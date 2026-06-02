@@ -101,24 +101,27 @@ export function gameLayout(height = H) {
   const margin = 16;
   const boardH = GRID * CELL + BOARD_PAD * 2;
 
-  const navY = 26 + safeTop;
-  const headerTop = 44 + safeTop;
-  const headerH = 66;
-  const goalBarY = headerTop + headerH + 8;
+  const navY = 22 + safeTop;
+  const navClearY = 46 + safeTop;
+  const headerTop = navClearY + 6;
+  const headerH = 68;
+  const headerBottom = headerTop + headerH;
+  const goalBarY = headerBottom + 10;
   const hudBottom = goalBarY + 10;
 
-  const trayH = 116;
-  const trayBottom = height - Math.max(10, safeBottom) - 10;
-  const trayCenterY = trayBottom - trayH / 2;
-  const trayTop = trayCenterY - trayH / 2;
-  const trayLabelY = trayTop + 14;
+  const trayH = 126;
+  const trayBottom = height - Math.max(10, safeBottom) - 8;
+  const trayTop = trayBottom - trayH;
+  const trayCenterY = trayTop + trayH / 2;
+  const trayLabelY = trayTop + 16;
+  const trayPiecesY = trayTop + trayH * 0.68;
   const trayInnerH = trayH - 36;
-  const trayScale = Math.min(0.54, trayInnerH / (5 * CELL));
-  const trayPiecesY = trayCenterY + 4;
+  const trayScale = Math.min(0.5, (trayInnerH * 0.9) / (5 * CELL));
+  const trayW = W - margin * 2;
 
-  const playTop = hudBottom;
+  const playTop = hudBottom + 8;
   const playBottom = trayTop - 12;
-  let boardY = playTop + Math.max(0, (playBottom - playTop - boardH) / 2);
+  let boardY = playTop + (playBottom - playTop - boardH) / 2;
   boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
 
   return {
@@ -126,28 +129,29 @@ export function gameLayout(height = H) {
     navY,
     headerTop,
     headerH,
+    headerBottom,
+    hudBottom,
     panelY: headerTop + headerH / 2,
-    panelW: W - margin * 2,
+    panelW: trayW,
     scoreX: margin,
     scoreLabelY: headerTop + 12,
     scoreValueY: headerTop + 36,
     centerX: W / 2,
-    levelTitleY: headerTop + 10,
-    levelNameY: headerTop + 28,
-    movesY: headerTop + 46,
+    levelTitleY: headerTop + 12,
+    levelSubY: headerTop + 32,
     goalX: W - margin,
     goalLabelY: headerTop + 12,
     goalProgY: headerTop + 36,
     goalBarY,
-    goalBarW: W - margin * 2,
-    streakY: goalBarY - 4,
+    goalBarW: trayW,
+    streakY: goalBarY - 6,
     boardY,
     boardH,
     boardBottom: boardY + boardH,
     trayTop,
     trayCenterY,
     trayH,
-    trayW: W - margin * 2,
+    trayW,
     trayLabelY,
     trayPiecesY,
     trayScale,

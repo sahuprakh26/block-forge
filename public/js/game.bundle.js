@@ -971,50 +971,54 @@
     const { top: safeTop, bottom: safeBottom } = gameSafeY();
     const margin = 16;
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const navY = 26 + safeTop;
-    const headerTop = 44 + safeTop;
-    const headerH = 66;
-    const goalBarY = headerTop + headerH + 8;
+    const navY = 22 + safeTop;
+    const navClearY = 46 + safeTop;
+    const headerTop = navClearY + 6;
+    const headerH = 68;
+    const headerBottom = headerTop + headerH;
+    const goalBarY = headerBottom + 10;
     const hudBottom = goalBarY + 10;
-    const trayH = 116;
-    const trayBottom = height - Math.max(10, safeBottom) - 10;
-    const trayCenterY = trayBottom - trayH / 2;
-    const trayTop = trayCenterY - trayH / 2;
-    const trayLabelY = trayTop + 14;
+    const trayH = 126;
+    const trayBottom = height - Math.max(10, safeBottom) - 8;
+    const trayTop = trayBottom - trayH;
+    const trayCenterY = trayTop + trayH / 2;
+    const trayLabelY = trayTop + 16;
+    const trayPiecesY = trayTop + trayH * 0.68;
     const trayInnerH = trayH - 36;
-    const trayScale = Math.min(0.54, trayInnerH / (5 * CELL));
-    const trayPiecesY = trayCenterY + 4;
-    const playTop = hudBottom;
+    const trayScale = Math.min(0.5, trayInnerH * 0.9 / (5 * CELL));
+    const trayW = W - margin * 2;
+    const playTop = hudBottom + 8;
     const playBottom = trayTop - 12;
-    let boardY = playTop + Math.max(0, (playBottom - playTop - boardH) / 2);
+    let boardY = playTop + (playBottom - playTop - boardH) / 2;
     boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
     return {
       margin,
       navY,
       headerTop,
       headerH,
+      headerBottom,
+      hudBottom,
       panelY: headerTop + headerH / 2,
-      panelW: W - margin * 2,
+      panelW: trayW,
       scoreX: margin,
       scoreLabelY: headerTop + 12,
       scoreValueY: headerTop + 36,
       centerX: W / 2,
-      levelTitleY: headerTop + 10,
-      levelNameY: headerTop + 28,
-      movesY: headerTop + 46,
+      levelTitleY: headerTop + 12,
+      levelSubY: headerTop + 32,
       goalX: W - margin,
       goalLabelY: headerTop + 12,
       goalProgY: headerTop + 36,
       goalBarY,
-      goalBarW: W - margin * 2,
-      streakY: goalBarY - 4,
+      goalBarW: trayW,
+      streakY: goalBarY - 6,
       boardY,
       boardH,
       boardBottom: boardY + boardH,
       trayTop,
       trayCenterY,
       trayH,
-      trayW: W - margin * 2,
+      trayW,
       trayLabelY,
       trayPiecesY,
       trayScale,
@@ -1487,7 +1491,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.4.0";
+  var APP_VERSION = "1.4.1";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1862,6 +1866,156 @@
     }
   };
 
+  // public/js/gameUi.js
+  var GAME_UI = {
+    font: {
+      caption: "11px",
+      body: "13px",
+      heading: "15px",
+      stat: "24px"
+    },
+    color: {
+      muted: "#94a3b8",
+      title: "#38bdf8",
+      accent: "#fb923c",
+      moves: "#fbbf24",
+      bright: "#cbd5e1",
+      stat: "#ffffff",
+      goal: "#4ade80"
+    }
+  };
+  function gameHudStyle(role, overrides = {}) {
+    const base = {
+      caption: {
+        fontSize: GAME_UI.font.caption,
+        fontStyle: "700",
+        color: GAME_UI.color.muted
+      },
+      body: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.accent
+      },
+      heading: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.heading,
+        fontStyle: "800",
+        color: GAME_UI.color.title,
+        strokeThickness: 2
+      },
+      moves: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.moves
+      },
+      stat: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.stat,
+        fontStyle: "800",
+        color: GAME_UI.color.stat,
+        stroke: "#0f172a",
+        strokeThickness: 3
+      },
+      goalLabel: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.caption,
+        fontStyle: "700",
+        color: GAME_UI.color.bright
+      },
+      goalStat: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.stat,
+        fontStyle: "800",
+        color: GAME_UI.color.goal,
+        stroke: "#0f172a",
+        strokeThickness: 2
+      },
+      trayLabel: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.bright,
+        letterSpacing: 1
+      }
+    };
+    return uiTextStyle({ ...base[role] || base.body, ...overrides });
+  }
+
+  // public/js/gameHud.js
+  function levelSubtitle(mode, level) {
+    if (mode === "endless") return "No move limit";
+    if (mode === "daily") return "Same pieces for everyone";
+    if (!level) return "";
+    const parts = [];
+    if (level.name) parts.push(level.name);
+    if (level.moves) parts.push(`${level.moves} moves`);
+    return parts.join(" \xB7 ");
+  }
+  function buildGameHud(scene, layout, state) {
+    const { mode, levelId, level, progress, onBack, onQuit } = state;
+    const L = layout;
+    const title = mode === "endless" ? "ENDLESS" : mode === "daily" ? "DAILY" : `LEVEL ${levelId}`;
+    addGameTopNav(scene, { onBack, onQuit, navY: L.navY });
+    scene.add.rectangle(W / 2, L.panelY, L.panelW, L.headerH, 988970, 0.96).setStrokeStyle(2, 4674921, 0.85).setDepth(45);
+    applyCrispText(
+      scene.add.text(L.scoreX, L.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 })).setOrigin(0, 0.5).setDepth(50)
+    );
+    const scoreText = applyCrispText(
+      scene.add.text(L.scoreX, L.scoreValueY, "0", gameHudStyle("stat")).setOrigin(0, 0.5).setDepth(50)
+    );
+    applyCrispText(
+      scene.add.text(L.centerX, L.levelTitleY, title, gameHudStyle("heading")).setOrigin(0.5, 0.5).setDepth(50)
+    );
+    const sub = levelSubtitle(mode, level);
+    let levelSubText = null;
+    if (sub) {
+      levelSubText = applyCrispText(
+        scene.add.text(L.centerX, L.levelSubY, sub, gameHudStyle("body", { color: "#fbbf24" })).setOrigin(0.5, 0.5).setDepth(50)
+      );
+    }
+    let goalTitle = "";
+    let goalProg = "\u2014";
+    if (mode === "endless") {
+      const best = progress.endlessBest || 0;
+      goalTitle = "BEST";
+      goalProg = best > 0 ? `${best}` : "\u2014";
+    } else if (mode === "daily") {
+      const db = getDailyBest(progress);
+      goalTitle = "TODAY";
+      goalProg = db > 0 ? `${db}` : "\u2014";
+    } else if (level?.goal) {
+      goalTitle = goalHudTitle(level.goal);
+      goalProg = goalProgress(level.goal, 0, 0, 0);
+    }
+    applyCrispText(
+      scene.add.text(L.goalX, L.goalLabelY, goalTitle, gameHudStyle("goalLabel", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
+    );
+    const goalProgressText = applyCrispText(
+      scene.add.text(L.goalX, L.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
+    );
+    const streakBadge = applyCrispText(
+      scene.add.text(L.centerX, L.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
+    );
+    let goalBar = null;
+    let goalBarMax = 0;
+    if (mode === "level") {
+      scene.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 8, 1976635).setOrigin(0.5).setDepth(50);
+      goalBar = scene.add.rectangle(L.margin, L.goalBarY, 0, 8, 3718648).setOrigin(0, 0.5).setDepth(51);
+      goalBarMax = L.goalBarW;
+    }
+    scene.add.rectangle(W / 2, L.hudBottom, L.panelW, 2, 3359061, 0.5).setOrigin(0.5, 0).setDepth(44);
+    return { scoreText, goalProgressText, streakBadge, goalBar, goalBarMax, levelSubText };
+  }
+  function formatLevelSub(level, movesLeft) {
+    if (!level) return "";
+    const parts = [];
+    if (level.name) parts.push(level.name);
+    if (level.moves != null && movesLeft != null) parts.push(`${movesLeft} moves`);
+    return parts.join(" \xB7 ");
+  }
+
   // public/js/apiBase.js
   function apiBase() {
     const b = typeof window !== "undefined" ? window.BF_API_BASE : "";
@@ -1945,83 +2099,6 @@
     }
   }
 
-  // public/js/gameUi.js
-  var GAME_UI = {
-    font: {
-      caption: "11px",
-      body: "13px",
-      heading: "15px",
-      stat: "24px"
-    },
-    color: {
-      muted: "#94a3b8",
-      title: "#38bdf8",
-      accent: "#fb923c",
-      moves: "#fbbf24",
-      bright: "#cbd5e1",
-      stat: "#ffffff",
-      goal: "#4ade80"
-    }
-  };
-  function gameHudStyle(role, overrides = {}) {
-    const base = {
-      caption: {
-        fontSize: GAME_UI.font.caption,
-        fontStyle: "700",
-        color: GAME_UI.color.muted
-      },
-      body: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.body,
-        fontStyle: "800",
-        color: GAME_UI.color.accent
-      },
-      heading: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.heading,
-        fontStyle: "800",
-        color: GAME_UI.color.title,
-        strokeThickness: 2
-      },
-      moves: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.body,
-        fontStyle: "800",
-        color: GAME_UI.color.moves
-      },
-      stat: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.stat,
-        fontStyle: "800",
-        color: GAME_UI.color.stat,
-        stroke: "#0f172a",
-        strokeThickness: 3
-      },
-      goalLabel: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.caption,
-        fontStyle: "700",
-        color: GAME_UI.color.bright
-      },
-      goalStat: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.stat,
-        fontStyle: "800",
-        color: GAME_UI.color.goal,
-        stroke: "#0f172a",
-        strokeThickness: 2
-      },
-      trayLabel: {
-        fontFamily: "Syne, sans-serif",
-        fontSize: GAME_UI.font.body,
-        fontStyle: "800",
-        color: GAME_UI.color.bright,
-        letterSpacing: 1
-      }
-    };
-    return uiTextStyle({ ...base[role] || base.body, ...overrides });
-  }
-
   // public/js/scenes/GameScene.js
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
@@ -2094,8 +2171,11 @@
     drawTrayArea() {
       const L = this.layout;
       this.add.rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 988970, 0.94).setStrokeStyle(2, 4674921, 1).setDepth(1);
+      const slotTop = L.trayTop + 30;
+      const slotH = L.trayH - 34;
+      this.add.rectangle(W / 2, slotTop + slotH / 2, L.trayW - 12, slotH, 1120295, 0.6).setDepth(1);
       applyCrispText(
-        this.add.text(W / 2, L.trayLabelY, "NEXT", gameHudStyle("trayLabel", { fontSize: "10px", letterSpacing: 2 })).setOrigin(0.5).setDepth(2)
+        this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel")).setOrigin(0.5).setDepth(2)
       );
     }
     drawBoardFrame() {
@@ -2111,61 +2191,24 @@
       this.boardFrame.add([outer, inner]);
     }
     buildHud() {
-      const title = this.mode === "endless" ? "ENDLESS" : this.mode === "daily" ? "DAILY" : `LEVEL ${this.levelId}`;
       const askLeave = () => {
         if (this.gameEnded) this.exitGame();
         else this.showConfirmExit();
       };
-      const L = this.layout;
-      addGameTopNav(this, { onBack: askLeave, onQuit: askLeave, navY: L.navY });
-      this.add.rectangle(W / 2, L.panelY, L.panelW, L.headerH, 988970, 0.94).setStrokeStyle(1, 3359061, 0.7).setDepth(45);
-      applyCrispText(
-        this.add.text(L.scoreX, L.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 })).setOrigin(0, 0.5).setDepth(50)
-      );
-      this.scoreText = applyCrispText(
-        this.add.text(L.scoreX, L.scoreValueY, "0", gameHudStyle("stat")).setOrigin(0, 0.5).setDepth(50)
-      );
-      applyCrispText(
-        this.add.text(L.centerX, L.levelTitleY, title, gameHudStyle("heading")).setOrigin(0.5).setDepth(50)
-      );
-      if (this.mode === "level" && this.level?.name) {
-        applyCrispText(
-          this.add.text(L.centerX, L.levelNameY, this.level.name, gameHudStyle("body")).setOrigin(0.5).setDepth(50)
-        );
-      }
-      if (this.mode === "level" && this.level.moves) {
-        this.movesText = applyCrispText(
-          this.add.text(L.centerX, L.movesY, `Moves ${this.level.moves}`, gameHudStyle("moves")).setOrigin(0.5).setDepth(50)
-        );
-      }
-      let goalTitle = "";
-      let goalProg = "\u2014";
-      if (this.mode === "endless") {
-        const best = this.progress.endlessBest || 0;
-        goalTitle = "BEST";
-        goalProg = best > 0 ? `${best}` : "\u2014";
-      } else if (this.mode === "daily") {
-        const db = getDailyBest(this.progress);
-        goalTitle = "TODAY";
-        goalProg = db > 0 ? `${db}` : "\u2014";
-      } else if (this.level?.goal) {
-        goalTitle = goalHudTitle(this.level.goal);
-        goalProg = goalProgress(this.level.goal, 0, 0, 0);
-      }
-      applyCrispText(
-        this.add.text(L.goalX, L.goalLabelY, goalTitle, gameHudStyle("goalLabel", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
-      );
-      this.goalProgressText = applyCrispText(
-        this.add.text(L.goalX, L.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
-      );
-      this.streakBadge = applyCrispText(
-        this.add.text(L.centerX, L.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
-      );
-      if (this.mode === "level") {
-        this.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 6, 1976635).setOrigin(0.5);
-        this.goalBar = this.add.rectangle(L.margin, L.goalBarY, 0, 6, 3718648).setOrigin(0, 0.5).setDepth(50);
-        this.goalBarMax = L.goalBarW;
-      }
+      const hud = buildGameHud(this, this.layout, {
+        mode: this.mode,
+        levelId: this.levelId,
+        level: this.level,
+        progress: this.progress,
+        onBack: askLeave,
+        onQuit: askLeave
+      });
+      this.scoreText = hud.scoreText;
+      this.goalProgressText = hud.goalProgressText;
+      this.streakBadge = hud.streakBadge;
+      this.goalBar = hud.goalBar;
+      this.goalBarMax = hud.goalBarMax;
+      this.levelSubText = hud.levelSubText;
     }
     spawnTray() {
       this.traySlots.forEach((s) => s.container.destroy());
@@ -2566,12 +2609,12 @@
     }
     afterPlacement() {
       this.refreshGoalDisplay();
-      if (this.mode === "level" && this.level.moves && this.movesText) {
+      if (this.mode === "level" && this.level.moves && this.levelSubText) {
         const left = this.level.moves - this.movesUsed;
-        this.movesText.setText(`Moves: ${Math.max(0, left)}`);
+        this.levelSubText.setText(formatLevelSub(this.level, Math.max(0, left)));
         if (left <= 5 && left > 0) {
-          this.movesText.setColor("#f87171");
-          this.tweens.add({ targets: this.movesText, scale: 1.2, duration: 100, yoyo: true });
+          this.levelSubText.setColor("#f87171");
+          this.tweens.add({ targets: this.levelSubText, scale: 1.08, duration: 100, yoyo: true });
         }
         if (left <= 0 && !this.checkWin()) {
           this.endGame(false);

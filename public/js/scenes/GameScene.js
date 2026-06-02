@@ -27,7 +27,8 @@ import {
 } from "../fx.js";
 import { sfx } from "../audio.js";
 import { bgm } from "../music.js";
-import { addGameTopNav, showLeaveDialog } from "../navUi.js";
+import { showLeaveDialog } from "../navUi.js";
+import { buildGameHud, formatLevelSub } from "../gameHud.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
@@ -117,9 +118,14 @@ export default class GameScene extends Phaser.Scene {
       .rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 0x0f172a, 0.94)
       .setStrokeStyle(2, 0x475569, 1)
       .setDepth(1);
+    const slotTop = L.trayTop + 30;
+    const slotH = L.trayH - 34;
+    this.add
+      .rectangle(W / 2, slotTop + slotH / 2, L.trayW - 12, slotH, 0x111827, 0.6)
+      .setDepth(1);
     applyCrispText(
       this.add
-        .text(W / 2, L.trayLabelY, "NEXT", gameHudStyle("trayLabel", { fontSize: "10px", letterSpacing: 2 }))
+        .text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel"))
         .setOrigin(0.5)
         .setDepth(2)
     );
@@ -139,107 +145,24 @@ export default class GameScene extends Phaser.Scene {
   }
 
   buildHud() {
-    const title =
-      this.mode === "endless"
-        ? "ENDLESS"
-        : this.mode === "daily"
-          ? "DAILY"
-          : `LEVEL ${this.levelId}`;
-
     const askLeave = () => {
       if (this.gameEnded) this.exitGame();
       else this.showConfirmExit();
     };
-    const L = this.layout;
-    addGameTopNav(this, { onBack: askLeave, onQuit: askLeave, navY: L.navY });
-
-    this.add
-      .rectangle(W / 2, L.panelY, L.panelW, L.headerH, 0x0f172a, 0.94)
-      .setStrokeStyle(1, 0x334155, 0.7)
-      .setDepth(45);
-
-    applyCrispText(
-      this.add
-        .text(L.scoreX, L.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 }))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
-    this.scoreText = applyCrispText(
-      this.add
-        .text(L.scoreX, L.scoreValueY, "0", gameHudStyle("stat"))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
-
-    applyCrispText(
-      this.add
-        .text(L.centerX, L.levelTitleY, title, gameHudStyle("heading"))
-        .setOrigin(0.5)
-        .setDepth(50)
-    );
-
-    if (this.mode === "level" && this.level?.name) {
-      applyCrispText(
-        this.add
-          .text(L.centerX, L.levelNameY, this.level.name, gameHudStyle("body"))
-          .setOrigin(0.5)
-          .setDepth(50)
-      );
-    }
-
-    if (this.mode === "level" && this.level.moves) {
-      this.movesText = applyCrispText(
-        this.add
-          .text(L.centerX, L.movesY, `Moves ${this.level.moves}`, gameHudStyle("moves"))
-          .setOrigin(0.5)
-          .setDepth(50)
-      );
-    }
-
-    let goalTitle = "";
-    let goalProg = "—";
-    if (this.mode === "endless") {
-      const best = this.progress.endlessBest || 0;
-      goalTitle = "BEST";
-      goalProg = best > 0 ? `${best}` : "—";
-    } else if (this.mode === "daily") {
-      const db = getDailyBest(this.progress);
-      goalTitle = "TODAY";
-      goalProg = db > 0 ? `${db}` : "—";
-    } else if (this.level?.goal) {
-      goalTitle = goalHudTitle(this.level.goal);
-      goalProg = goalProgress(this.level.goal, 0, 0, 0);
-    }
-
-    applyCrispText(
-      this.add
-        .text(L.goalX, L.goalLabelY, goalTitle, gameHudStyle("goalLabel", { align: "right" }))
-        .setOrigin(1, 0.5)
-        .setDepth(50)
-    );
-    this.goalProgressText = applyCrispText(
-      this.add
-        .text(L.goalX, L.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" }))
-        .setOrigin(1, 0.5)
-        .setDepth(50)
-    );
-
-    this.streakBadge = applyCrispText(
-      this.add
-        .text(L.centerX, L.streakY, "", gameHudStyle("body"))
-        .setOrigin(0.5)
-        .setAlpha(0)
-        .setDepth(50)
-    );
-
-    if (this.mode === "level") {
-      this.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 6, 0x1e293b).setOrigin(0.5);
-      this.goalBar = this.add
-        .rectangle(L.margin, L.goalBarY, 0, 6, 0x38bdf8)
-        .setOrigin(0, 0.5)
-        .setDepth(50);
-      this.goalBarMax = L.goalBarW;
-    }
+    const hud = buildGameHud(this, this.layout, {
+      mode: this.mode,
+      levelId: this.levelId,
+      level: this.level,
+      progress: this.progress,
+      onBack: askLeave,
+      onQuit: askLeave,
+    });
+    this.scoreText = hud.scoreText;
+    this.goalProgressText = hud.goalProgressText;
+    this.streakBadge = hud.streakBadge;
+    this.goalBar = hud.goalBar;
+    this.goalBarMax = hud.goalBarMax;
+    this.levelSubText = hud.levelSubText;
   }
 
   spawnTray() {
@@ -687,12 +610,12 @@ export default class GameScene extends Phaser.Scene {
 
   afterPlacement() {
     this.refreshGoalDisplay();
-    if (this.mode === "level" && this.level.moves && this.movesText) {
+    if (this.mode === "level" && this.level.moves && this.levelSubText) {
       const left = this.level.moves - this.movesUsed;
-      this.movesText.setText(`Moves: ${Math.max(0, left)}`);
+      this.levelSubText.setText(formatLevelSub(this.level, Math.max(0, left)));
       if (left <= 5 && left > 0) {
-        this.movesText.setColor("#f87171");
-        this.tweens.add({ targets: this.movesText, scale: 1.2, duration: 100, yoyo: true });
+        this.levelSubText.setColor("#f87171");
+        this.tweens.add({ targets: this.levelSubText, scale: 1.08, duration: 100, yoyo: true });
       }
       if (left <= 0 && !this.checkWin()) {
         this.endGame(false);
