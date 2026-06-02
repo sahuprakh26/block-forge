@@ -1237,6 +1237,103 @@
     return [goal.target, goal.target + 2, goal.target + 4];
   }
 
+  // public/js/navUi.js
+  var NAV_DEPTH = 120;
+  var MODAL_DEPTH = 200;
+  function addNavButton(scene, x, y, label, color, onClick, width = 92) {
+    const h = 34;
+    const bg = scene.add.rectangle(x, y, width, h, color, 1).setStrokeStyle(1, 16777215, 0.12).setInteractive({ useHandCursor: true }).setDepth(NAV_DEPTH);
+    const txt = scene.add.text(x, y, label, {
+      fontFamily: "Outfit, sans-serif",
+      fontSize: "12px",
+      fontStyle: "700",
+      color: "#fff"
+    }).setOrigin(0.5).setDepth(NAV_DEPTH + 1);
+    const press = () => {
+      sfx.play("click");
+      onClick();
+    };
+    txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
+    bg.on("pointerdown", press);
+    bg.on("pointerover", () => bg.setFillStyle(lighten(color)));
+    bg.on("pointerout", () => bg.setFillStyle(color));
+    return { bg, txt };
+  }
+  function lighten(hex) {
+    const c = Phaser.Display.Color.IntegerToColor(hex);
+    c.lighten(12);
+    return c.color;
+  }
+  function showLeaveDialog(scene, { title = "Leave game?", onLeave }) {
+    if (scene._leaveModal) return;
+    const items = [];
+    const add = (obj) => {
+      obj.setDepth(MODAL_DEPTH);
+      items.push(obj);
+      return obj;
+    };
+    const close = () => {
+      items.forEach((o) => o.destroy());
+      scene._leaveModal = null;
+      scene.input.enabled = true;
+    };
+    scene._leaveModal = { close };
+    scene.input.enabled = true;
+    add(scene.add.rectangle(W / 2, 390, W, 780, 0, 0.72).setInteractive());
+    add(
+      scene.add.text(W / 2, 298, title, {
+        fontFamily: "Syne, sans-serif",
+        fontSize: "22px",
+        fontStyle: "700",
+        color: "#e2e8f0",
+        align: "center",
+        wordWrap: { width: W - 48 }
+      }).setOrigin(0.5)
+    );
+    add(
+      scene.add.text(W / 2, 338, "Progress in this run will be lost.", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "13px",
+        color: "#94a3b8"
+      }).setOrigin(0.5)
+    );
+    const quitBg = add(
+      scene.add.rectangle(W / 2, 400, 220, 46, 14427686).setInteractive({ useHandCursor: true })
+    );
+    add(
+      scene.add.text(W / 2, 400, "QUIT", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "16px",
+        fontStyle: "800",
+        color: "#fff"
+      }).setOrigin(0.5)
+    );
+    const stayBg = add(
+      scene.add.rectangle(W / 2, 462, 220, 46, 3359061).setInteractive({ useHandCursor: true })
+    );
+    add(
+      scene.add.text(W / 2, 462, "KEEP PLAYING", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "15px",
+        fontStyle: "700",
+        color: "#e2e8f0"
+      }).setOrigin(0.5)
+    );
+    quitBg.on("pointerdown", () => {
+      sfx.play("click");
+      close();
+      onLeave();
+    });
+    stayBg.on("pointerdown", () => {
+      sfx.play("click");
+      close();
+    });
+  }
+  function addGameTopNav(scene, { onBack, onQuit, backLabel = "\u2190 BACK" }) {
+    addNavButton(scene, 52, 26, backLabel, 3359061, onBack, 88);
+    if (onQuit) addNavButton(scene, W - 52, 26, "QUIT", 12131356, onQuit, 72);
+  }
+
   // public/js/scenes/MapScene.js
   var MapScene = class extends Phaser.Scene {
     constructor() {
@@ -1249,7 +1346,9 @@
       drawBackdrop(this, width, height);
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const maxStars = world.levels.length * 3;
-      this.add.text(width / 2, 32, world.name, {
+      const goMenu = () => transitionTo(this, "Menu");
+      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
+      this.add.text(width / 2, 54, world.name, {
         fontFamily: "Syne, sans-serif",
         fontSize: "26px",
         fontStyle: "700",
@@ -1322,7 +1421,6 @@
           });
         }
       });
-      this.makeBack(width / 2, height - 56);
       fadeInScene(this);
       if (bgm.isOn()) bgm.unlock();
     }
@@ -1333,13 +1431,6 @@
       const txt = this.add.text(0, 0, lv.name, { fontFamily: "Outfit, sans-serif", fontSize: "12px", fontStyle: "600", color: "#e2e8f0" }).setOrigin(0.5);
       this.preview.add([bg, txt]);
       this.tweens.add({ targets: this.preview, alpha: 0, duration: 400, delay: 400, onComplete: () => this.preview?.destroy() });
-    }
-    makeBack(x, y) {
-      const bg = this.add.rectangle(x, y, 200, 46, 1976635).setInteractive({ useHandCursor: true }).setStrokeStyle(1, 4674921);
-      const txt = this.add.text(x, y, "\u2190 Menu", { fontFamily: "Outfit, sans-serif", fontSize: "16px", fontStyle: "600", color: "#e2e8f0" }).setOrigin(0.5);
-      bg.on("pointerdown", () => transitionTo(this, "Menu"));
-      bg.on("pointerover", () => bg.setFillStyle(3359061));
-      bg.on("pointerout", () => bg.setFillStyle(1976635));
     }
   };
 
@@ -1477,12 +1568,17 @@
     }
     buildHud() {
       const title = this.mode === "endless" ? "ENDLESS" : this.mode === "daily" ? "DAILY CHALLENGE" : `${this.level?.name || "Level"} \xB7 L${this.levelId}`;
-      this.add.text(W / 2, 28, title, {
+      const askLeave = () => {
+        if (this.gameEnded) this.exitGame();
+        else this.showConfirmExit();
+      };
+      addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
+      this.add.text(W / 2, 54, title, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "18px",
+        fontSize: "17px",
         fontStyle: "700",
         color: "#38bdf8"
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(50);
       this.scoreText = this.add.text(24, 56, "0", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "28px",
@@ -1526,11 +1622,6 @@
         this.goalBar = this.add.rectangle(24, 102, 0, 6, 2282478).setOrigin(0, 0.5);
         this.goalBarMax = W - 48;
       }
-      const back = this.add.text(24, 28, "\u2190", { fontSize: "22px", color: "#64748b" }).setInteractive({ useHandCursor: true });
-      back.on("pointerdown", () => {
-        if (this.gameEnded) this.exitGame();
-        else this.showConfirmExit();
-      });
     }
     spawnTray() {
       this.traySlots.forEach((s) => s.container.destroy());
@@ -2129,22 +2220,8 @@ ${prog}`);
       this.time.delayedCall(ms, () => t.destroy());
     }
     showConfirmExit() {
-      const dim = this.add.rectangle(W / 2, 390, W, 780, 0, 0.6).setDepth(90).setInteractive();
-      this.add.text(W / 2, 320, "Leave level?", {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "22px",
-        color: "#e2e8f0"
-      }).setOrigin(0.5).setDepth(91);
-      const quit = this.add.rectangle(W / 2, 390, 200, 44, 16281969).setDepth(91).setInteractive({ useHandCursor: true });
-      this.add.text(W / 2, 390, "Quit", { fontSize: "16px", color: "#fff" }).setOrigin(0.5).setDepth(92);
-      const stay = this.add.rectangle(W / 2, 450, 200, 44, 3359061).setDepth(91).setInteractive({ useHandCursor: true });
-      this.add.text(W / 2, 450, "Keep playing", { fontSize: "16px", color: "#e2e8f0" }).setOrigin(0.5).setDepth(92);
-      quit.on("pointerdown", () => this.exitGame());
-      stay.on("pointerdown", () => {
-        dim.destroy();
-        quit.destroy();
-        stay.destroy();
-      });
+      const title = this.mode === "level" ? "Leave this level?" : this.mode === "daily" ? "Leave daily run?" : "Leave endless run?";
+      showLeaveDialog(this, { title, onLeave: () => this.exitGame() });
     }
     exitGame() {
       if (this.mode === "level") transitionTo(this, "Map");
@@ -2162,7 +2239,9 @@ ${prog}`);
     }
     create() {
       drawBackdrop(this, W, 780);
-      this.add.text(W / 2, 32, "GLOBAL RANKINGS", {
+      const goMenu = () => transitionTo(this, "Menu");
+      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
+      this.add.text(W / 2, 54, "GLOBAL RANKINGS", {
         fontFamily: "Syne, sans-serif",
         fontSize: "24px",
         fontStyle: "700",
@@ -2177,7 +2256,6 @@ ${prog}`);
       const dailyBoard = `daily-${dailySeed()}`;
       this.makeTab(W / 2 - 90, 96, "ENDLESS", "endless", this.board === "endless");
       this.makeTab(W / 2 + 90, 96, "DAILY", dailyBoard, this.board === dailyBoard);
-      this.makeBack(W / 2, 740);
       this.initBoard();
       fadeInScene(this);
     }
@@ -2233,11 +2311,6 @@ ${prog}`);
         );
       });
     }
-    makeBack(x, y) {
-      const bg = this.add.rectangle(x, y, 200, 44, 1976635).setInteractive({ useHandCursor: true }).setStrokeStyle(1, 4674921);
-      this.add.text(x, y, "\u2190 Menu", { fontFamily: "Outfit, sans-serif", fontSize: "16px", color: "#e2e8f0" }).setOrigin(0.5);
-      bg.on("pointerdown", () => transitionTo(this, "Menu"));
-    }
   };
 
   // public/js/main.js
@@ -2248,6 +2321,22 @@ ${prog}`);
     cap.Plugins?.SplashScreen?.hide?.().catch(() => {
     });
     cap.Plugins?.App?.addListener?.("backButton", () => {
+      const g = window.__bfGame;
+      const gameSc = g?.scene?.getScene?.("Game");
+      if (gameSc?.scene?.isActive?.()) {
+        gameSc.showConfirmExit?.();
+        return;
+      }
+      const mapSc = g?.scene?.getScene?.("Map");
+      if (mapSc?.scene?.isActive?.()) {
+        mapSc.scene.start("Menu");
+        return;
+      }
+      const lbSc = g?.scene?.getScene?.("Leaderboard");
+      if (lbSc?.scene?.isActive?.()) {
+        lbSc.scene.start("Menu");
+        return;
+      }
       cap.Plugins?.App?.minimizeApp?.();
     });
   }
@@ -2300,5 +2389,10 @@ ${prog}`);
   }
   ["pointerdown", "touchstart", "keydown", "click"].forEach((ev) => {
     document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const gameSc = window.__bfGame?.scene?.getScene?.("Game");
+    if (gameSc?.scene?.isActive?.()) gameSc.showConfirmExit?.();
   });
 })();

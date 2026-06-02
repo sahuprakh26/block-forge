@@ -13,6 +13,22 @@ function setupNative() {
   document.body.classList.add("native-app");
   cap.Plugins?.SplashScreen?.hide?.().catch(() => {});
   cap.Plugins?.App?.addListener?.("backButton", () => {
+    const g = window.__bfGame;
+    const gameSc = g?.scene?.getScene?.("Game");
+    if (gameSc?.scene?.isActive?.()) {
+      gameSc.showConfirmExit?.();
+      return;
+    }
+    const mapSc = g?.scene?.getScene?.("Map");
+    if (mapSc?.scene?.isActive?.()) {
+      mapSc.scene.start("Menu");
+      return;
+    }
+    const lbSc = g?.scene?.getScene?.("Leaderboard");
+    if (lbSc?.scene?.isActive?.()) {
+      lbSc.scene.start("Menu");
+      return;
+    }
     cap.Plugins?.App?.minimizeApp?.();
   });
 }
@@ -74,4 +90,10 @@ function unlockAudio() {
 
 ["pointerdown", "touchstart", "keydown", "click"].forEach((ev) => {
   document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  const gameSc = window.__bfGame?.scene?.getScene?.("Game");
+  if (gameSc?.scene?.isActive?.()) gameSc.showConfirmExit?.();
 });

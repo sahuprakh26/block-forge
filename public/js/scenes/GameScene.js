@@ -27,6 +27,7 @@ import {
 } from "../fx.js";
 import { sfx } from "../audio.js";
 import { bgm } from "../music.js";
+import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
@@ -147,14 +148,21 @@ export default class GameScene extends Phaser.Scene {
           ? "DAILY CHALLENGE"
           : `${this.level?.name || "Level"} · L${this.levelId}`;
 
+    const askLeave = () => {
+      if (this.gameEnded) this.exitGame();
+      else this.showConfirmExit();
+    };
+    addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
+
     this.add
-      .text(W / 2, 28, title, {
+      .text(W / 2, 54, title, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "18px",
+        fontSize: "17px",
         fontStyle: "700",
         color: "#38bdf8",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(50);
 
     this.scoreText = this.add.text(24, 56, "0", {
       fontFamily: "Outfit, sans-serif",
@@ -211,13 +219,6 @@ export default class GameScene extends Phaser.Scene {
       this.goalBarMax = W - 48;
     }
 
-    const back = this.add
-      .text(24, 28, "←", { fontSize: "22px", color: "#64748b" })
-      .setInteractive({ useHandCursor: true });
-    back.on("pointerdown", () => {
-      if (this.gameEnded) this.exitGame();
-      else this.showConfirmExit();
-    });
   }
 
   spawnTray() {
@@ -914,25 +915,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showConfirmExit() {
-    const dim = this.add.rectangle(W / 2, 390, W, 780, 0x000000, 0.6).setDepth(90).setInteractive();
-    this.add
-      .text(W / 2, 320, "Leave level?", {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "22px",
-        color: "#e2e8f0",
-      })
-      .setOrigin(0.5)
-      .setDepth(91);
-    const quit = this.add.rectangle(W / 2, 390, 200, 44, 0xf87171).setDepth(91).setInteractive({ useHandCursor: true });
-    this.add.text(W / 2, 390, "Quit", { fontSize: "16px", color: "#fff" }).setOrigin(0.5).setDepth(92);
-    const stay = this.add.rectangle(W / 2, 450, 200, 44, 0x334155).setDepth(91).setInteractive({ useHandCursor: true });
-    this.add.text(W / 2, 450, "Keep playing", { fontSize: "16px", color: "#e2e8f0" }).setOrigin(0.5).setDepth(92);
-    quit.on("pointerdown", () => this.exitGame());
-    stay.on("pointerdown", () => {
-      dim.destroy();
-      quit.destroy();
-      stay.destroy();
-    });
+    const title =
+      this.mode === "level" ? "Leave this level?" : this.mode === "daily" ? "Leave daily run?" : "Leave endless run?";
+    showLeaveDialog(this, { title, onLeave: () => this.exitGame() });
   }
 
   exitGame() {

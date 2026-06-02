@@ -4,6 +4,7 @@ import { fetchLeaderboard } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { dailySeed } from "../shapes.js";
 import { ensureName } from "../namePrompt.js";
+import { addGameTopNav } from "../navUi.js";
 
 export default class LeaderboardScene extends Phaser.Scene {
   constructor() {
@@ -16,8 +17,11 @@ export default class LeaderboardScene extends Phaser.Scene {
 
   create() {
     drawBackdrop(this, W, 780);
+    const goMenu = () => transitionTo(this, "Menu");
+    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
+
     this.add
-      .text(W / 2, 32, "GLOBAL RANKINGS", {
+      .text(W / 2, 54, "GLOBAL RANKINGS", {
         fontFamily: "Syne, sans-serif",
         fontSize: "24px",
         fontStyle: "700",
@@ -38,7 +42,6 @@ export default class LeaderboardScene extends Phaser.Scene {
     this.makeTab(W / 2 - 90, 96, "ENDLESS", "endless", this.board === "endless");
     this.makeTab(W / 2 + 90, 96, "DAILY", dailyBoard, this.board === dailyBoard);
 
-    this.makeBack(W / 2, 740);
     this.initBoard();
     fadeInScene(this);
   }
@@ -112,12 +115,4 @@ export default class LeaderboardScene extends Phaser.Scene {
     });
   }
 
-  makeBack(x, y) {
-    const bg = this.add
-      .rectangle(x, y, 200, 44, 0x1e293b)
-      .setInteractive({ useHandCursor: true })
-      .setStrokeStyle(1, 0x475569);
-    this.add.text(x, y, "← Menu", { fontFamily: "Outfit, sans-serif", fontSize: "16px", color: "#e2e8f0" }).setOrigin(0.5);
-    bg.on("pointerdown", () => transitionTo(this, "Menu"));
-  }
 }

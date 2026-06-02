@@ -3,6 +3,7 @@ import { loadProgress, getStars } from "../progress.js";
 import { drawBackdrop, transitionTo, fadeInScene } from "../fx.js";
 import { sfx } from "../audio.js";
 import { bgm } from "../music.js";
+import { addGameTopNav } from "../navUi.js";
 
 export default class MapScene extends Phaser.Scene {
   constructor() {
@@ -18,8 +19,11 @@ export default class MapScene extends Phaser.Scene {
     const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
     const maxStars = world.levels.length * 3;
 
+    const goMenu = () => transitionTo(this, "Menu");
+    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
+
     this.add
-      .text(width / 2, 32, world.name, {
+      .text(width / 2, 54, world.name, {
         fontFamily: "Syne, sans-serif",
         fontSize: "26px",
         fontStyle: "700",
@@ -114,7 +118,6 @@ export default class MapScene extends Phaser.Scene {
       }
     });
 
-    this.makeBack(width / 2, height - 56);
     fadeInScene(this);
     if (bgm.isOn()) bgm.unlock();
   }
@@ -130,16 +133,4 @@ export default class MapScene extends Phaser.Scene {
     this.tweens.add({ targets: this.preview, alpha: 0, duration: 400, delay: 400, onComplete: () => this.preview?.destroy() });
   }
 
-  makeBack(x, y) {
-    const bg = this.add
-      .rectangle(x, y, 200, 46, 0x1e293b)
-      .setInteractive({ useHandCursor: true })
-      .setStrokeStyle(1, 0x475569);
-    const txt = this.add
-      .text(x, y, "← Menu", { fontFamily: "Outfit, sans-serif", fontSize: "16px", fontStyle: "600", color: "#e2e8f0" })
-      .setOrigin(0.5);
-    bg.on("pointerdown", () => transitionTo(this, "Menu"));
-    bg.on("pointerover", () => bg.setFillStyle(0x334155));
-    bg.on("pointerout", () => bg.setFillStyle(0x1e293b));
-  }
 }
