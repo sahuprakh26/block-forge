@@ -963,7 +963,7 @@
     const goalBarY = headerBottom + 10;
     const hudBottom = goalBarY + 10;
     const trayH = 130;
-    const trayBottom = height - Math.max(10, safeBottom) - 8;
+    const trayBottom = height - Math.max(14, safeBottom) - 12;
     const trayTop = trayBottom - trayH;
     const trayCenterY = trayTop + trayH / 2;
     const trayLabelY = trayTop + 16;
