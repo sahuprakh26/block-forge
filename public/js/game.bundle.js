@@ -965,13 +965,34 @@
   }
   var HUD_HEADER = {
     navY: 26,
-    titleY: 78,
-    scoreLabelY: 70,
-    scoreValueY: 90,
-    streakY: 70,
-    goalY: 80,
-    movesY: 106
+    barY: 82,
+    barH: 52,
+    scoreLabelY: 54,
+    scoreValueY: 72,
+    titleY: 58,
+    goalY: 56,
+    movesY: 98,
+    streakY: 104
   };
+  function gameLayout() {
+    const boardH = GRID * CELL + BOARD_PAD * 2;
+    const boardY = 112;
+    const boardBottom = boardY + boardH;
+    const trayGap = 12;
+    const trayH = 108;
+    const trayLabelY = boardBottom + trayGap;
+    const trayCenterY = trayLabelY + 22 + trayH / 2;
+    const trayPiecesY = trayCenterY + 26;
+    return {
+      boardY,
+      boardBottom,
+      boardH,
+      trayLabelY,
+      trayCenterY,
+      trayH,
+      trayPiecesY
+    };
+  }
   function mapLayout(width = W, height = H) {
     const { top } = insetY();
     return {
@@ -1438,7 +1459,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.7";
+  var APP_VERSION = "1.2.8";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1887,8 +1908,7 @@
   }
 
   // public/js/scenes/GameScene.js
-  var TRAY_Y = 548;
-  var TRAY_SCALE = 0.8;
+  var TRAY_SCALE = 0.76;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -1920,9 +1940,10 @@
       this.dragging = null;
       this.ghost = null;
       this.gameEnded = false;
+      this.layout = gameLayout();
       this.boardW = GRID * CELL + BOARD_PAD * 2;
       this.boardX = (W - this.boardW) / 2 + BOARD_PAD;
-      this.boardY = 104;
+      this.boardY = this.layout.boardY;
       drawBackdrop(this, W, 780);
       this.hintGfx = this.add.graphics().setDepth(3);
       this.drawBoardFrame();
@@ -1957,8 +1978,9 @@
       if (bgm.isOn()) bgm.unlock();
     }
     drawTrayArea() {
-      this.add.rectangle(W / 2, TRAY_Y + 20, W - 32, 140, 1120295, 0.85).setStrokeStyle(2, 3359061, 0.8).setDepth(1);
-      this.add.text(W / 2, TRAY_Y - 52, "NEXT PIECES", {
+      const L = this.layout;
+      this.add.rectangle(W / 2, L.trayCenterY, W - 32, L.trayH, 1120295, 0.85).setStrokeStyle(2, 3359061, 0.8).setDepth(1);
+      this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "11px",
         fontStyle: "700",
@@ -1986,6 +2008,7 @@
       };
       addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
       const H2 = HUD_HEADER;
+      this.add.rectangle(W / 2, H2.barY, W - 16, H2.barH, 395538, 0.82).setDepth(45);
       this.add.text(W / 2, H2.titleY, title, {
         fontFamily: "Syne, sans-serif",
         fontSize: "16px",
@@ -2049,20 +2072,21 @@
       sfx.play("tray");
       const slotXs = [W * 0.22, W * 0.5, W * 0.78];
       this.tray.forEach((shape, i) => {
-        const container = this.makePieceContainer(shape, slotXs[i], TRAY_Y + 40, TRAY_SCALE, true);
+        const container = this.makePieceContainer(shape, slotXs[i], this.layout.trayPiecesY, TRAY_SCALE, true);
         container.setData("slot", i);
         container.setData("shape", shape);
         container.setData("homeX", slotXs[i]);
-        container.setData("homeY", TRAY_Y);
+        container.setData("homeY", this.layout.trayPiecesY);
         container.setInteractive(
           new Phaser.Geom.Rectangle(-80, -80, 160, 160),
           Phaser.Geom.Rectangle.Contains
         );
         this.input.setDraggable(container);
         this.traySlots.push({ container, shape, index: i });
+        const homeY = this.layout.trayPiecesY;
         this.tweens.add({
           targets: container,
-          y: TRAY_Y,
+          y: homeY,
           alpha: { from: 0, to: 1 },
           duration: 280,
           delay: i * 70,
@@ -2070,7 +2094,7 @@
         });
         this.tweens.add({
           targets: container,
-          y: TRAY_Y - 3,
+          y: homeY - 3,
           duration: 1400 + i * 200,
           yoyo: true,
           repeat: -1,

@@ -31,10 +31,9 @@ import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
-import { HUD_HEADER } from "../layout.js";
+import { HUD_HEADER, gameLayout } from "../layout.js";
 
-const TRAY_Y = 548;
-const TRAY_SCALE = 0.8;
+const TRAY_SCALE = 0.76;
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -69,9 +68,10 @@ export default class GameScene extends Phaser.Scene {
     this.dragging = null;
     this.ghost = null;
     this.gameEnded = false;
+    this.layout = gameLayout();
     this.boardW = GRID * CELL + BOARD_PAD * 2;
     this.boardX = (W - this.boardW) / 2 + BOARD_PAD;
-    this.boardY = 104;
+    this.boardY = this.layout.boardY;
 
     drawBackdrop(this, W, 780);
     this.hintGfx = this.add.graphics().setDepth(3);
@@ -112,12 +112,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   drawTrayArea() {
+    const L = this.layout;
     this.add
-      .rectangle(W / 2, TRAY_Y + 20, W - 32, 140, 0x111827, 0.85)
+      .rectangle(W / 2, L.trayCenterY, W - 32, L.trayH, 0x111827, 0.85)
       .setStrokeStyle(2, 0x334155, 0.8)
       .setDepth(1);
     this.add
-      .text(W / 2, TRAY_Y - 52, "NEXT PIECES", {
+      .text(W / 2, L.trayLabelY, "NEXT PIECES", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "11px",
         fontStyle: "700",
@@ -156,6 +157,9 @@ export default class GameScene extends Phaser.Scene {
     addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
 
     const H = HUD_HEADER;
+    this.add
+      .rectangle(W / 2, H.barY, W - 16, H.barH, 0x060912, 0.82)
+      .setDepth(45);
     this.add
       .text(W / 2, H.titleY, title, {
         fontFamily: "Syne, sans-serif",
@@ -241,11 +245,11 @@ export default class GameScene extends Phaser.Scene {
 
     const slotXs = [W * 0.22, W * 0.5, W * 0.78];
     this.tray.forEach((shape, i) => {
-      const container = this.makePieceContainer(shape, slotXs[i], TRAY_Y + 40, TRAY_SCALE, true);
+      const container = this.makePieceContainer(shape, slotXs[i], this.layout.trayPiecesY, TRAY_SCALE, true);
       container.setData("slot", i);
       container.setData("shape", shape);
       container.setData("homeX", slotXs[i]);
-      container.setData("homeY", TRAY_Y);
+      container.setData("homeY", this.layout.trayPiecesY);
       container.setInteractive(
         new Phaser.Geom.Rectangle(-80, -80, 160, 160),
         Phaser.Geom.Rectangle.Contains
@@ -253,9 +257,10 @@ export default class GameScene extends Phaser.Scene {
       this.input.setDraggable(container);
       this.traySlots.push({ container, shape, index: i });
 
+      const homeY = this.layout.trayPiecesY;
       this.tweens.add({
         targets: container,
-        y: TRAY_Y,
+        y: homeY,
         alpha: { from: 0, to: 1 },
         duration: 280,
         delay: i * 70,
@@ -263,7 +268,7 @@ export default class GameScene extends Phaser.Scene {
       });
       this.tweens.add({
         targets: container,
-        y: TRAY_Y - 3,
+        y: homeY - 3,
         duration: 1400 + i * 200,
         yoyo: true,
         repeat: -1,

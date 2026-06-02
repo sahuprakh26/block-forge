@@ -1,4 +1,4 @@
-import { H, W } from "./config.js";
+import { H, W, GRID, CELL, BOARD_PAD } from "./config.js";
 import { MENU_LOGO } from "./uiTheme.js";
 
 export function measureSafeInsets() {
@@ -83,15 +83,40 @@ export function menuLayout(height = H) {
   };
 }
 
+/** Top HUD band — must end above game board (see gameLayout). */
 export const HUD_HEADER = {
   navY: 26,
-  titleY: 78,
-  scoreLabelY: 70,
-  scoreValueY: 90,
-  streakY: 70,
-  goalY: 80,
-  movesY: 106,
+  barY: 82,
+  barH: 52,
+  scoreLabelY: 54,
+  scoreValueY: 72,
+  titleY: 58,
+  goalY: 56,
+  movesY: 98,
+  streakY: 104,
 };
+
+/** Board + tray vertical slots so nothing overlaps. */
+export function gameLayout() {
+  const boardH = GRID * CELL + BOARD_PAD * 2;
+  const boardY = 112;
+  const boardBottom = boardY + boardH;
+  const trayGap = 12;
+  const trayH = 108;
+  const trayLabelY = boardBottom + trayGap;
+  const trayCenterY = trayLabelY + 22 + trayH / 2;
+  const trayPiecesY = trayCenterY + 26;
+
+  return {
+    boardY,
+    boardBottom,
+    boardH,
+    trayLabelY,
+    trayCenterY,
+    trayH,
+    trayPiecesY,
+  };
+}
 
 export function mapLayout(width = W, height = H) {
   const { top } = insetY();
