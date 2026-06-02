@@ -31,10 +31,10 @@ import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
-import { HUD_HEADER, gameLayout } from "../layout.js";
+import { HUD_HEADER, TRAY_LAYOUT_SCALE, gameLayout } from "../layout.js";
 import { applyCrispText, uiTextStyle } from "../textUtil.js";
 
-const TRAY_SCALE = 1.05;
+const TRAY_SCALE = TRAY_LAYOUT_SCALE;
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -121,10 +121,11 @@ export default class GameScene extends Phaser.Scene {
     applyCrispText(
       this.add
         .text(W / 2, L.trayLabelY, "NEXT PIECES", uiTextStyle({
-          fontSize: "13px",
+          fontFamily: "Syne, sans-serif",
+          fontSize: "16px",
           fontStyle: "800",
-          color: "#94a3b8",
-          letterSpacing: 3,
+          color: "#cbd5e1",
+          letterSpacing: 2,
         }))
         .setOrigin(0.5)
         .setDepth(2)
@@ -168,7 +169,7 @@ export default class GameScene extends Phaser.Scene {
       this.add
         .text(W / 2, H.levelTitleY, title, uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "15px",
+          fontSize: "16px",
           fontStyle: "800",
           color: "#38bdf8",
           strokeThickness: 2,
@@ -181,10 +182,12 @@ export default class GameScene extends Phaser.Scene {
       applyCrispText(
         this.add
           .text(W / 2, H.levelNameY, this.level.name, uiTextStyle({
-            fontFamily: "Outfit, sans-serif",
-            fontSize: "12px",
-            fontStyle: "700",
+            fontFamily: "Syne, sans-serif",
+            fontSize: "14px",
+            fontStyle: "800",
             color: "#fb923c",
+            stroke: "#0f172a",
+            strokeThickness: 2,
           }))
           .setOrigin(0.5)
           .setDepth(50)
@@ -194,7 +197,7 @@ export default class GameScene extends Phaser.Scene {
     applyCrispText(
       this.add
         .text(H.scoreX, H.scoreLabelY, "SCORE", uiTextStyle({
-          fontSize: "11px",
+          fontSize: "12px",
           fontStyle: "700",
           color: "#94a3b8",
           letterSpacing: 1,
@@ -246,10 +249,10 @@ export default class GameScene extends Phaser.Scene {
     applyCrispText(
       this.add
         .text(H.goalX, H.goalLabelY, `GOAL · ${goalTitle}`, uiTextStyle({
-          fontFamily: "Outfit, sans-serif",
-          fontSize: "11px",
-          fontStyle: "700",
-          color: "#94a3b8",
+          fontFamily: "Syne, sans-serif",
+          fontSize: "13px",
+          fontStyle: "800",
+          color: "#cbd5e1",
           align: "right",
         }))
         .setOrigin(1, 0.5)
@@ -259,7 +262,7 @@ export default class GameScene extends Phaser.Scene {
       this.add
         .text(H.goalX, H.goalProgY, goalProg, uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "26px",
+          fontSize: "30px",
           fontStyle: "800",
           color: "#4ade80",
           align: "right",
@@ -274,9 +277,12 @@ export default class GameScene extends Phaser.Scene {
       this.movesText = applyCrispText(
         this.add
           .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, uiTextStyle({
-            fontSize: "15px",
-            fontStyle: "700",
+            fontFamily: "Syne, sans-serif",
+            fontSize: "14px",
+            fontStyle: "800",
             color: "#fbbf24",
+            stroke: "#0f172a",
+            strokeThickness: 2,
           }))
           .setOrigin(0.5)
           .setDepth(50)

@@ -92,31 +92,50 @@ export function menuLayout(height = H) {
  */
 export const HUD_HEADER = {
   navY: 26,
-  panelY: 108,
-  panelH: 92,
-  levelTitleY: 72,
-  levelNameY: 90,
+  panelY: 100,
+  panelH: 86,
+  levelTitleY: 66,
+  levelNameY: 84,
+  movesY: 100,
   scoreX: 28,
-  scoreLabelY: 112,
-  scoreValueY: 132,
+  scoreLabelY: 116,
+  scoreValueY: 136,
   goalX: W - 28,
-  goalLabelY: 112,
-  goalProgY: 132,
-  movesY: 148,
+  goalLabelY: 116,
+  goalProgY: 136,
   streakY: 148,
-  goalBarY: 158,
+  goalBarY: 152,
 };
 
-/** Board + tray vertical slots so nothing overlaps. */
-export function gameLayout() {
+/** Tray piece half-height (~5-tall shape at tray scale). Keep in sync with GameScene TRAY_SCALE. */
+export const TRAY_LAYOUT_SCALE = 0.98;
+const TRAY_PIECE_HALF = Math.round(2.5 * CELL * TRAY_LAYOUT_SCALE);
+
+/** Board + tray — tray anchored from bottom so it stays on screen. */
+export function gameLayout(height = H) {
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const boardY = 168;
-  const boardBottom = boardY + boardH;
-  const trayGap = 10;
-  const trayH = 162;
-  const trayLabelY = boardBottom + trayGap;
-  const trayCenterY = trayLabelY + 22 + trayH / 2;
-  const trayPiecesY = trayCenterY + 28;
+  const hudEndY = 156;
+  const trayH = 118;
+  const bottomPad = 18;
+  const labelGap = 10;
+  const boardTrayGap = 8;
+
+  let trayPiecesY = height - bottomPad - TRAY_PIECE_HALF;
+  let trayTop = trayPiecesY - trayH * 0.42;
+  let trayCenterY = trayTop + trayH / 2;
+  let trayLabelY = trayTop - labelGap;
+
+  let boardBottom = trayTop - boardTrayGap;
+  let boardY = boardBottom - boardH;
+
+  if (boardY < hudEndY) {
+    boardY = hudEndY;
+    boardBottom = boardY + boardH;
+    trayTop = boardBottom + boardTrayGap;
+    trayCenterY = trayTop + trayH / 2;
+    trayLabelY = trayTop - labelGap;
+    trayPiecesY = Math.min(trayPiecesY, trayCenterY);
+  }
 
   return {
     boardY,
