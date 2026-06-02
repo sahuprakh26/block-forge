@@ -67,11 +67,11 @@ window.addEventListener("error", (e) => {
 
 startGame();
 
-document.addEventListener(
-  "pointerdown",
-  () => {
-    sfx.ensure();
-    bgm.start();
-  },
-  { once: true }
-);
+function unlockAudio() {
+  sfx.ensure();
+  bgm.unlock();
+}
+
+["pointerdown", "touchstart", "keydown", "click"].forEach((ev) => {
+  document.addEventListener(ev, unlockAudio, { once: true, passive: true });
+});

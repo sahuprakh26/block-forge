@@ -2,6 +2,7 @@ import { WORLDS } from "../levels.js";
 import { loadProgress, getStars } from "../progress.js";
 import { drawBackdrop, transitionTo, fadeInScene } from "../fx.js";
 import { sfx } from "../audio.js";
+import { bgm } from "../music.js";
 
 export default class MapScene extends Phaser.Scene {
   constructor() {
@@ -115,6 +116,7 @@ export default class MapScene extends Phaser.Scene {
 
     this.makeBack(width / 2, height - 56);
     fadeInScene(this);
+    if (bgm.isOn()) bgm.unlock();
   }
 
   showLevelPreview(lv, x, y) {

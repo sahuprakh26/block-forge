@@ -26,6 +26,7 @@ import {
   niceClearPop,
 } from "../fx.js";
 import { sfx } from "../audio.js";
+import { bgm } from "../music.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
@@ -105,6 +106,7 @@ export default class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: this.boardFrame, scale: 1, duration: 400, ease: "Back.easeOut" });
     }
     fadeInScene(this, 280);
+    if (bgm.isOn()) bgm.unlock();
   }
 
   drawTrayArea() {

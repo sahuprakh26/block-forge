@@ -117,6 +117,9 @@ export default class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    this.input.once("pointerdown", () => bgm.unlock());
+    if (bgm.isOn()) bgm.unlock();
+
     fadeInScene(this);
   }
 
@@ -153,7 +156,7 @@ export default class MenuScene extends Phaser.Scene {
     });
     this.makeToggle(width / 2 + 58, y, bgm.isOn(), "MUSIC", (on) => {
       bgm.toggle(on);
-      if (on) bgm.start();
+      if (on) bgm.unlock();
     });
   }
 
@@ -204,6 +207,8 @@ export default class MenuScene extends Phaser.Scene {
     bg.on("pointerover", () => this.tweens.add({ targets: bg, scaleX: 1.03, scaleY: 1.03, duration: 100 }));
     bg.on("pointerout", () => this.tweens.add({ targets: bg, scaleX: 1, scaleY: 1, duration: 100 }));
     bg.on("pointerdown", () => {
+      sfx.ensure();
+      bgm.unlock();
       this.tweens.add({
         targets: [bg, txt],
         scaleX: 0.96,

@@ -1,0 +1,15 @@
+Block Forge — Player links (share these only)
+============================================
+
+LIVE (Netlify — no sahuprakh26 in URL):
+PLAY:     https://blackforgee26.netlify.app/
+INSTALL:  https://blackforgee26.netlify.app/download.html
+APK:      https://blackforgee26.netlify.app/download/BlockForge.apk
+
+BACKUP (GitHub Pages):
+https://sahuprakh26.github.io/block-forge/
+
+DEAD — do not share (404 Site not found):
+https://blackforgee.netlify.app/
+
+Game shows "Block Forge" only — your GitHub name is NOT inside the app.
