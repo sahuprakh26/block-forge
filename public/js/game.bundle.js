@@ -136,18 +136,18 @@
 
   // public/js/meta.js
   var RANKS = [
-    { name: "Iron", xp: 0, color: 5395035, stroke: 10592682, text: "#f4f4f5", letter: "I", metal: "iron" },
-    { name: "Bronze", xp: 50, color: 10105874, stroke: 15357964, text: "#ffedd5", letter: "B", metal: "bronze" },
-    { name: "Silver", xp: 120, color: 6583435, stroke: 14870768, text: "#f8fafc", letter: "S", metal: "silver" },
-    { name: "Gold", xp: 220, color: 16757504, stroke: 16771584, text: "#422006", letter: "G", metal: "gold" },
-    { name: "Platinum", xp: 360, color: 440020, stroke: 6809849, text: "#ecfeff", letter: "P", metal: "platinum" },
-    { name: "Diamond", xp: 540, color: 959977, stroke: 8246268, text: "#e0f2fe", letter: "D", metal: "diamond" },
-    { name: "Master", xp: 760, color: 9647082, stroke: 12616956, text: "#faf5ff", letter: "M", metal: "master" },
-    { name: "Grandmaster", xp: 1020, color: 14362487, stroke: 16020150, text: "#fdf2f8", letter: "GM", metal: "grand" },
-    { name: "Champion", xp: 1320, color: 14427686, stroke: 16557477, text: "#fef2f2", letter: "C", metal: "champion" },
-    { name: "Legend", xp: 1680, color: 15357964, stroke: 16628340, text: "#fff7ed", letter: "L", metal: "legend" },
-    { name: "Mythic", xp: 2100, color: 5195493, stroke: 10859772, text: "#eef2ff", letter: "X", metal: "mythic" },
-    { name: "Immortal", xp: 2600, color: 16436245, stroke: 16707722, text: "#422006", letter: "\u2605", metal: "immortal" }
+    { name: "Iron", xp: 0, color: 7434618, stroke: 13948120, text: "#f4f4f5", letter: "I", metal: "iron" },
+    { name: "Bronze", xp: 50, color: 15357964, stroke: 16628340, text: "#fff7ed", letter: "B", metal: "bronze" },
+    { name: "Silver", xp: 120, color: 9741240, stroke: 15857145, text: "#f8fafc", letter: "S", metal: "silver" },
+    { name: "Gold", xp: 220, color: 16766720, stroke: 16774557, text: "#fffef0", letter: "G", metal: "gold" },
+    { name: "Platinum", xp: 360, color: 2282478, stroke: 10875900, text: "#ecfeff", letter: "P", metal: "platinum" },
+    { name: "Diamond", xp: 540, color: 3718648, stroke: 12248829, text: "#f0f9ff", letter: "D", metal: "diamond" },
+    { name: "Master", xp: 760, color: 11032055, stroke: 15324671, text: "#faf5ff", letter: "M", metal: "master" },
+    { name: "Grandmaster", xp: 1020, color: 15485081, stroke: 16502760, text: "#fdf2f8", letter: "GM", metal: "grand" },
+    { name: "Champion", xp: 1320, color: 15680580, stroke: 16698058, text: "#fef2f2", letter: "C", metal: "champion" },
+    { name: "Legend", xp: 1680, color: 16347926, stroke: 16701354, text: "#fff7ed", letter: "L", metal: "legend" },
+    { name: "Mythic", xp: 2100, color: 6514417, stroke: 13095678, text: "#eef2ff", letter: "X", metal: "mythic" },
+    { name: "Immortal", xp: 2600, color: 16638023, stroke: 16710083, text: "#fffef0", letter: "\u2605", metal: "immortal" }
   ];
   var ACHIEVEMENTS = {
     first_clear: { title: "First Spark", desc: "Clear your first line", xp: 30 },
@@ -1018,85 +1018,100 @@
     const g = scene.add.graphics();
     const r = radius;
     const metal = rank.metal || "default";
-    const fillMedal = (layers) => {
-      layers.forEach((layer, i) => {
+    const layers = (list) => {
+      list.forEach((layer, i) => {
         g.fillStyle(layer.color, layer.alpha ?? 1);
-        g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink || i * 2));
+        g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink ?? i * 2));
       });
     };
+    const shine = (sx, sy, sr, color = 16777215, alpha = 0.8) => {
+      g.fillStyle(color, alpha);
+      g.fillCircle(x + sx, y + sy, sr);
+    };
+    const ring = (color, width = 3) => {
+      g.lineStyle(width, color, 1);
+      g.strokeCircle(x, y, r - 2);
+    };
     if (metal === "gold") {
-      fillMedal([
-        { color: 6044928, dy: 3 },
-        { color: 12092939, shrink: 0 },
-        { color: 16757504, shrink: 2 },
-        { color: 16766720, shrink: 6 }
+      layers([
+        { color: 13215744, dy: 2, shrink: 0 },
+        { color: 16766720, shrink: 2 },
+        { color: 16771899, shrink: 5 },
+        { color: 16774557, shrink: 9 }
       ]);
-      g.fillStyle(16776679, 0.9);
-      g.fillCircle(x - r * 0.25, y - r * 0.3, r * 0.42);
-      g.fillStyle(16752640, 0.35);
-      g.fillCircle(x + r * 0.15, y + r * 0.2, r * 0.55);
-      g.lineStyle(3, 16771584, 1);
-      g.strokeCircle(x, y, r - 2);
-      g.lineStyle(2, 16777215, 0.5);
-      g.strokeCircle(x - 2, y - 4, r - 9);
+      shine(-r * 0.28, -r * 0.32, r * 0.4, 16777215, 0.92);
+      shine(r * 0.12, r * 0.15, r * 0.22, 16775620, 0.55);
+      ring(16771584);
+      g.lineStyle(2, 16777215, 0.55);
+      g.strokeCircle(x - 2, y - 3, r - 10);
     } else if (metal === "silver") {
-      fillMedal([
-        { color: 3359061, dy: 3 },
-        { color: 6583435, shrink: 0 },
-        { color: 13358561, shrink: 4 }
+      layers([
+        { color: 4674921, dy: 2, shrink: 0 },
+        { color: 9741240, shrink: 2 },
+        { color: 14870768, shrink: 6 }
       ]);
-      g.fillStyle(16777215, 0.75);
-      g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.36);
-      g.lineStyle(3, 15857145, 1);
-      g.strokeCircle(x, y, r - 2);
+      shine(-r * 0.24, -r * 0.28, r * 0.34);
+      ring(16317180);
     } else if (metal === "bronze") {
-      fillMedal([
-        { color: 4528643, dy: 3 },
-        { color: 10105874, shrink: 0 },
-        { color: 14251782, shrink: 4 }
+      layers([
+        { color: 12730636, dy: 2, shrink: 0 },
+        { color: 15357964, shrink: 2 },
+        { color: 16347926, shrink: 6 }
       ]);
-      g.fillStyle(16569165, 0.45);
-      g.fillCircle(x - r * 0.2, y - r * 0.22, r * 0.32);
-      g.lineStyle(3, 16486972, 1);
-      g.strokeCircle(x, y, r - 2);
+      shine(-r * 0.22, -r * 0.26, r * 0.32, 16772565, 0.7);
+      ring(16628340);
+    } else if (metal === "iron") {
+      layers([
+        { color: 4144966, dy: 2, shrink: 0 },
+        { color: 7434618, shrink: 2 },
+        { color: 10592682, shrink: 6 }
+      ]);
+      shine(-r * 0.2, -r * 0.25, r * 0.3, 16053493, 0.65);
+      ring(13948120);
     } else if (metal === "diamond") {
-      fillMedal([
-        { color: 805486, dy: 3 },
-        { color: 165063, shrink: 0 },
-        { color: 8246268, shrink: 5 }
+      layers([
+        { color: 223649, dy: 2, shrink: 0 },
+        { color: 959977, shrink: 2 },
+        { color: 8246268, shrink: 6 }
       ]);
-      g.fillStyle(14742270, 0.85);
-      g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.35);
-      g.lineStyle(3, 12248829, 1);
-      g.strokeCircle(x, y, r - 2);
+      shine(-r * 0.22, -r * 0.28, r * 0.34, 16777215, 0.88);
+      ring(14742270);
     } else if (metal === "platinum") {
-      fillMedal([
-        { color: 1461859, dy: 3 },
-        { color: 561586, shrink: 0 },
-        { color: 6809849, shrink: 5 }
+      layers([
+        { color: 947344, dy: 2, shrink: 0 },
+        { color: 2282478, shrink: 2 },
+        { color: 6809849, shrink: 6 }
       ]);
-      g.fillStyle(16777215, 0.7);
-      g.fillCircle(x - r * 0.2, y - r * 0.26, r * 0.34);
-      g.lineStyle(3, 10875900, 1);
-      g.strokeCircle(x, y, r - 2);
+      shine(-r * 0.22, -r * 0.26, r * 0.33, 16777215, 0.85);
+      ring(13630206);
+    } else if (metal === "immortal") {
+      layers([
+        { color: 15381256, dy: 2, shrink: 0 },
+        { color: 16436245, shrink: 2 },
+        { color: 16707722, shrink: 6 }
+      ]);
+      shine(-r * 0.26, -r * 0.3, r * 0.38, 16777215, 0.9);
+      ring(16775620);
     } else {
-      g.fillStyle(132631, 0.6);
-      g.fillCircle(x, y + 3, r);
+      g.fillStyle(988970, 0.5);
+      g.fillCircle(x, y + 2, r);
       g.fillStyle(rank.color, 1);
       g.fillCircle(x, y, r - 2);
-      g.lineStyle(3, rank.stroke || 16777215, 1);
-      g.strokeCircle(x, y, r - 2);
+      shine(-r * 0.2, -r * 0.24, r * 0.28, 16777215, 0.5);
+      ring(rank.stroke || 16777215);
     }
     parent.add(g);
     const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
+    const letterFill = metal === "gold" || metal === "immortal" ? "#1e293b" : rank.text || "#fff";
+    const letterStroke = metal === "gold" ? "#ffea00" : metal === "immortal" ? "#fde047" : "#0f172a";
     const lbl = applyCrispText(
       scene.add.text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: letterSize,
         fontStyle: "800",
-        color: rank.text || "#fff",
-        stroke: metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: metal === "gold" ? 3 : 3
+        color: letterFill,
+        stroke: letterStroke,
+        strokeThickness: metal === "gold" || metal === "immortal" ? 2 : 3
       })).setOrigin(0.5)
     );
     parent.add(lbl);
@@ -1134,9 +1149,9 @@
           fontFamily: "Syne, sans-serif",
           fontSize: "40px",
           fontStyle: "800",
-          color: "#ffd700",
-          stroke: "#422006",
-          strokeThickness: 5
+          color: "#ffeb3b",
+          stroke: "#c9a800",
+          strokeThickness: 4
         })).setOrigin(0.5)
       )
     );
@@ -1160,7 +1175,7 @@
     const left = -w / 2 + pad;
     const innerW = w - pad * 2;
     const top = -h / 2 + 12;
-    const frameStroke = rank.metal === "gold" ? 16766720 : rank.stroke || rank.color;
+    const frameStroke = rank.stroke || rank.color;
     c.add(
       scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.95)
     );
@@ -1169,15 +1184,16 @@
     const badgeY = top + 38;
     drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
     const textX = left + 78;
-    const titleColor = rank.metal === "gold" ? "#ffec8b" : rank.text || "#fff";
+    const titleColor = rank.text || "#fff";
+    const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
     applyCrispText(
       scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: "28px",
         fontStyle: "800",
         color: titleColor,
-        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: 3
+        stroke: titleStroke,
+        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 3
       })).setOrigin(0, 0.5)
     );
     applyCrispText(
@@ -1191,10 +1207,10 @@
     const barH = 16;
     c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
     const fillW = Math.max(6, innerW * ratio);
-    const barColor = rank.metal === "gold" ? 16761095 : rank.color;
+    const barColor = rank.metal === "gold" ? 16766720 : rank.metal === "immortal" ? 16436245 : rank.color;
     c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
-    if (rank.metal === "gold" && fillW > 8) {
-      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.4, 16775620, 0.45).setOrigin(0, 0.5));
+    if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 8) {
+      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.42, 16775620, 0.5).setOrigin(0, 0.5));
     }
     applyCrispText(
       scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
@@ -1430,7 +1446,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.3";
+  var APP_VERSION = "1.2.4";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {

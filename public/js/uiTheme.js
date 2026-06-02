@@ -2,94 +2,109 @@ import { W } from "./config.js";
 import { sfx } from "./audio.js";
 import { applyCrispText, uiTextStyle } from "./textUtil.js";
 
-/** Shiny tier medal — real gold / silver / bronze look */
+/** Tier medal — clean metal colours (gold = yellow only, no brown) */
 export function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
   const g = scene.add.graphics();
   const r = radius;
   const metal = rank.metal || "default";
 
-  const fillMedal = (layers) => {
-    layers.forEach((layer, i) => {
+  const layers = (list) => {
+    list.forEach((layer, i) => {
       g.fillStyle(layer.color, layer.alpha ?? 1);
-      g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink || i * 2));
+      g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink ?? i * 2));
     });
+  };
+  const shine = (sx, sy, sr, color = 0xffffff, alpha = 0.8) => {
+    g.fillStyle(color, alpha);
+    g.fillCircle(x + sx, y + sy, sr);
+  };
+  const ring = (color, width = 3) => {
+    g.lineStyle(width, color, 1);
+    g.strokeCircle(x, y, r - 2);
   };
 
   if (metal === "gold") {
-    fillMedal([
-      { color: 0x5c3d00, dy: 3 },
-      { color: 0xb8860b, shrink: 0 },
-      { color: 0xffb300, shrink: 2 },
-      { color: 0xffd700, shrink: 6 },
+    layers([
+      { color: 0xc9a800, dy: 2, shrink: 0 },
+      { color: 0xffd700, shrink: 2 },
+      { color: 0xffeb3b, shrink: 5 },
+      { color: 0xfff59d, shrink: 9 },
     ]);
-    g.fillStyle(0xfffde7, 0.9);
-    g.fillCircle(x - r * 0.25, y - r * 0.3, r * 0.42);
-    g.fillStyle(0xffa000, 0.35);
-    g.fillCircle(x + r * 0.15, y + r * 0.2, r * 0.55);
-    g.lineStyle(3, 0xffea00, 1);
-    g.strokeCircle(x, y, r - 2);
-    g.lineStyle(2, 0xffffff, 0.5);
-    g.strokeCircle(x - 2, y - 4, r - 9);
+    shine(-r * 0.28, -r * 0.32, r * 0.4, 0xffffff, 0.92);
+    shine(r * 0.12, r * 0.15, r * 0.22, 0xfff9c4, 0.55);
+    ring(0xffea00);
+    g.lineStyle(2, 0xffffff, 0.55);
+    g.strokeCircle(x - 2, y - 3, r - 10);
   } else if (metal === "silver") {
-    fillMedal([
-      { color: 0x334155, dy: 3 },
-      { color: 0x64748b, shrink: 0 },
-      { color: 0xcbd5e1, shrink: 4 },
+    layers([
+      { color: 0x475569, dy: 2, shrink: 0 },
+      { color: 0x94a3b8, shrink: 2 },
+      { color: 0xe2e8f0, shrink: 6 },
     ]);
-    g.fillStyle(0xffffff, 0.75);
-    g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.36);
-    g.lineStyle(3, 0xf1f5f9, 1);
-    g.strokeCircle(x, y, r - 2);
+    shine(-r * 0.24, -r * 0.28, r * 0.34);
+    ring(0xf8fafc);
   } else if (metal === "bronze") {
-    fillMedal([
-      { color: 0x451a03, dy: 3 },
-      { color: 0x9a3412, shrink: 0 },
-      { color: 0xd97706, shrink: 4 },
+    layers([
+      { color: 0xc2410c, dy: 2, shrink: 0 },
+      { color: 0xea580c, shrink: 2 },
+      { color: 0xf97316, shrink: 6 },
     ]);
-    g.fillStyle(0xfcd34d, 0.45);
-    g.fillCircle(x - r * 0.2, y - r * 0.22, r * 0.32);
-    g.lineStyle(3, 0xfb923c, 1);
-    g.strokeCircle(x, y, r - 2);
+    shine(-r * 0.22, -r * 0.26, r * 0.32, 0xffedd5, 0.7);
+    ring(0xfdba74);
+  } else if (metal === "iron") {
+    layers([
+      { color: 0x3f3f46, dy: 2, shrink: 0 },
+      { color: 0x71717a, shrink: 2 },
+      { color: 0xa1a1aa, shrink: 6 },
+    ]);
+    shine(-r * 0.2, -r * 0.25, r * 0.3, 0xf4f4f5, 0.65);
+    ring(0xd4d4d8);
   } else if (metal === "diamond") {
-    fillMedal([
-      { color: 0x0c4a6e, dy: 3 },
-      { color: 0x0284c7, shrink: 0 },
-      { color: 0x7dd3fc, shrink: 5 },
+    layers([
+      { color: 0x0369a1, dy: 2, shrink: 0 },
+      { color: 0x0ea5e9, shrink: 2 },
+      { color: 0x7dd3fc, shrink: 6 },
     ]);
-    g.fillStyle(0xe0f2fe, 0.85);
-    g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.35);
-    g.lineStyle(3, 0xbae6fd, 1);
-    g.strokeCircle(x, y, r - 2);
+    shine(-r * 0.22, -r * 0.28, r * 0.34, 0xffffff, 0.88);
+    ring(0xe0f2fe);
   } else if (metal === "platinum") {
-    fillMedal([
-      { color: 0x164e63, dy: 3 },
-      { color: 0x0891b2, shrink: 0 },
-      { color: 0x67e8f9, shrink: 5 },
+    layers([
+      { color: 0x0e7490, dy: 2, shrink: 0 },
+      { color: 0x22d3ee, shrink: 2 },
+      { color: 0x67e8f9, shrink: 6 },
     ]);
-    g.fillStyle(0xffffff, 0.7);
-    g.fillCircle(x - r * 0.2, y - r * 0.26, r * 0.34);
-    g.lineStyle(3, 0xa5f3fc, 1);
-    g.strokeCircle(x, y, r - 2);
+    shine(-r * 0.22, -r * 0.26, r * 0.33, 0xffffff, 0.85);
+    ring(0xcffafe);
+  } else if (metal === "immortal") {
+    layers([
+      { color: 0xeab308, dy: 2, shrink: 0 },
+      { color: 0xfacc15, shrink: 2 },
+      { color: 0xfef08a, shrink: 6 },
+    ]);
+    shine(-r * 0.26, -r * 0.3, r * 0.38, 0xffffff, 0.9);
+    ring(0xfff9c4);
   } else {
-    g.fillStyle(0x020617, 0.6);
-    g.fillCircle(x, y + 3, r);
+    g.fillStyle(0x0f172a, 0.5);
+    g.fillCircle(x, y + 2, r);
     g.fillStyle(rank.color, 1);
     g.fillCircle(x, y, r - 2);
-    g.lineStyle(3, rank.stroke || 0xffffff, 1);
-    g.strokeCircle(x, y, r - 2);
+    shine(-r * 0.2, -r * 0.24, r * 0.28, 0xffffff, 0.5);
+    ring(rank.stroke || 0xffffff);
   }
 
   parent.add(g);
   const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
+  const letterFill = metal === "gold" || metal === "immortal" ? "#1e293b" : rank.text || "#fff";
+  const letterStroke = metal === "gold" ? "#ffea00" : metal === "immortal" ? "#fde047" : "#0f172a";
   const lbl = applyCrispText(
     scene.add
       .text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: letterSize,
         fontStyle: "800",
-        color: rank.text || "#fff",
-        stroke: metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: metal === "gold" ? 3 : 3,
+        color: letterFill,
+        stroke: letterStroke,
+        strokeThickness: metal === "gold" || metal === "immortal" ? 2 : 3,
       }))
       .setOrigin(0.5)
   );
@@ -136,9 +151,9 @@ export function drawMenuLogo(scene, x, y) {
           fontFamily: "Syne, sans-serif",
           fontSize: "40px",
           fontStyle: "800",
-          color: "#ffd700",
-          stroke: "#422006",
-          strokeThickness: 5,
+          color: "#ffeb3b",
+          stroke: "#c9a800",
+          strokeThickness: 4,
         }))
         .setOrigin(0.5)
     )
@@ -167,7 +182,7 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const innerW = w - pad * 2;
   const top = -h / 2 + 12;
 
-  const frameStroke = rank.metal === "gold" ? 0xffd700 : rank.stroke || rank.color;
+  const frameStroke = rank.stroke || rank.color;
   c.add(
     scene.add
       .rectangle(0, 0, w, h, 0x0c1222, 0.96)
@@ -180,7 +195,8 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
 
   const textX = left + 78;
-  const titleColor = rank.metal === "gold" ? "#ffec8b" : rank.text || "#fff";
+  const titleColor = rank.text || "#fff";
+  const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
   applyCrispText(
     scene.add
       .text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
@@ -188,8 +204,8 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
         fontSize: "28px",
         fontStyle: "800",
         color: titleColor,
-        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: 3,
+        stroke: titleStroke,
+        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 3,
       }))
       .setOrigin(0, 0.5)
   );
@@ -207,10 +223,10 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const barH = 16;
   c.add(scene.add.rectangle(left, barY, innerW, barH, 0x1e293b).setOrigin(0, 0.5));
   const fillW = Math.max(6, innerW * ratio);
-  const barColor = rank.metal === "gold" ? 0xffc107 : rank.color;
+  const barColor = rank.metal === "gold" ? 0xffd700 : rank.metal === "immortal" ? 0xfacc15 : rank.color;
   c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
-  if (rank.metal === "gold" && fillW > 8) {
-    c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.4, 0xfff9c4, 0.45).setOrigin(0, 0.5));
+  if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 8) {
+    c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.42, 0xfff9c4, 0.5).setOrigin(0, 0.5));
   }
 
   applyCrispText(
