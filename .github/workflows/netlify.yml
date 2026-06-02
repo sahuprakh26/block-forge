@@ -1,0 +1,51 @@
+name: Global Server (Netlify)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run build
+      - name: Inject server env into netlify.toml
+        env:
+          BF_GIST_ID: ${{ secrets.BF_GIST_ID }}
+          BF_GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
+        run: |
+          cat >> netlify.toml << EOF
+
+          [context.production.environment]
+            NODE_ENV = "production"
+            GITHUB_GIST_ID = "${BF_GIST_ID}"
+            GITHUB_TOKEN = "${BF_GH_TOKEN}"
+          EOF
+      - name: Deploy to Netlify
+        id: netlify
+        run: |
+          npm install -g netlify-cli
+          if [ -n "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
+            netlify deploy --prod --build --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --site ${{ secrets.NETLIFY_SITE_ID }}
+          else
+            OUT=$(netlify deploy --prod --build --allow-anonymous 2>&1)
+            echo "$OUT"
+            URL=$(echo "$OUT" | grep -Eo 'https://[a-z0-9-]+\.netlify\.app' | tail -1)
+            echo "url=$URL" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Save global API URL
+        if: steps.netlify.outputs.url != ''
+        run: |
+          URL="${{ steps.netlify.outputs.url }}"
+          gh variable set BF_API_URL --body "$URL"
+          curl -fsS "$URL/api/health" || true
+        env:
+          GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}

@@ -111,7 +111,11 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`Block Forge v1.1.0 → http://localhost:${PORT}`);
-  console.log(`Mode: ${IS_PROD ? "production" : "development"}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Block Forge v1.1.0 → http://localhost:${PORT}`);
+    console.log(`Mode: ${IS_PROD ? "production" : "development"}`);
+  });
+}
+
+module.exports = app;
