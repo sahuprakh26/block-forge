@@ -33,19 +33,22 @@ jobs:
         id: netlify
         run: |
           npm install -g netlify-cli
+          set +e
           if [ -n "${{ secrets.NETLIFY_AUTH_TOKEN }}" ]; then
-            netlify deploy --prod --build --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --site ${{ secrets.NETLIFY_SITE_ID }}
+            netlify deploy --prod --build --auth "${{ secrets.NETLIFY_AUTH_TOKEN }}" --site "${{ secrets.NETLIFY_SITE_ID }}"
+            CODE=$?
           else
             OUT=$(netlify deploy --prod --build --allow-anonymous 2>&1)
+            CODE=$?
             echo "$OUT"
             URL=$(echo "$OUT" | grep -Eo 'https://[a-z0-9-]+\.netlify\.app' | tail -1)
             echo "url=$URL" >> "$GITHUB_OUTPUT"
           fi
+          exit $CODE
       - name: Save global API URL
         if: steps.netlify.outputs.url != ''
         run: |
-          URL="${{ steps.netlify.outputs.url }}"
-          gh variable set BF_API_URL --body "$URL"
-          curl -fsS "$URL/api/health" || true
+          gh variable set BF_API_URL --body "${{ steps.netlify.outputs.url }}"
+          curl -fsS "${{ steps.netlify.outputs.url }}/api/health" || true
         env:
           GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
