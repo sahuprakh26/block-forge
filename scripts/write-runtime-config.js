@@ -39,7 +39,18 @@ if (!base && isAndroid) {
   base = "http://10.0.2.2:8097";
 }
 
-const gistId = (process.env.BF_GIST_ID || process.env.GITHUB_GIST_ID || "").trim();
+const gistFile = path.join(__dirname, "..", "config", "gist-id.public.txt");
+function readGistIdFile() {
+  if (!fs.existsSync(gistFile)) return "";
+  return (
+    fs
+      .readFileSync(gistFile, "utf8")
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .find((l) => l && !l.startsWith("#")) || ""
+  );
+}
+const gistId = (process.env.BF_GIST_ID || process.env.GITHUB_GIST_ID || readGistIdFile() || "").trim();
 const body =
   `/** Auto-generated — do not edit */\n` +
   `window.BF_API_BASE = ${JSON.stringify(base)};\n` +
