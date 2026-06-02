@@ -1,0 +1,5 @@
+# Player-facing game URL (no personal username in link)
+# Examples:
+#   https://block-forge.netlify.app
+#   https://play.blockforge.example.com
+https://YOUR-SITE.netlify.app

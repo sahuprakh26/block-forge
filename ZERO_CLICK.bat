@@ -7,5 +7,5 @@ git add -A
 git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto setup" && git push origin master 2>nul)
 powershell -ExecutionPolicy Bypass -File scripts\install-android-sdk.ps1
 echo.
-echo Done. Web: https://sahuprakh26.github.io/block-forge/
+echo Done. Public URL: config\public-url.txt
 pause

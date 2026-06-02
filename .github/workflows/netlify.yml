@@ -14,6 +14,12 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci && npm run build
+      - name: Bundle APK for anonymous download page
+        run: |
+          mkdir -p public/download
+          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp android/app/build/outputs/apk/debug/app-debug.apk public/download/BlockForge.apk
+          fi
 
       - name: Deploy global site (Rs 0, no PC)
         id: drop
@@ -21,8 +27,11 @@ jobs:
           npm install -g netlify-cli
           OUT=$(netlify deploy --prod --dir=public --allow-anonymous 2>&1) || true
           echo "$OUT"
-          URL=$(echo "$OUT" | grep -Eo 'https://[a-z0-9-]+\.netlify\.app' | tail -1)
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          URL=$(echo "$OUT" | grep -Eo 'https?://[a-z0-9-]+\.netlify\.app' | tail -1)
+          if [ -n "$URL" ]; then
+            echo "url=${URL}" >> "$GITHUB_OUTPUT"
+            echo "Public (anonymous) URL: $URL"
+          fi
 
       - name: Save global URL
         if: steps.drop.outputs.url != ''

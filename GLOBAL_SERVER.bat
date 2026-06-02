@@ -3,7 +3,7 @@
 title Global Server Deploy
 cd /d "%~dp0"
 echo.
-echo  GitHub Pages (game): https://sahuprakh26.github.io/block-forge/
+echo  Public game URL: see config\public-url.txt (anonymous Netlify link)
 echo  Ab API server Netlify par deploy ho raha hai...
 echo  Agar browser khule to GitHub se Authorize dabao (sirf ek baar).
 echo.

@@ -39,8 +39,8 @@ if exist "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" (
 echo.
 echo [4/4] Summary...
 echo.
-echo  GitHub:  https://github.com/sahuprakh26/block-forge
-echo  Web:     https://sahuprakh26.github.io/block-forge/  (Actions deploy ke baad)
+echo  Repo: block-forge (private setup — players ko username mat do)
+echo  Web:    config\public-url.txt  (Netlify / anonymous link)
 echo  Gist:    config\cloud.env (rankings storage)
 echo.
 if exist "android\app\build\outputs\apk\debug\app-debug.apk" (
