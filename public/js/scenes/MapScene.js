@@ -23,7 +23,7 @@ export default class MapScene extends Phaser.Scene {
     const maxStars = world.levels.length * 3;
 
     const goMenu = () => transitionTo(this, "Menu");
-    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
+    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK", navY: M.navY });
 
     this.add
       .text(width / 2, M.titleY, world.name, {
@@ -46,15 +46,16 @@ export default class MapScene extends Phaser.Scene {
     const progBar = this.add.rectangle(30, M.barY, 0, 5, 0xfbbf24).setOrigin(0, 0.5);
     progBar.width = (width - 60) * (totalStars / maxStars);
 
-    const cols = 5;
-    const startX = 52;
+    const cols = M.cols;
+    const startX = M.startX;
     const startY = M.startY;
-    const gap = 68;
+    const gapX = M.gapX;
+    const gapY = M.gapY;
 
     const nodes = world.levels.map((_, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      return { x: startX + col * gap, y: startY + row * gap };
+      return { x: startX + col * gapX, y: startY + row * gapY };
     });
 
     const pathGfx = this.add.graphics().setDepth(0);

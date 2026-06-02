@@ -97,10 +97,10 @@ export function buildGameHud(scene, layout, state) {
       .setDepth(50)
   );
 
+  scene.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 8, 0x1e293b).setOrigin(0.5).setDepth(50);
   let goalBar = null;
   let goalBarMax = 0;
   if (mode === "level") {
-    scene.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 8, 0x1e293b).setOrigin(0.5).setDepth(50);
     goalBar = scene.add
       .rectangle(L.margin, L.goalBarY, 0, 8, 0x38bdf8)
       .setOrigin(0, 0.5)

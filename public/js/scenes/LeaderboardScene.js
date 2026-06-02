@@ -5,7 +5,8 @@ import { getPlayer, hasName } from "../player.js";
 import { dailySeed } from "../shapes.js";
 import { ensureName } from "../namePrompt.js";
 import { addGameTopNav } from "../navUi.js";
-import { drawGlassPanel, drawScreenHeader, makePillTab, rankColors } from "../uiTheme.js";
+import { drawGlassPanel, makePillTab, rankColors } from "../uiTheme.js";
+import { applyCrispText, uiTextStyle } from "../textUtil.js";
 import { sfx } from "../audio.js";
 import { leaderboardLayout } from "../layout.js";
 
@@ -22,20 +23,32 @@ export default class LeaderboardScene extends Phaser.Scene {
     const L = leaderboardLayout(H);
     drawBackdrop(this, W, H);
     const goMenu = () => transitionTo(this, "Menu");
-    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
+    addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK", navY: L.navY });
 
-    drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "● Live worldwide scores", true);
+    applyCrispText(
+      this.add
+        .text(W / 2, L.titleY, "GLOBAL RANKINGS", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "20px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 2,
+        }))
+        .setOrigin(0.5)
+        .setDepth(20)
+    );
 
-    this.liveDot = this.add.circle(W / 2 - 76, L.statusY, 5, 0x4ade80, 1).setDepth(20);
-    this.statusText = this.add
-      .text(W / 2 - 58, L.statusY, "Connecting…", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "600",
-        color: "#94a3b8",
-      })
-      .setOrigin(0, 0.5)
-      .setDepth(20);
+    this.liveDot = this.add.circle(W / 2 - 108, L.statusY, 5, 0x4ade80, 1).setDepth(20);
+    this.statusText = applyCrispText(
+      this.add
+        .text(W / 2 - 92, L.statusY, "Connecting…", uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "600",
+          color: "#94a3b8",
+        }))
+        .setOrigin(0, 0.5)
+        .setDepth(20)
+    );
 
     this.myRankText = this.add
       .text(W / 2, L.myRankY, "", {

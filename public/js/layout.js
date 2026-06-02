@@ -39,10 +39,21 @@ function gameSafeY() {
   return { top: ins.topGame || 0, bottom: ins.bottomGame || 0 };
 }
 
+/** Shared top nav row — all non-game screens use this. */
+export function topChrome(safeTop = 0) {
+  return {
+    navY: 22 + safeTop,
+    navClearY: 48 + safeTop,
+    contentTop: 52 + safeTop,
+    margin: 16,
+  };
+}
+
 /** Stack-based menu — logo zone then rank card (no overlap) */
 export function menuLayout(height = H) {
   const { top, bottom } = insetY();
-  let y = top;
+  const safe = gameSafeY();
+  let y = top + Math.max(0, safe.top);
 
   const logoZone = MENU_LOGO.height + 8;
   const logoY = y + MENU_LOGO.centerToBottom;
@@ -159,35 +170,64 @@ export function gameLayout(height = H) {
   };
 }
 
+/** Campaign map — header under nav, level grid centered in remaining space. */
 export function mapLayout(width = W, height = H) {
-  const { top } = insetY();
+  const { bottom } = insetY();
+  const safe = gameSafeY();
+  const chrome = topChrome(safe.top);
+  const cols = 5;
+  const rows = 3;
+  const gapX = 66;
+  const gapY = 72;
+  const gridW = (cols - 1) * gapX;
+  const gridH = (rows - 1) * gapY + 52;
+  const headerBottom = chrome.contentTop + 74;
+  const playBottom = height - bottom - 20;
+  const startX = width / 2 - gridW / 2;
+  const startY = headerBottom + Math.max(12, (playBottom - headerBottom - gridH) / 2) + 26;
+
   return {
-    titleY: top + 64,
-    starsY: top + 98,
-    barY: top + 118,
-    startY: top + 142,
+    ...chrome,
+    titleY: chrome.contentTop + 18,
+    starsY: chrome.contentTop + 42,
+    barY: chrome.contentTop + 58,
+    startX,
+    startY,
+    gapX,
+    gapY,
+    cols,
     width,
     height,
   };
 }
 
+/** Live rankings — compact header, podium + list fill lower screen. */
 export function leaderboardLayout(height = H) {
-  const { top, bottom } = insetY();
-  const headerBottom = top + 156;
-  const listStart = headerBottom + 120;
-  const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 40));
+  const { bottom } = insetY();
+  const safe = gameSafeY();
+  const chrome = topChrome(safe.top);
+  const titleY = chrome.contentTop + 12;
+  const statusY = chrome.contentTop + 36;
+  const myRankY = chrome.contentTop + 52;
+  const tabsY = chrome.contentTop + 70;
+  const podiumY = chrome.contentTop + 96;
+  const listStart = podiumY + 76;
+  const panelH = height - listStart - bottom - 10;
+  const panelY = listStart + panelH / 2;
+  const maxRows = Math.max(4, Math.floor(panelH / 36));
 
   return {
-    headerY: top + 54,
-    statusY: top + 104,
-    myRankY: top + 124,
-    tabsY: top + 144,
-    refreshY: top + 144,
-    podiumY: headerBottom + 10,
+    ...chrome,
+    titleY,
+    statusY,
+    myRankY,
+    tabsY,
+    refreshY: tabsY,
+    podiumY,
     listStart,
-    listRow: 40,
-    panelY: listStart + ((height - bottom - 8) - listStart) / 2,
-    panelH: height - listStart - bottom - 12,
+    listRow: 36,
+    panelY,
+    panelH,
     maxRows,
   };
 }

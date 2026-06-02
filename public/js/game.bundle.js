@@ -863,31 +863,6 @@
     txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
     return { bg, txt };
   }
-  function drawScreenHeader(scene, x, y, title, subtitle, live = false) {
-    applyCrispText(
-      scene.add.text(x, y, title, uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: "28px",
-        fontStyle: "800",
-        color: "#38bdf8",
-        strokeThickness: 4
-      })).setOrigin(0.5).setDepth(5)
-    );
-    if (subtitle) {
-      const subY = y + 34;
-      if (live) {
-        const dot = scene.add.circle(x - 72, subY, 5, 4906624, 1).setDepth(6);
-        scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 800, yoyo: true, repeat: -1 });
-      }
-      applyCrispText(
-        scene.add.text(x + (live ? 8 : 0), subY, subtitle, uiTextStyle({
-          fontSize: "14px",
-          color: live ? "#86efac" : "#94a3b8",
-          strokeThickness: 1
-        })).setOrigin(0.5).setDepth(5)
-      );
-    }
-  }
   function rankColors(i) {
     if (i === 0) return { bg: 16761095, stroke: 16771584, text: "#422006", medal: "1" };
     if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "2" };
@@ -927,9 +902,18 @@
     const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
     return { top: ins.topGame || 0, bottom: ins.bottomGame || 0 };
   }
+  function topChrome(safeTop = 0) {
+    return {
+      navY: 22 + safeTop,
+      navClearY: 48 + safeTop,
+      contentTop: 52 + safeTop,
+      margin: 16
+    };
+  }
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
-    let y = top;
+    const safe = gameSafeY();
+    let y = top + Math.max(0, safe.top);
     const logoZone = MENU_LOGO.height + 8;
     const logoY = y + MENU_LOGO.centerToBottom;
     y += logoZone + 14;
@@ -1026,32 +1010,58 @@
     };
   }
   function mapLayout(width = W, height = H) {
-    const { top } = insetY();
+    const { bottom } = insetY();
+    const safe = gameSafeY();
+    const chrome = topChrome(safe.top);
+    const cols = 5;
+    const rows = 3;
+    const gapX = 66;
+    const gapY = 72;
+    const gridW = (cols - 1) * gapX;
+    const gridH = (rows - 1) * gapY + 52;
+    const headerBottom = chrome.contentTop + 74;
+    const playBottom = height - bottom - 20;
+    const startX = width / 2 - gridW / 2;
+    const startY = headerBottom + Math.max(12, (playBottom - headerBottom - gridH) / 2) + 26;
     return {
-      titleY: top + 64,
-      starsY: top + 98,
-      barY: top + 118,
-      startY: top + 142,
+      ...chrome,
+      titleY: chrome.contentTop + 18,
+      starsY: chrome.contentTop + 42,
+      barY: chrome.contentTop + 58,
+      startX,
+      startY,
+      gapX,
+      gapY,
+      cols,
       width,
       height
     };
   }
   function leaderboardLayout(height = H) {
-    const { top, bottom } = insetY();
-    const headerBottom = top + 156;
-    const listStart = headerBottom + 120;
-    const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 40));
+    const { bottom } = insetY();
+    const safe = gameSafeY();
+    const chrome = topChrome(safe.top);
+    const titleY = chrome.contentTop + 12;
+    const statusY = chrome.contentTop + 36;
+    const myRankY = chrome.contentTop + 52;
+    const tabsY = chrome.contentTop + 70;
+    const podiumY = chrome.contentTop + 96;
+    const listStart = podiumY + 76;
+    const panelH = height - listStart - bottom - 10;
+    const panelY = listStart + panelH / 2;
+    const maxRows = Math.max(4, Math.floor(panelH / 36));
     return {
-      headerY: top + 54,
-      statusY: top + 104,
-      myRankY: top + 124,
-      tabsY: top + 144,
-      refreshY: top + 144,
-      podiumY: headerBottom + 10,
+      ...chrome,
+      titleY,
+      statusY,
+      myRankY,
+      tabsY,
+      refreshY: tabsY,
+      podiumY,
       listStart,
-      listRow: 40,
-      panelY: listStart + (height - bottom - 8 - listStart) / 2,
-      panelH: height - listStart - bottom - 12,
+      listRow: 36,
+      panelY,
+      panelH,
       maxRows
     };
   }
@@ -1491,7 +1501,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.4.1";
+  var APP_VERSION = "1.4.2";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1779,7 +1789,7 @@
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const maxStars = world.levels.length * 3;
       const goMenu = () => transitionTo(this, "Menu");
-      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
+      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK", navY: M.navY });
       this.add.text(width / 2, M.titleY, world.name, {
         fontFamily: "Syne, sans-serif",
         fontSize: "24px",
@@ -1794,14 +1804,15 @@
       this.add.rectangle(width / 2, M.barY, width - 60, 5, 1976635).setOrigin(0.5);
       const progBar = this.add.rectangle(30, M.barY, 0, 5, 16498468).setOrigin(0, 0.5);
       progBar.width = (width - 60) * (totalStars / maxStars);
-      const cols = 5;
-      const startX = 52;
+      const cols = M.cols;
+      const startX = M.startX;
       const startY = M.startY;
-      const gap = 68;
+      const gapX = M.gapX;
+      const gapY = M.gapY;
       const nodes = world.levels.map((_, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
-        return { x: startX + col * gap, y: startY + row * gap };
+        return { x: startX + col * gapX, y: startY + row * gapY };
       });
       const pathGfx = this.add.graphics().setDepth(0);
       pathGfx.lineStyle(2, 3359061, 0.5);
@@ -1998,10 +2009,10 @@
     const streakBadge = applyCrispText(
       scene.add.text(L.centerX, L.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
     );
+    scene.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 8, 1976635).setOrigin(0.5).setDepth(50);
     let goalBar = null;
     let goalBarMax = 0;
     if (mode === "level") {
-      scene.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 8, 1976635).setOrigin(0.5).setDepth(50);
       goalBar = scene.add.rectangle(L.margin, L.goalBarY, 0, 8, 3718648).setOrigin(0, 0.5).setDepth(51);
       goalBarMax = L.goalBarW;
     }
@@ -2848,15 +2859,24 @@
       const L = leaderboardLayout(H);
       drawBackdrop(this, W, H);
       const goMenu = () => transitionTo(this, "Menu");
-      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
-      drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "\u25CF Live worldwide scores", true);
-      this.liveDot = this.add.circle(W / 2 - 76, L.statusY, 5, 4906624, 1).setDepth(20);
-      this.statusText = this.add.text(W / 2 - 58, L.statusY, "Connecting\u2026", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "600",
-        color: "#94a3b8"
-      }).setOrigin(0, 0.5).setDepth(20);
+      addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK", navY: L.navY });
+      applyCrispText(
+        this.add.text(W / 2, L.titleY, "GLOBAL RANKINGS", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "20px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 2
+        })).setOrigin(0.5).setDepth(20)
+      );
+      this.liveDot = this.add.circle(W / 2 - 108, L.statusY, 5, 4906624, 1).setDepth(20);
+      this.statusText = applyCrispText(
+        this.add.text(W / 2 - 92, L.statusY, "Connecting\u2026", uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "600",
+          color: "#94a3b8"
+        })).setOrigin(0, 0.5).setDepth(20)
+      );
       this.myRankText = this.add.text(W / 2, L.myRankY, "", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
