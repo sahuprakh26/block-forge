@@ -44,14 +44,14 @@ export function goalText(goal) {
   }
 }
 
-/** One-line goal for game HUD (readable, no truncation). */
+/** Short goal label for HUD right column (fits beside score). */
 export function goalHudTitle(goal) {
   if (!goal) return "";
   switch (goal.type) {
     case "score":
-      return `SCORE ${goal.target}`;
+      return `${goal.target} PTS`;
     case "lines":
-      return `CLEAR ${goal.target} LINES`;
+      return `${goal.target} LINES`;
     case "combo":
       return `${goal.target}x COMBO`;
     default:

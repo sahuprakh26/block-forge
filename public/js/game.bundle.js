@@ -964,27 +964,27 @@
     };
   }
   var HUD_HEADER = {
-    navY: 24,
-    barY: 86,
-    barH: 76,
-    scoreX: 118,
-    scoreLabelY: 58,
-    scoreValueY: 84,
-    titleY: 58,
-    levelNameY: 78,
-    goalX: 312,
-    goalLabelY: 58,
-    goalProgY: 84,
-    movesY: 108,
-    streakY: 108,
-    goalBarY: 124
+    navY: 26,
+    panelY: 108,
+    panelH: 92,
+    levelTitleY: 72,
+    levelNameY: 90,
+    scoreX: 28,
+    scoreLabelY: 112,
+    scoreValueY: 132,
+    goalX: W - 28,
+    goalLabelY: 112,
+    goalProgY: 132,
+    movesY: 148,
+    streakY: 148,
+    goalBarY: 158
   };
   function gameLayout() {
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const boardY = 136;
+    const boardY = 168;
     const boardBottom = boardY + boardH;
-    const trayGap = 12;
-    const trayH = 172;
+    const trayGap = 10;
+    const trayH = 162;
     const trayLabelY = boardBottom + trayGap;
     const trayCenterY = trayLabelY + 22 + trayH / 2;
     const trayPiecesY = trayCenterY + 28;
@@ -1464,7 +1464,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.3.0";
+  var APP_VERSION = "1.3.1";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1615,9 +1615,9 @@
     if (!goal) return "";
     switch (goal.type) {
       case "score":
-        return `SCORE ${goal.target}`;
+        return `${goal.target} PTS`;
       case "lines":
-        return `CLEAR ${goal.target} LINES`;
+        return `${goal.target} LINES`;
       case "combo":
         return `${goal.target}x COMBO`;
       default:
@@ -2025,7 +2025,26 @@
       };
       addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
       const H2 = HUD_HEADER;
-      this.add.rectangle(W / 2, H2.barY, W - 16, H2.barH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      this.add.rectangle(W / 2, H2.panelY, W - 16, H2.panelH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      applyCrispText(
+        this.add.text(W / 2, H2.levelTitleY, title, uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "15px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 2
+        })).setOrigin(0.5).setDepth(50)
+      );
+      if (this.mode === "level" && this.level?.name) {
+        applyCrispText(
+          this.add.text(W / 2, H2.levelNameY, this.level.name, uiTextStyle({
+            fontFamily: "Outfit, sans-serif",
+            fontSize: "12px",
+            fontStyle: "700",
+            color: "#fb923c"
+          })).setOrigin(0.5).setDepth(50)
+        );
+      }
       applyCrispText(
         this.add.text(H2.scoreX, H2.scoreLabelY, "SCORE", uiTextStyle({
           fontSize: "11px",
@@ -2037,34 +2056,13 @@
       this.scoreText = applyCrispText(
         this.add.text(H2.scoreX, H2.scoreValueY, "0", uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "30px",
+          fontSize: "28px",
           fontStyle: "800",
           color: "#ffffff",
           stroke: "#0f172a",
           strokeThickness: 3
         })).setOrigin(0, 0.5).setDepth(50)
       );
-      applyCrispText(
-        this.add.text(W / 2, H2.titleY, title, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "16px",
-          fontStyle: "800",
-          color: "#38bdf8",
-          strokeThickness: 2
-        })).setOrigin(0.5).setDepth(50)
-      );
-      if (this.mode === "level" && this.level?.name) {
-        applyCrispText(
-          this.add.text(W / 2, H2.levelNameY, this.level.name.toUpperCase(), uiTextStyle({
-            fontFamily: "Outfit, sans-serif",
-            fontSize: "13px",
-            fontStyle: "800",
-            color: "#fb923c",
-            stroke: "#0f172a",
-            strokeThickness: 2
-          })).setOrigin(0.5).setDepth(50)
-        );
-      }
       this.streakBadge = applyCrispText(
         this.add.text(W / 2, H2.streakY, "", uiTextStyle({
           fontSize: "13px",
@@ -2087,19 +2085,18 @@
         goalProg = goalProgress(this.level.goal, 0, 0, 0);
       }
       applyCrispText(
-        this.add.text(H2.goalX, H2.goalLabelY, goalTitle, uiTextStyle({
+        this.add.text(H2.goalX, H2.goalLabelY, `GOAL \xB7 ${goalTitle}`, uiTextStyle({
           fontFamily: "Outfit, sans-serif",
           fontSize: "11px",
-          fontStyle: "800",
-          color: "#e2e8f0",
-          align: "right",
-          letterSpacing: 0.5
+          fontStyle: "700",
+          color: "#94a3b8",
+          align: "right"
         })).setOrigin(1, 0.5).setDepth(50)
       );
       this.goalProgressText = applyCrispText(
         this.add.text(H2.goalX, H2.goalProgY, goalProg, uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "22px",
+          fontSize: "26px",
           fontStyle: "800",
           color: "#4ade80",
           align: "right",

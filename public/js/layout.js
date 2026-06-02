@@ -83,31 +83,37 @@ export function menuLayout(height = H) {
   };
 }
 
-/** Top HUD — nav row, then 3-column bar (score | level | goal). */
+/**
+ * Game HUD — stacked rows (no side-by-side cramming).
+ * Row 1: BACK / QUIT (nav only)
+ * Row 2: level title + name (center)
+ * Row 3: score (left) · goal (right)
+ * Row 4: progress bar
+ */
 export const HUD_HEADER = {
-  navY: 24,
-  barY: 86,
-  barH: 76,
-  scoreX: 118,
-  scoreLabelY: 58,
-  scoreValueY: 84,
-  titleY: 58,
-  levelNameY: 78,
-  goalX: 312,
-  goalLabelY: 58,
-  goalProgY: 84,
-  movesY: 108,
-  streakY: 108,
-  goalBarY: 124,
+  navY: 26,
+  panelY: 108,
+  panelH: 92,
+  levelTitleY: 72,
+  levelNameY: 90,
+  scoreX: 28,
+  scoreLabelY: 112,
+  scoreValueY: 132,
+  goalX: W - 28,
+  goalLabelY: 112,
+  goalProgY: 132,
+  movesY: 148,
+  streakY: 148,
+  goalBarY: 158,
 };
 
 /** Board + tray vertical slots so nothing overlaps. */
 export function gameLayout() {
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const boardY = 136;
+  const boardY = 168;
   const boardBottom = boardY + boardH;
-  const trayGap = 12;
-  const trayH = 172;
+  const trayGap = 10;
+  const trayH = 162;
   const trayLabelY = boardBottom + trayGap;
   const trayCenterY = trayLabelY + 22 + trayH / 2;
   const trayPiecesY = trayCenterY + 28;
