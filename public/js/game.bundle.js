@@ -1016,7 +1016,6 @@
       trayLabelY,
       traySlotY,
       trayPiecesY,
-      trayScale,
       trayPieceBand,
       slotXs: [W * 0.2, W * 0.5, W * 0.8]
     };
