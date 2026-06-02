@@ -1,4 +1,4 @@
-name: Global Server (Netlify)
+name: Global Netlify Deploy
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     branches: [main, master]
 
 jobs:
-  deploy-static:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,60 +14,20 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci && npm run build
-      - name: Deploy static site (free, no login)
+
+      - name: Deploy global site (Rs 0, no PC)
         id: drop
         run: |
           npm install -g netlify-cli
-          set +e
-          OUT=$(netlify deploy --prod --dir=public --allow-anonymous 2>&1)
-          CODE=$?
+          OUT=$(netlify deploy --prod --dir=public --allow-anonymous 2>&1) || true
           echo "$OUT"
           URL=$(echo "$OUT" | grep -Eo 'https://[a-z0-9-]+\.netlify\.app' | tail -1)
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          exit 0
-      - name: Save game URL
-        if: steps.drop.outputs.url != ''
-        run: gh variable set BF_GAME_URL --body "${{ steps.drop.outputs.url }}"
-        env:
-          GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
 
-  deploy-api:
-    if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npm ci && npm run build
-      - name: Write API netlify config
-        env:
-          BF_GIST_ID: ${{ secrets.BF_GIST_ID }}
-          BF_GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
+      - name: Save global URL
+        if: steps.drop.outputs.url != ''
         run: |
-          cat > netlify.toml << EOF
-          [build]
-            command = "npm run build"
-            publish = "public"
-            functions = "netlify/functions"
-          [context.production.environment]
-            NODE_ENV = "production"
-            GITHUB_GIST_ID = "${BF_GIST_ID}"
-            GITHUB_TOKEN = "${BF_GH_TOKEN}"
-          [[redirects]]
-            from = "/api/*"
-            to = "/.netlify/functions/server/:splat"
-            status = 200
-          [[redirects]]
-            from = "/*"
-            to = "/index.html"
-            status = 200
-          EOF
-      - name: Deploy game + API
-        run: |
-          npm install -g netlify-cli
-          netlify deploy --prod --build --auth "${{ secrets.NETLIFY_AUTH_TOKEN }}" --site "${{ secrets.NETLIFY_SITE_ID }}"
-      - name: Set API URL
-        run: gh variable set BF_API_URL --body "https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app"
+          gh variable set BF_GAME_URL --body "${{ steps.drop.outputs.url }}"
+          gh variable set BF_API_URL --body "${{ steps.drop.outputs.url }}"
         env:
           GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
