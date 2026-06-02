@@ -28,7 +28,7 @@ function initialValue(name) {
   return n;
 }
 
-/** Name modal — empty / "Player" save nahi hoga. */
+/** Name modal — empty or "Player" cannot be saved. */
 export function promptName(initial = "") {
   return new Promise((resolve) => {
     const prevInput = pauseGameInput();
@@ -43,9 +43,9 @@ export function promptName(initial = "") {
       "background:#1e293b;border:2px solid #6366f1;border-radius:16px;padding:24px;width:min(320px,90vw);text-align:center;font-family:Outfit,sans-serif;pointer-events:auto";
 
     panel.innerHTML = `
-      <h3 style="color:#38bdf8;margin-bottom:8px;font-size:18px">Apna naam likho</h3>
-      <p style="color:#94a3b8;font-size:13px;margin-bottom:16px">Yeh naam global rankings par dikhega</p>
-      <input id="name-input" type="text" maxlength="16" placeholder="e.g. Rahul, Priya..." autocomplete="nickname"
+      <h3 style="color:#38bdf8;margin-bottom:8px;font-size:18px">Choose your name</h3>
+      <p style="color:#94a3b8;font-size:13px;margin-bottom:16px">This name appears on global rankings</p>
+      <input id="name-input" type="text" maxlength="16" placeholder="e.g. Alex, Sam..." autocomplete="nickname"
         style="width:100%;padding:12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:16px;margin-bottom:8px;user-select:text;-webkit-user-select:text;pointer-events:auto;outline:none" />
       <p id="name-err" style="color:#f87171;font-size:12px;margin-bottom:8px;min-height:16px"></p>
       <button type="button" id="name-save" style="width:100%;padding:12px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;font-size:16px;cursor:pointer">Save</button>
@@ -64,7 +64,7 @@ export function promptName(initial = "") {
     const trySave = () => {
       const saved = setPlayerName(input.value);
       if (!saved) {
-        err.textContent = "Kam se kam 2 letters — asli naam likho (Player mat likho)";
+        err.textContent = "Use at least 2 letters — pick a real name (not \"Player\")";
         input.style.borderColor = "#f87171";
         input.focus();
         return;
@@ -92,7 +92,7 @@ export function promptName(initial = "") {
   });
 }
 
-/** Real naam mandatory — tab tak puchta rahega. */
+/** Name required before rankings — keeps prompting until set. */
 export async function ensureName() {
   if (hasName()) return getPlayer().name;
   while (!hasName()) {

@@ -47,13 +47,13 @@ function showBootError(msg) {
   el.innerHTML = `<div style="color:#f87171;padding:24px;font-family:Outfit,sans-serif;max-width:380px;margin:40px auto">
     <h2 style="color:#38bdf8;margin-bottom:12px">Block Forge failed to start</h2>
     <p style="color:#94a3b8;font-size:14px;line-height:1.5;word-break:break-word">${String(msg)}</p>
-    <p style="margin-top:16px;font-size:13px;color:#64748b">LAUNCH.bat chalao → http://localhost:8097 → Ctrl+Shift+R</p>
+    <p style="margin-top:16px;font-size:13px;color:#64748b">Run LAUNCH.bat → http://localhost:8097 → Ctrl+Shift+R</p>
   </div>`;
 }
 
 function startGame() {
   if (typeof Phaser === "undefined") {
-    showBootError("Phaser missing — LAUNCH.bat chalao.");
+    showBootError("Phaser missing — run LAUNCH.bat.");
     return;
   }
 

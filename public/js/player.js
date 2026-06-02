@@ -24,7 +24,7 @@ export function getPlayer() {
     let name = clean(p.name);
     let nameSet = !!p.nameSet;
 
-    // Purana auto "Player" — dubara pucho
+    // Legacy auto "Player" — ask again
     if (nameSet && isAutoPlayer(name)) {
       nameSet = false;
       name = "";

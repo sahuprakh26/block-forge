@@ -1449,9 +1449,9 @@
       const panel = document.createElement("div");
       panel.style.cssText = "background:#1e293b;border:2px solid #6366f1;border-radius:16px;padding:24px;width:min(320px,90vw);text-align:center;font-family:Outfit,sans-serif;pointer-events:auto";
       panel.innerHTML = `
-      <h3 style="color:#38bdf8;margin-bottom:8px;font-size:18px">Apna naam likho</h3>
-      <p style="color:#94a3b8;font-size:13px;margin-bottom:16px">Yeh naam global rankings par dikhega</p>
-      <input id="name-input" type="text" maxlength="16" placeholder="e.g. Rahul, Priya..." autocomplete="nickname"
+      <h3 style="color:#38bdf8;margin-bottom:8px;font-size:18px">Choose your name</h3>
+      <p style="color:#94a3b8;font-size:13px;margin-bottom:16px">This name appears on global rankings</p>
+      <input id="name-input" type="text" maxlength="16" placeholder="e.g. Alex, Sam..." autocomplete="nickname"
         style="width:100%;padding:12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:16px;margin-bottom:8px;user-select:text;-webkit-user-select:text;pointer-events:auto;outline:none" />
       <p id="name-err" style="color:#f87171;font-size:12px;margin-bottom:8px;min-height:16px"></p>
       <button type="button" id="name-save" style="width:100%;padding:12px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;font-size:16px;cursor:pointer">Save</button>
@@ -1467,7 +1467,7 @@
       const trySave = () => {
         const saved = setPlayerName(input.value);
         if (!saved) {
-          err.textContent = "Kam se kam 2 letters \u2014 asli naam likho (Player mat likho)";
+          err.textContent = 'Use at least 2 letters \u2014 pick a real name (not "Player")';
           input.style.borderColor = "#f87171";
           input.focus();
           return;
@@ -1501,7 +1501,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.4.3";
+  var APP_VERSION = "1.4.4";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -3050,12 +3050,12 @@
     el.innerHTML = `<div style="color:#f87171;padding:24px;font-family:Outfit,sans-serif;max-width:380px;margin:40px auto">
     <h2 style="color:#38bdf8;margin-bottom:12px">Block Forge failed to start</h2>
     <p style="color:#94a3b8;font-size:14px;line-height:1.5;word-break:break-word">${String(msg)}</p>
-    <p style="margin-top:16px;font-size:13px;color:#64748b">LAUNCH.bat chalao \u2192 http://localhost:8097 \u2192 Ctrl+Shift+R</p>
+    <p style="margin-top:16px;font-size:13px;color:#64748b">Run LAUNCH.bat \u2192 http://localhost:8097 \u2192 Ctrl+Shift+R</p>
   </div>`;
   }
   function startGame() {
     if (typeof Phaser === "undefined") {
-      showBootError("Phaser missing \u2014 LAUNCH.bat chalao.");
+      showBootError("Phaser missing \u2014 run LAUNCH.bat.");
       return;
     }
     const config = {
