@@ -32,7 +32,7 @@ export default class MenuScene extends Phaser.Scene {
     applyCrispText(
       this.add
         .text(W / 2, L.statsY, `★ ${totalStars}  ·  Endless best ${p.endlessBest || 0}${streakTxt}`, uiTextStyle({
-          fontSize: "14px",
+          fontSize: "12px",
           color: "#94a3b8",
           strokeThickness: 1,
         }))

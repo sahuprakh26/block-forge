@@ -41,14 +41,14 @@ export function menuLayout(height = H) {
 
   const logoZone = MENU_LOGO.height + 8;
   const logoY = y + MENU_LOGO.centerToBottom;
-  y += logoZone + 20;
+  y += logoZone + 14;
 
-  const rankCardH = 128;
+  const rankCardH = 92;
   const rankCardY = y + rankCardH / 2;
-  y += rankCardH + 16;
+  y += rankCardH + 12;
 
-  const statsY = y + 14;
-  y += 30;
+  const statsY = y + 10;
+  y += 24;
 
   const btnGap = 58;
   const btnCampaign = y + 30;
@@ -68,7 +68,7 @@ export function menuLayout(height = H) {
     logoY,
     rankCardY,
     rankCardH,
-    rankCardW: W - 28,
+    rankCardW: W - 56,
     statsY,
     btnCampaign,
     btnDaily,

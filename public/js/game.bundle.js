@@ -763,52 +763,52 @@
     const { rank, next, nextXp, ratio } = progress;
     const depth = 6;
     const c = scene.add.container(x, y).setDepth(depth);
-    const pad = 16;
+    const pad = 12;
     const left = -w / 2 + pad;
     const innerW = w - pad * 2;
-    const top = -h / 2 + 12;
+    const top = -h / 2 + 8;
     const frameStroke = rank.stroke || rank.color;
     c.add(
-      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.95)
+      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.9)
     );
-    c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
-    const badgeX = left + 34;
-    const badgeY = top + 38;
-    drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
-    const textX = left + 78;
+    c.add(scene.add.rectangle(left, top + 2, 4, h - 16, rank.color, 1).setOrigin(0, 0));
+    const badgeX = left + 26;
+    const badgeY = top + 28;
+    drawRankEmblem(scene, c, badgeX, badgeY, rank, 22);
+    const textX = left + 58;
     const titleColor = rank.text || "#fff";
     const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
     applyCrispText(
-      scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
+      scene.add.text(textX, top + 18, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
-        fontSize: "28px",
+        fontSize: "20px",
         fontStyle: "800",
         color: titleColor,
         stroke: titleStroke,
-        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 3
+        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 2
       })).setOrigin(0, 0.5)
     );
     applyCrispText(
-      scene.add.text(textX, top + 52, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
-        fontSize: "16px",
+      scene.add.text(textX, top + 36, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
+        fontSize: "12px",
         color: "#94a3b8",
         strokeThickness: 1
       })).setOrigin(0, 0.5)
     );
-    const barY = top + 78;
-    const barH = 16;
+    const barY = top + 54;
+    const barH = 10;
     c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
-    const fillW = Math.max(6, innerW * ratio);
+    const fillW = Math.max(4, innerW * ratio);
     const barColor = rank.metal === "gold" ? 16766720 : rank.metal === "immortal" ? 16436245 : rank.color;
     c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
-    if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 8) {
-      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.42, 16775620, 0.5).setOrigin(0, 0.5));
+    if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 6) {
+      c.add(scene.add.rectangle(left, barY - 2, fillW, barH * 0.4, 16775620, 0.45).setOrigin(0, 0.5));
     }
     applyCrispText(
-      scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
-        fontSize: "16px",
+      scene.add.text(left, barY + 16, `${xp} / ${nextXp} XP`, uiTextStyle({
+        fontSize: "12px",
         fontStyle: "700",
-        color: "#e2e8f0",
+        color: "#cbd5e1",
         strokeThickness: 1
       })).setOrigin(0, 0.5)
     );
@@ -938,12 +938,12 @@
     let y = top;
     const logoZone = MENU_LOGO.height + 8;
     const logoY = y + MENU_LOGO.centerToBottom;
-    y += logoZone + 20;
-    const rankCardH = 128;
+    y += logoZone + 14;
+    const rankCardH = 92;
     const rankCardY = y + rankCardH / 2;
-    y += rankCardH + 16;
-    const statsY = y + 14;
-    y += 30;
+    y += rankCardH + 12;
+    const statsY = y + 10;
+    y += 24;
     const btnGap = 58;
     const btnCampaign = y + 30;
     const btnDaily = btnCampaign + btnGap;
@@ -959,7 +959,7 @@
       logoY,
       rankCardY,
       rankCardH,
-      rankCardW: W - 28,
+      rankCardW: W - 56,
       statsY,
       btnCampaign,
       btnDaily,
@@ -1448,7 +1448,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.5";
+  var APP_VERSION = "1.2.6";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1467,7 +1467,7 @@
       const streakTxt = streak > 1 ? ` \xB7 \u{1F525} ${streak}d` : "";
       applyCrispText(
         this.add.text(W / 2, L.statsY, `\u2605 ${totalStars}  \xB7  Endless best ${p.endlessBest || 0}${streakTxt}`, uiTextStyle({
-          fontSize: "14px",
+          fontSize: "12px",
           color: "#94a3b8",
           strokeThickness: 1
         })).setOrigin(0.5).setDepth(2)
