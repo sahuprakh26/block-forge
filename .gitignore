@@ -3,6 +3,7 @@ public/config.js
 .env
 config/api-url.txt
 config/cloud.env
+config/render-env.txt
 data/leaderboard.json
 
 # Android / Capacitor
