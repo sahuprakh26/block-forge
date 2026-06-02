@@ -964,25 +964,27 @@
     };
   }
   var HUD_HEADER = {
-    navY: 26,
-    barY: 82,
-    barH: 52,
-    scoreLabelY: 54,
-    scoreValueY: 72,
-    titleY: 58,
-    goalY: 56,
-    movesY: 98,
-    streakY: 104
+    navY: 28,
+    barY: 88,
+    barH: 58,
+    scoreLabelY: 58,
+    scoreValueY: 78,
+    titleY: 62,
+    goalTitleY: 54,
+    goalProgY: 74,
+    movesY: 100,
+    streakY: 108,
+    goalBarY: 118
   };
   function gameLayout() {
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const boardY = 112;
+    const boardY = 126;
     const boardBottom = boardY + boardH;
-    const trayGap = 12;
-    const trayH = 108;
+    const trayGap = 10;
+    const trayH = 148;
     const trayLabelY = boardBottom + trayGap;
-    const trayCenterY = trayLabelY + 22 + trayH / 2;
-    const trayPiecesY = trayCenterY + 26;
+    const trayCenterY = trayLabelY + 24 + trayH / 2;
+    const trayPiecesY = trayCenterY + 32;
     return {
       boardY,
       boardBottom,
@@ -1459,7 +1461,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.8";
+  var APP_VERSION = "1.2.9";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1610,14 +1612,20 @@
     if (!goal) return "";
     switch (goal.type) {
       case "score":
-        return `Score ${goal.target}`;
+        return `Reach ${goal.target} points`;
       case "lines":
         return `Clear ${goal.target} lines`;
       case "combo":
-        return `Hit a ${goal.target}x combo`;
+        return `Get ${goal.target}x combo`;
       default:
         return "Complete goal";
     }
+  }
+  function goalProgress(goal, score, lines, maxCombo) {
+    if (!goal) return "";
+    if (goal.type === "score") return `${score} / ${goal.target}`;
+    if (goal.type === "lines") return `${lines} / ${goal.target} lines`;
+    return `Combo ${maxCombo} / ${goal.target}x`;
   }
   function starThresholds(level, goal) {
     if (goal.type === "score") {
@@ -1629,15 +1637,19 @@
   // public/js/navUi.js
   var NAV_DEPTH = 120;
   var MODAL_DEPTH = 200;
-  function addNavButton(scene, x, y, label, color, onClick, width = 92) {
-    const h = 34;
-    const bg = scene.add.rectangle(x, y, width, h, color, 1).setStrokeStyle(1, 16777215, 0.12).setInteractive({ useHandCursor: true }).setDepth(NAV_DEPTH);
-    const txt = scene.add.text(x, y, label, {
-      fontFamily: "Outfit, sans-serif",
-      fontSize: "12px",
-      fontStyle: "700",
-      color: "#fff"
-    }).setOrigin(0.5).setDepth(NAV_DEPTH + 1);
+  function addNavButton(scene, x, y, label, color, onClick, width = 108) {
+    const h = 40;
+    const bg = scene.add.rectangle(x, y, width, h, color, 1).setStrokeStyle(2, 16777215, 0.2).setInteractive({ useHandCursor: true }).setDepth(NAV_DEPTH);
+    const txt = applyCrispText(
+      scene.add.text(x, y, label, uiTextStyle({
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "15px",
+        fontStyle: "800",
+        color: "#ffffff",
+        stroke: "#0f172a",
+        strokeThickness: 2
+      })).setOrigin(0.5).setDepth(NAV_DEPTH + 1)
+    );
     const press = () => {
       sfx.play("click");
       onClick();
@@ -1719,8 +1731,8 @@
     });
   }
   function addGameTopNav(scene, { onBack, onQuit, backLabel = "\u2190 BACK" }) {
-    addNavButton(scene, 52, 26, backLabel, 3359061, onBack, 88);
-    if (onQuit) addNavButton(scene, W - 52, 26, "QUIT", 12131356, onQuit, 72);
+    addNavButton(scene, 58, 28, backLabel, 4674921, onBack, 100);
+    if (onQuit) addNavButton(scene, W - 58, 28, "QUIT", 12131356, onQuit, 84);
   }
 
   // public/js/scenes/MapScene.js
@@ -1908,7 +1920,7 @@
   }
 
   // public/js/scenes/GameScene.js
-  var TRAY_SCALE = 0.76;
+  var TRAY_SCALE = 0.84;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -1979,14 +1991,15 @@
     }
     drawTrayArea() {
       const L = this.layout;
-      this.add.rectangle(W / 2, L.trayCenterY, W - 32, L.trayH, 1120295, 0.85).setStrokeStyle(2, 3359061, 0.8).setDepth(1);
-      this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "11px",
-        fontStyle: "700",
-        color: "#64748b",
-        letterSpacing: 2
-      }).setOrigin(0.5).setDepth(2);
+      this.add.rectangle(W / 2, L.trayCenterY, W - 20, L.trayH, 1120295, 0.9).setStrokeStyle(2, 4674921, 0.9).setDepth(1);
+      applyCrispText(
+        this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", uiTextStyle({
+          fontSize: "13px",
+          fontStyle: "800",
+          color: "#94a3b8",
+          letterSpacing: 3
+        })).setOrigin(0.5).setDepth(2)
+      );
     }
     drawBoardFrame() {
       const fx = this.boardX - BOARD_PAD;
@@ -2001,66 +2014,101 @@
       this.boardFrame.add([outer, inner]);
     }
     buildHud() {
-      const title = this.mode === "endless" ? "ENDLESS" : this.mode === "daily" ? "DAILY CHALLENGE" : `${this.level?.name || "Level"} \xB7 L${this.levelId}`;
+      const title = this.mode === "endless" ? "ENDLESS" : this.mode === "daily" ? "DAILY" : `LEVEL ${this.levelId}`;
       const askLeave = () => {
         if (this.gameEnded) this.exitGame();
         else this.showConfirmExit();
       };
       addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
       const H2 = HUD_HEADER;
-      this.add.rectangle(W / 2, H2.barY, W - 16, H2.barH, 395538, 0.82).setDepth(45);
-      this.add.text(W / 2, H2.titleY, title, {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "16px",
-        fontStyle: "700",
-        color: "#38bdf8"
-      }).setOrigin(0.5).setDepth(50);
-      this.add.text(24, H2.scoreLabelY, "SCORE", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "10px",
-        color: "#64748b"
-      }).setDepth(50);
-      this.scoreText = this.add.text(24, H2.scoreValueY, "0", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "26px",
-        fontStyle: "800",
-        color: "#e2e8f0"
-      }).setDepth(50);
-      this.streakBadge = this.add.text(W / 2, H2.streakY, "", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "700",
-        color: "#f97316"
-      }).setOrigin(0.5).setAlpha(0).setDepth(50);
-      let goalLabel;
+      this.add.rectangle(W / 2, H2.barY, W - 12, H2.barH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      applyCrispText(
+        this.add.text(W / 2, H2.titleY, title, uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "17px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 2
+        })).setOrigin(0.5).setDepth(50)
+      );
+      if (this.mode === "level" && this.level?.name) {
+        applyCrispText(
+          this.add.text(W / 2, H2.titleY + 18, this.level.name, uiTextStyle({
+            fontSize: "11px",
+            fontStyle: "600",
+            color: "#64748b"
+          })).setOrigin(0.5).setDepth(50)
+        );
+      }
+      applyCrispText(
+        this.add.text(20, H2.scoreLabelY, "SCORE", uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "700",
+          color: "#94a3b8"
+        })).setOrigin(0, 0.5).setDepth(50)
+      );
+      this.scoreText = applyCrispText(
+        this.add.text(20, H2.scoreValueY, "0", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "34px",
+          fontStyle: "800",
+          color: "#ffffff",
+          stroke: "#0f172a",
+          strokeThickness: 3
+        })).setOrigin(0, 0.5).setDepth(50)
+      );
+      this.streakBadge = applyCrispText(
+        this.add.text(W / 2, H2.streakY, "", uiTextStyle({
+          fontSize: "13px",
+          fontStyle: "800",
+          color: "#fb923c"
+        })).setOrigin(0.5).setAlpha(0).setDepth(50)
+      );
+      let goalTitle = "";
+      let goalProg = "\u2014";
       if (this.mode === "endless") {
         const best = this.progress.endlessBest || 0;
-        goalLabel = best > 0 ? `Beat best: ${best}` : "Survive \xB7 chase milestones";
+        goalTitle = "ENDLESS";
+        goalProg = best > 0 ? `Best ${best}` : "Survive!";
       } else if (this.mode === "daily") {
         const db = getDailyBest(this.progress);
-        goalLabel = db > 0 ? `Today: beat ${db}` : "Today's run \u2014 score high!";
-      } else {
-        goalLabel = goalText(this.level?.goal);
+        goalTitle = "TODAY";
+        goalProg = db > 0 ? `Beat ${db}` : "Score high";
+      } else if (this.level?.goal) {
+        goalTitle = goalText(this.level.goal);
+        goalProg = goalProgress(this.level.goal, 0, 0, 0);
       }
-      this.goalText = this.add.text(W - 24, H2.goalY, goalLabel, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "600",
-        color: "#94a3b8",
-        align: "right",
-        wordWrap: { width: 160 }
-      }).setOrigin(1, 0).setDepth(50);
+      applyCrispText(
+        this.add.text(W - 20, H2.goalTitleY, goalTitle, uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "700",
+          color: "#94a3b8",
+          align: "right"
+        })).setOrigin(1, 0.5).setDepth(50)
+      );
+      this.goalProgressText = applyCrispText(
+        this.add.text(W - 20, H2.goalProgY, goalProg, uiTextStyle({
+          fontSize: "17px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          align: "right",
+          stroke: "#0f172a",
+          strokeThickness: 2
+        })).setOrigin(1, 0.5).setDepth(50)
+      );
       if (this.mode === "level" && this.level.moves) {
-        this.movesText = this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, {
-          fontFamily: "Outfit, sans-serif",
-          fontSize: "14px",
-          color: "#fbbf24"
-        }).setOrigin(0.5);
+        this.movesText = applyCrispText(
+          this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, uiTextStyle({
+            fontSize: "15px",
+            fontStyle: "700",
+            color: "#fbbf24"
+          })).setOrigin(0.5).setDepth(50)
+        );
       }
       if (this.mode === "level") {
-        this.add.rectangle(W / 2, 102, W - 48, 6, 1976635).setOrigin(0.5);
-        this.goalBar = this.add.rectangle(24, 102, 0, 6, 2282478).setOrigin(0, 0.5);
-        this.goalBarMax = W - 48;
+        this.add.rectangle(W / 2, H2.goalBarY, W - 40, 8, 1976635).setOrigin(0.5);
+        this.goalBar = this.add.rectangle(20, H2.goalBarY, 0, 8, 3718648).setOrigin(0, 0.5).setDepth(50);
+        this.goalBarMax = W - 40;
       }
     }
     spawnTray() {
@@ -2078,7 +2126,7 @@
         container.setData("homeX", slotXs[i]);
         container.setData("homeY", this.layout.trayPiecesY);
         container.setInteractive(
-          new Phaser.Geom.Rectangle(-80, -80, 160, 160),
+          new Phaser.Geom.Rectangle(-100, -100, 200, 200),
           Phaser.Geom.Rectangle.Contains
         );
         this.input.setDraggable(container);
@@ -2399,22 +2447,26 @@
       }
     }
     refreshGoalDisplay() {
+      if (this.mode === "endless") {
+        if (this.goalProgressText) {
+          this.goalProgressText.setText(`Score ${this.score}`);
+        }
+        return;
+      }
+      if (this.mode === "daily") {
+        if (this.goalProgressText) {
+          this.goalProgressText.setText(`Score ${this.score}`);
+        }
+        return;
+      }
       if (this.mode !== "level" || !this.level) return;
       const g = this.level.goal;
-      let prog = "";
+      const prog = goalProgress(g, this.score, this.totalLines, this.maxCombo);
       let ratio = 0;
-      if (g.type === "score") {
-        prog = `${this.score} / ${g.target}`;
-        ratio = Math.min(1, this.score / g.target);
-      } else if (g.type === "lines") {
-        prog = `${this.totalLines} / ${g.target} lines`;
-        ratio = Math.min(1, this.totalLines / g.target);
-      } else {
-        prog = `Best combo: ${this.maxCombo} / ${g.target}x`;
-        ratio = Math.min(1, this.maxCombo / g.target);
-      }
-      this.goalText.setText(`${goalText(g)}
-${prog}`);
+      if (g.type === "score") ratio = Math.min(1, this.score / g.target);
+      else if (g.type === "lines") ratio = Math.min(1, this.totalLines / g.target);
+      else ratio = Math.min(1, this.maxCombo / g.target);
+      if (this.goalProgressText) this.goalProgressText.setText(prog);
       if (this.goalBar) {
         this.goalBar.width = this.goalBarMax * ratio;
         if (ratio >= 0.85 && ratio < 1) {

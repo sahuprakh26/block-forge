@@ -1,26 +1,31 @@
 import { W } from "./config.js";
 import { sfx } from "./audio.js";
+import { applyCrispText, uiTextStyle } from "./textUtil.js";
 
 const NAV_DEPTH = 120;
 const MODAL_DEPTH = 200;
 
-/** Top-corner pill button (BACK / QUIT) */
-export function addNavButton(scene, x, y, label, color, onClick, width = 92) {
-  const h = 34;
+/** Top-corner pill button (BACK / QUIT) — large and sharp */
+export function addNavButton(scene, x, y, label, color, onClick, width = 108) {
+  const h = 40;
   const bg = scene.add
     .rectangle(x, y, width, h, color, 1)
-    .setStrokeStyle(1, 0xffffff, 0.12)
+    .setStrokeStyle(2, 0xffffff, 0.2)
     .setInteractive({ useHandCursor: true })
     .setDepth(NAV_DEPTH);
-  const txt = scene.add
-    .text(x, y, label, {
-      fontFamily: "Outfit, sans-serif",
-      fontSize: "12px",
-      fontStyle: "700",
-      color: "#fff",
-    })
-    .setOrigin(0.5)
-    .setDepth(NAV_DEPTH + 1);
+  const txt = applyCrispText(
+    scene.add
+      .text(x, y, label, uiTextStyle({
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "15px",
+        fontStyle: "800",
+        color: "#ffffff",
+        stroke: "#0f172a",
+        strokeThickness: 2,
+      }))
+      .setOrigin(0.5)
+      .setDepth(NAV_DEPTH + 1)
+  );
 
   const press = () => {
     sfx.play("click");
@@ -40,7 +45,6 @@ function lighten(hex) {
   return c.color;
 }
 
-/** Leave confirmation — BACK and QUIT both use this during play */
 export function showLeaveDialog(scene, { title = "Leave game?", onLeave }) {
   if (scene._leaveModal) return;
 
@@ -122,8 +126,7 @@ export function showLeaveDialog(scene, { title = "Leave game?", onLeave }) {
   });
 }
 
-/** Standard top bar: BACK (left) + optional QUIT (right) */
 export function addGameTopNav(scene, { onBack, onQuit, backLabel = "← BACK" }) {
-  addNavButton(scene, 52, 26, backLabel, 0x334155, onBack, 88);
-  if (onQuit) addNavButton(scene, W - 52, 26, "QUIT", 0xb91c1c, onQuit, 72);
+  addNavButton(scene, 58, 28, backLabel, 0x475569, onBack, 100);
+  if (onQuit) addNavButton(scene, W - 58, 28, "QUIT", 0xb91c1c, onQuit, 84);
 }

@@ -1,6 +1,6 @@
 import { GRID, CELL, BOARD_PAD, W, COLORS } from "../config.js";
 import { randomTray, mulberry32, dailySeed } from "../shapes.js";
-import { getLevel, goalText, starThresholds } from "../levels.js";
+import { getLevel, goalText, goalProgress, starThresholds } from "../levels.js";
 import {
   loadProgress,
   setStars,
@@ -32,8 +32,9 @@ import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
 import { HUD_HEADER, gameLayout } from "../layout.js";
+import { applyCrispText, uiTextStyle } from "../textUtil.js";
 
-const TRAY_SCALE = 0.76;
+const TRAY_SCALE = 0.84;
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -114,19 +115,20 @@ export default class GameScene extends Phaser.Scene {
   drawTrayArea() {
     const L = this.layout;
     this.add
-      .rectangle(W / 2, L.trayCenterY, W - 32, L.trayH, 0x111827, 0.85)
-      .setStrokeStyle(2, 0x334155, 0.8)
+      .rectangle(W / 2, L.trayCenterY, W - 20, L.trayH, 0x111827, 0.9)
+      .setStrokeStyle(2, 0x475569, 0.9)
       .setDepth(1);
-    this.add
-      .text(W / 2, L.trayLabelY, "NEXT PIECES", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "11px",
-        fontStyle: "700",
-        color: "#64748b",
-        letterSpacing: 2,
-      })
-      .setOrigin(0.5)
-      .setDepth(2);
+    applyCrispText(
+      this.add
+        .text(W / 2, L.trayLabelY, "NEXT PIECES", uiTextStyle({
+          fontSize: "13px",
+          fontStyle: "800",
+          color: "#94a3b8",
+          letterSpacing: 3,
+        }))
+        .setOrigin(0.5)
+        .setDepth(2)
+    );
   }
 
   drawBoardFrame() {
@@ -147,8 +149,8 @@ export default class GameScene extends Phaser.Scene {
       this.mode === "endless"
         ? "ENDLESS"
         : this.mode === "daily"
-          ? "DAILY CHALLENGE"
-          : `${this.level?.name || "Level"} · L${this.levelId}`;
+          ? "DAILY"
+          : `LEVEL ${this.levelId}`;
 
     const askLeave = () => {
       if (this.gameEnded) this.exitGame();
@@ -158,81 +160,130 @@ export default class GameScene extends Phaser.Scene {
 
     const H = HUD_HEADER;
     this.add
-      .rectangle(W / 2, H.barY, W - 16, H.barH, 0x060912, 0.82)
+      .rectangle(W / 2, H.barY, W - 12, H.barH, 0x0f172a, 0.92)
+      .setStrokeStyle(1, 0x334155, 0.6)
       .setDepth(45);
-    this.add
-      .text(W / 2, H.titleY, title, {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "16px",
-        fontStyle: "700",
-        color: "#38bdf8",
-      })
-      .setOrigin(0.5)
-      .setDepth(50);
 
-    this.add.text(24, H.scoreLabelY, "SCORE", {
-      fontFamily: "Outfit, sans-serif",
-      fontSize: "10px",
-      color: "#64748b",
-    }).setDepth(50);
-    this.scoreText = this.add
-      .text(24, H.scoreValueY, "0", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "26px",
-        fontStyle: "800",
-        color: "#e2e8f0",
-      })
-      .setDepth(50);
+    applyCrispText(
+      this.add
+        .text(W / 2, H.titleY, title, uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "17px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 2,
+        }))
+        .setOrigin(0.5)
+        .setDepth(50)
+    );
 
-    this.streakBadge = this.add
-      .text(W / 2, H.streakY, "", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "700",
-        color: "#f97316",
-      })
-      .setOrigin(0.5)
-      .setAlpha(0)
-      .setDepth(50);
+    if (this.mode === "level" && this.level?.name) {
+      applyCrispText(
+        this.add
+          .text(W / 2, H.titleY + 18, this.level.name, uiTextStyle({
+            fontSize: "11px",
+            fontStyle: "600",
+            color: "#64748b",
+          }))
+          .setOrigin(0.5)
+          .setDepth(50)
+      );
+    }
 
-    let goalLabel;
+    applyCrispText(
+      this.add
+        .text(20, H.scoreLabelY, "SCORE", uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "700",
+          color: "#94a3b8",
+        }))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+    this.scoreText = applyCrispText(
+      this.add
+        .text(20, H.scoreValueY, "0", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "34px",
+          fontStyle: "800",
+          color: "#ffffff",
+          stroke: "#0f172a",
+          strokeThickness: 3,
+        }))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+
+    this.streakBadge = applyCrispText(
+      this.add
+        .text(W / 2, H.streakY, "", uiTextStyle({
+          fontSize: "13px",
+          fontStyle: "800",
+          color: "#fb923c",
+        }))
+        .setOrigin(0.5)
+        .setAlpha(0)
+        .setDepth(50)
+    );
+
+    let goalTitle = "";
+    let goalProg = "—";
     if (this.mode === "endless") {
       const best = this.progress.endlessBest || 0;
-      goalLabel = best > 0 ? `Beat best: ${best}` : "Survive · chase milestones";
+      goalTitle = "ENDLESS";
+      goalProg = best > 0 ? `Best ${best}` : "Survive!";
     } else if (this.mode === "daily") {
       const db = getDailyBest(this.progress);
-      goalLabel = db > 0 ? `Today: beat ${db}` : "Today's run — score high!";
-    } else {
-      goalLabel = goalText(this.level?.goal);
+      goalTitle = "TODAY";
+      goalProg = db > 0 ? `Beat ${db}` : "Score high";
+    } else if (this.level?.goal) {
+      goalTitle = goalText(this.level.goal);
+      goalProg = goalProgress(this.level.goal, 0, 0, 0);
     }
-    this.goalText = this.add
-      .text(W - 24, H.goalY, goalLabel, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        fontStyle: "600",
-        color: "#94a3b8",
-        align: "right",
-        wordWrap: { width: 160 },
-      })
-      .setOrigin(1, 0)
-      .setDepth(50);
+
+    applyCrispText(
+      this.add
+        .text(W - 20, H.goalTitleY, goalTitle, uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "700",
+          color: "#94a3b8",
+          align: "right",
+        }))
+        .setOrigin(1, 0.5)
+        .setDepth(50)
+    );
+    this.goalProgressText = applyCrispText(
+      this.add
+        .text(W - 20, H.goalProgY, goalProg, uiTextStyle({
+          fontSize: "17px",
+          fontStyle: "800",
+          color: "#38bdf8",
+          align: "right",
+          stroke: "#0f172a",
+          strokeThickness: 2,
+        }))
+        .setOrigin(1, 0.5)
+        .setDepth(50)
+    );
 
     if (this.mode === "level" && this.level.moves) {
-      this.movesText = this.add
-        .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, {
-          fontFamily: "Outfit, sans-serif",
-          fontSize: "14px",
-          color: "#fbbf24",
-        })
-        .setOrigin(0.5);
+      this.movesText = applyCrispText(
+        this.add
+          .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, uiTextStyle({
+            fontSize: "15px",
+            fontStyle: "700",
+            color: "#fbbf24",
+          }))
+          .setOrigin(0.5)
+          .setDepth(50)
+      );
     }
 
     if (this.mode === "level") {
-      this.add.rectangle(W / 2, 102, W - 48, 6, 0x1e293b).setOrigin(0.5);
-      this.goalBar = this.add.rectangle(24, 102, 0, 6, 0x22d3ee).setOrigin(0, 0.5);
-      this.goalBarMax = W - 48;
+      this.add.rectangle(W / 2, H.goalBarY, W - 40, 8, 0x1e293b).setOrigin(0.5);
+      this.goalBar = this.add.rectangle(20, H.goalBarY, 0, 8, 0x38bdf8).setOrigin(0, 0.5).setDepth(50);
+      this.goalBarMax = W - 40;
     }
-
   }
 
   spawnTray() {
@@ -251,7 +302,7 @@ export default class GameScene extends Phaser.Scene {
       container.setData("homeX", slotXs[i]);
       container.setData("homeY", this.layout.trayPiecesY);
       container.setInteractive(
-        new Phaser.Geom.Rectangle(-80, -80, 160, 160),
+        new Phaser.Geom.Rectangle(-100, -100, 200, 200),
         Phaser.Geom.Rectangle.Contains
       );
       this.input.setDraggable(container);
@@ -614,21 +665,27 @@ export default class GameScene extends Phaser.Scene {
   }
 
   refreshGoalDisplay() {
+    if (this.mode === "endless") {
+      if (this.goalProgressText) {
+        this.goalProgressText.setText(`Score ${this.score}`);
+      }
+      return;
+    }
+    if (this.mode === "daily") {
+      if (this.goalProgressText) {
+        this.goalProgressText.setText(`Score ${this.score}`);
+      }
+      return;
+    }
     if (this.mode !== "level" || !this.level) return;
     const g = this.level.goal;
-    let prog = "";
+    const prog = goalProgress(g, this.score, this.totalLines, this.maxCombo);
     let ratio = 0;
-    if (g.type === "score") {
-      prog = `${this.score} / ${g.target}`;
-      ratio = Math.min(1, this.score / g.target);
-    } else if (g.type === "lines") {
-      prog = `${this.totalLines} / ${g.target} lines`;
-      ratio = Math.min(1, this.totalLines / g.target);
-    } else {
-      prog = `Best combo: ${this.maxCombo} / ${g.target}x`;
-      ratio = Math.min(1, this.maxCombo / g.target);
-    }
-    this.goalText.setText(`${goalText(g)}\n${prog}`);
+    if (g.type === "score") ratio = Math.min(1, this.score / g.target);
+    else if (g.type === "lines") ratio = Math.min(1, this.totalLines / g.target);
+    else ratio = Math.min(1, this.maxCombo / g.target);
+
+    if (this.goalProgressText) this.goalProgressText.setText(prog);
     if (this.goalBar) {
       this.goalBar.width = this.goalBarMax * ratio;
       if (ratio >= 0.85 && ratio < 1) {

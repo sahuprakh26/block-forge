@@ -34,14 +34,22 @@ export function goalText(goal) {
   if (!goal) return "";
   switch (goal.type) {
     case "score":
-      return `Score ${goal.target}`;
+      return `Reach ${goal.target} points`;
     case "lines":
       return `Clear ${goal.target} lines`;
     case "combo":
-      return `Hit a ${goal.target}x combo`;
+      return `Get ${goal.target}x combo`;
     default:
       return "Complete goal";
   }
+}
+
+/** Short progress line for HUD (large font). */
+export function goalProgress(goal, score, lines, maxCombo) {
+  if (!goal) return "";
+  if (goal.type === "score") return `${score} / ${goal.target}`;
+  if (goal.type === "lines") return `${lines} / ${goal.target} lines`;
+  return `Combo ${maxCombo} / ${goal.target}x`;
 }
 
 export function starThresholds(level, goal) {

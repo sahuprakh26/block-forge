@@ -85,27 +85,29 @@ export function menuLayout(height = H) {
 
 /** Top HUD band — must end above game board (see gameLayout). */
 export const HUD_HEADER = {
-  navY: 26,
-  barY: 82,
-  barH: 52,
-  scoreLabelY: 54,
-  scoreValueY: 72,
-  titleY: 58,
-  goalY: 56,
-  movesY: 98,
-  streakY: 104,
+  navY: 28,
+  barY: 88,
+  barH: 58,
+  scoreLabelY: 58,
+  scoreValueY: 78,
+  titleY: 62,
+  goalTitleY: 54,
+  goalProgY: 74,
+  movesY: 100,
+  streakY: 108,
+  goalBarY: 118,
 };
 
 /** Board + tray vertical slots so nothing overlaps. */
 export function gameLayout() {
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const boardY = 112;
+  const boardY = 126;
   const boardBottom = boardY + boardH;
-  const trayGap = 12;
-  const trayH = 108;
+  const trayGap = 10;
+  const trayH = 148;
   const trayLabelY = boardBottom + trayGap;
-  const trayCenterY = trayLabelY + 22 + trayH / 2;
-  const trayPiecesY = trayCenterY + 26;
+  const trayCenterY = trayLabelY + 24 + trayH / 2;
+  const trayPiecesY = trayCenterY + 32;
 
   return {
     boardY,
