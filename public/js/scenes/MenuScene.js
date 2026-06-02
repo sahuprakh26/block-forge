@@ -1,6 +1,7 @@
 import { loadProgress, getDailyBest, isDailyFresh } from "../progress.js";
 import { getRank, nextRankXp } from "../meta.js";
 import { drawBackdrop, transitionTo, fadeInScene } from "../fx.js";
+import { drawGlassPanel, makeGlowButton } from "../uiTheme.js";
 import { hasName, getPlayer } from "../player.js";
 import { promptName } from "../namePrompt.js";
 import { sfx } from "../audio.js";
@@ -34,22 +35,33 @@ export default class MenuScene extends Phaser.Scene {
       });
     }
 
+    const logoGlow = this.add.circle(width / 2, height * 0.17, 90, 0x6366f1, 0.12).setDepth(0);
+    this.tweens.add({
+      targets: logoGlow,
+      scale: { from: 0.9, to: 1.1 },
+      alpha: { from: 0.08, to: 0.2 },
+      duration: 2400,
+      yoyo: true,
+      repeat: -1,
+    });
     this.add
       .text(width / 2, height * 0.14, "BLOCK", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "50px",
+        fontSize: "52px",
         fontStyle: "800",
         color: "#e0e7ff",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
     this.add
       .text(width / 2, height * 0.2, "FORGE", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "50px",
+        fontSize: "52px",
         fontStyle: "800",
         color: "#38bdf8",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     const p = loadProgress();
     const rank = getRank(p.xp || 0);
@@ -58,23 +70,26 @@ export default class MenuScene extends Phaser.Scene {
     const barW = width - 64;
     const ratio = Math.min(1, (p.xp - prevXp) / Math.max(1, nextXp - prevXp));
 
+    drawGlassPanel(this, width / 2, height * 0.31, barW + 24, 72, { depth: 1, stroke: 0x6366f1 });
     this.add
-      .text(width / 2, height * 0.27, rank.name, {
+      .text(width / 2, height * 0.275, rank.name, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "16px",
+        fontSize: "17px",
         fontStyle: "700",
         color: "#fde047",
       })
-      .setOrigin(0.5);
-    this.add.rectangle(width / 2, height * 0.305, barW, 8, 0x1e293b).setOrigin(0.5);
-    this.add.rectangle(32 + barW * ratio * 0.5, height * 0.305, barW * ratio, 8, 0x818cf8).setOrigin(0, 0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
+    this.add.rectangle(width / 2, height * 0.31, barW, 10, 0x1e293b).setOrigin(0.5).setDepth(2);
+    this.add.rectangle(32 + barW * ratio * 0.5, height * 0.31, barW * ratio, 10, 0x818cf8).setOrigin(0, 0.5).setDepth(2);
     this.add
-      .text(width / 2, height * 0.325, `${p.xp || 0} / ${nextXp} XP`, {
+      .text(width / 2, height * 0.335, `${p.xp || 0} / ${nextXp} XP`, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "11px",
-        color: "#64748b",
+        color: "#94a3b8",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
     const streak = p.streakDays || 0;
@@ -85,24 +100,32 @@ export default class MenuScene extends Phaser.Scene {
         fontSize: "12px",
         color: "#64748b",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
-    this.makeButton(width / 2, height * 0.42, "▶  CAMPAIGN", 0x6366f1, () => transitionTo(this, "Map"));
+    const go = (fn) => () => {
+      bgm.unlock();
+      fn();
+    };
+    makeGlowButton(this, width / 2, height * 0.42, "▶  CAMPAIGN", 0x6366f1, go(() => transitionTo(this, "Map")));
 
     const dailyBest = getDailyBest(p);
     const dailyFresh = isDailyFresh(p);
     const dailyLabel = dailyFresh ? "☀  DAILY CHALLENGE  ·  NEW" : `☀  DAILY  ·  Best ${dailyBest}`;
-    this.makeButton(width / 2, height * 0.51, dailyLabel, dailyFresh ? 0xb45309 : 0x1e293b, () =>
-      transitionTo(this, "Game", { mode: "daily" })
+    makeGlowButton(
+      this,
+      width / 2,
+      height * 0.51,
+      dailyLabel,
+      dailyFresh ? 0xb45309 : 0x334155,
+      go(() => transitionTo(this, "Game", { mode: "daily" }))
     );
 
-    this.makeButton(width / 2, height * 0.6, "∞  ENDLESS", 0x1e293b, () =>
-      transitionTo(this, "Game", { mode: "endless" })
-    );
+    makeGlowButton(this, width / 2, height * 0.6, "∞  ENDLESS", 0x1e40af, go(() => transitionTo(this, "Game", { mode: "endless" })));
 
-    this.makeButton(width / 2, height * 0.69, "🏆  GLOBAL RANKINGS", 0x334155, () =>
+    makeGlowButton(this, width / 2, height * 0.69, "🏆  LIVE RANKINGS", 0x7c3aed, go(() =>
       transitionTo(this, "Leaderboard", { board: "endless" })
-    );
+    ));
 
     this.makeNameBadge(width / 2, height * 0.775);
     this.buildAudioToggles(width, height);
@@ -186,37 +209,4 @@ export default class MenuScene extends Phaser.Scene {
     });
   }
 
-  makeButton(x, y, label, color, cb) {
-    const w = 280;
-    const h = 50;
-    const bg = this.add
-      .rectangle(x, y, w, h, color, 1)
-      .setInteractive({ useHandCursor: true })
-      .setStrokeStyle(2, 0xffffff, 0.08);
-    const txt = this.add
-      .text(x, y, label, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: label.length > 22 ? "14px" : "17px",
-        fontStyle: "700",
-        color: "#fff",
-        align: "center",
-        wordWrap: { width: w - 20 },
-      })
-      .setOrigin(0.5);
-
-    bg.on("pointerover", () => this.tweens.add({ targets: bg, scaleX: 1.03, scaleY: 1.03, duration: 100 }));
-    bg.on("pointerout", () => this.tweens.add({ targets: bg, scaleX: 1, scaleY: 1, duration: 100 }));
-    bg.on("pointerdown", () => {
-      sfx.ensure();
-      bgm.unlock();
-      this.tweens.add({
-        targets: [bg, txt],
-        scaleX: 0.96,
-        scaleY: 0.96,
-        duration: 60,
-        yoyo: true,
-        onComplete: cb,
-      });
-    });
-  }
 }

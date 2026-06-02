@@ -3,6 +3,8 @@ public/config.js
 .env
 config/api-url.txt
 config/cloud.env
+config/netlify.env
+config/netlify.env.local
 config/render-env.txt
 data/leaderboard.json
 

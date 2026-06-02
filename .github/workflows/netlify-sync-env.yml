@@ -1,0 +1,23 @@
+# One-time: add NETLIFY_AUTH_TOKEN + NETLIFY_SITE_ID to GitHub repo secrets, then run this workflow.
+name: Sync Netlify leaderboard env
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g netlify-cli
+      - name: Set GITHUB_GIST_ID and GITHUB_TOKEN on Netlify site
+        run: |
+          netlify link --id "${{ secrets.NETLIFY_SITE_ID }}"
+          netlify env:set GITHUB_GIST_ID "${{ secrets.BF_GIST_ID }}" --context production --force
+          netlify env:set GITHUB_TOKEN "${{ secrets.BF_GH_TOKEN }}" --context production --force
+          netlify env:set BF_GIST_ID "${{ secrets.BF_GIST_ID }}" --context production --force
+          netlify env:set BF_GH_TOKEN "${{ secrets.BF_GH_TOKEN }}" --context production --force
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

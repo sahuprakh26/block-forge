@@ -24,6 +24,7 @@ body {
   height: 100%;
   max-width: 430px;
   margin: 0 auto;
+  filter: drop-shadow(0 0 48px rgba(99, 102, 241, 0.15));
 }
 
 #game-container canvas {

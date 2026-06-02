@@ -2,6 +2,20 @@
   command = "npm run build"
   publish = "public"
 
+[build.environment]
+  BF_GIST_ID = "25cb454696bb2a34e74dcd3df29fdee2"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# API must run before SPA fallback
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

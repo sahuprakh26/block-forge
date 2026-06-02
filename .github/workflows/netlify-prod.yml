@@ -1,0 +1,30 @@
+name: Deploy Netlify (game + rankings API)
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' && secrets.NETLIFY_SITE_ID != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci && npm run build
+        env:
+          BF_GIST_ID: ${{ secrets.BF_GIST_ID }}
+          BF_API_URL: https://blackforgee26.netlify.app
+      - run: npm install -g netlify-cli
+      - name: Sync function secrets + deploy
+        run: |
+          netlify link --id "${{ secrets.NETLIFY_SITE_ID }}"
+          printf 'GITHUB_GIST_ID=%s\nGITHUB_TOKEN=%s\nBF_GIST_ID=%s\n' \
+            "${{ secrets.BF_GIST_ID }}" "${{ secrets.BF_GH_TOKEN }}" "${{ secrets.BF_GIST_ID }}" > .env.netlify
+          netlify env:import .env.netlify --scope functions --context all --force
+          netlify deploy --prod --dir=public --functions=netlify/functions
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

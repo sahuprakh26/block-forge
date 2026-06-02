@@ -39,6 +39,11 @@ if (!base && isAndroid) {
   base = "http://10.0.2.2:8097";
 }
 
-const body = `/** Auto-generated — do not edit */\nwindow.BF_API_BASE = ${JSON.stringify(base)};\nwindow.BF_IS_NATIVE = ${JSON.stringify(!!isAndroid)};\n`;
+const gistId = (process.env.BF_GIST_ID || process.env.GITHUB_GIST_ID || "").trim();
+const body =
+  `/** Auto-generated — do not edit */\n` +
+  `window.BF_API_BASE = ${JSON.stringify(base)};\n` +
+  `window.BF_IS_NATIVE = ${JSON.stringify(!!isAndroid)};\n` +
+  `window.BF_GIST_ID = ${JSON.stringify(gistId)};\n`;
 fs.writeFileSync(out, body);
 console.log("runtime-config.js →", base || "(same origin)", isRelease ? "[release]" : isAndroid ? "[dev]" : "[web]");

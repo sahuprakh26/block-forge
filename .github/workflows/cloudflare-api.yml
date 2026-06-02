@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
-    paths:
-      - "worker/**"
-      - "wrangler.toml"
-      - ".github/workflows/cloudflare-api.yml"
 
 jobs:
   deploy:
@@ -18,6 +14,7 @@ jobs:
         with:
           node-version: "20"
       - name: Deploy Worker
+        id: wrangler
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
@@ -29,9 +26,11 @@ jobs:
         env:
           GITHUB_GIST_ID: ${{ secrets.BF_GIST_ID }}
           GITHUB_TOKEN: ${{ secrets.BF_GH_TOKEN }}
-      - name: Save API URL
+      - name: Save API URL for game builds
         run: |
-          URL="https://block-forge-api.${{ secrets.CF_ACCOUNT_SUBDOMAIN }}.workers.dev"
+          URL="${{ steps.wrangler.outputs.deployment-url }}"
+          if [ -z "$URL" ]; then URL="https://block-forge-api.workers.dev"; fi
+          echo "Worker URL: $URL"
           gh variable set BF_API_URL --body "$URL"
         env:
           GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}

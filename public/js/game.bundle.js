@@ -872,6 +872,102 @@
     });
   }
 
+  // public/js/uiTheme.js
+  function drawGlassPanel(scene, x, y, w, h, opts = {}) {
+    const depth = opts.depth ?? 4;
+    const fill = opts.fill ?? 988970;
+    const alpha = opts.alpha ?? 0.88;
+    const stroke = opts.stroke ?? 6514417;
+    const panel = scene.add.container(x, y).setDepth(depth);
+    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.45);
+    const shine = scene.add.rectangle(0, -h * 0.38, w - 8, h * 0.22, 16777215, 0.04);
+    panel.add([outer, shine]);
+    return panel;
+  }
+  function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
+    const w = opts.width ?? 280;
+    const h = opts.height ?? 52;
+    const depth = opts.depth ?? 10;
+    const container = scene.add.container(x, y).setDepth(depth);
+    const shadow = scene.add.rectangle(2, 4, w, h, 0, 0.35);
+    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.14).setInteractive({ useHandCursor: true });
+    const gloss = scene.add.rectangle(0, -h * 0.22, w - 12, h * 0.35, 16777215, 0.1);
+    const txt = scene.add.text(0, 0, label, {
+      fontFamily: "Outfit, sans-serif",
+      fontSize: opts.fontSize ?? (label.length > 22 ? "14px" : "17px"),
+      fontStyle: "700",
+      color: "#fff",
+      align: "center",
+      wordWrap: { width: w - 24 }
+    }).setOrigin(0.5);
+    container.add([shadow, bg, gloss, txt]);
+    const press = () => {
+      sfx.ensure();
+      sfx.play("click");
+      scene.tweens.add({
+        targets: container,
+        scaleX: 0.96,
+        scaleY: 0.96,
+        duration: 70,
+        yoyo: true,
+        onComplete: onClick
+      });
+    };
+    bg.on("pointerdown", press);
+    txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
+    bg.on("pointerover", () => scene.tweens.add({ targets: container, scaleX: 1.03, scaleY: 1.03, duration: 100 }));
+    bg.on("pointerout", () => scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 }));
+    return container;
+  }
+  function makePillTab(scene, x, y, label, active, onClick) {
+    const w = 148;
+    const h = 38;
+    const bg = scene.add.rectangle(x, y, w, h, active ? 6514417 : 1976635, active ? 1 : 0.92).setStrokeStyle(2, active ? 10859772 : 4674921, active ? 0.9 : 0.5).setInteractive({ useHandCursor: true }).setDepth(15);
+    if (active) {
+      scene.add.rectangle(x, y - 2, w - 8, 10, 16777215, 0.08).setDepth(14);
+    }
+    const txt = scene.add.text(x, y, label, {
+      fontFamily: "Outfit, sans-serif",
+      fontSize: "13px",
+      fontStyle: "700",
+      color: active ? "#fff" : "#94a3b8"
+    }).setOrigin(0.5).setDepth(16);
+    const fire = () => {
+      sfx.play("click");
+      onClick();
+    };
+    bg.on("pointerdown", fire);
+    txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
+    return { bg, txt };
+  }
+  function drawTitleGlow(scene, x, y, title, subtitle) {
+    scene.add.text(x, y - 2, title, {
+      fontFamily: "Syne, sans-serif",
+      fontSize: "26px",
+      fontStyle: "800",
+      color: "#6366f1"
+    }).setOrigin(0.5).setAlpha(0.35).setDepth(2);
+    scene.add.text(x, y, title, {
+      fontFamily: "Syne, sans-serif",
+      fontSize: "26px",
+      fontStyle: "800",
+      color: "#38bdf8"
+    }).setOrigin(0.5).setDepth(3);
+    if (subtitle) {
+      scene.add.text(x, y + 28, subtitle, {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "12px",
+        color: "#64748b"
+      }).setOrigin(0.5).setDepth(3);
+    }
+  }
+  function rankColors(i) {
+    if (i === 0) return { bg: 16498468, stroke: 16638023, text: "#0f172a", medal: "\u{1F947}" };
+    if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "\u{1F948}" };
+    if (i === 2) return { bg: 11817737, stroke: 16628340, text: "#fff", medal: "\u{1F949}" };
+    return { bg: 1120295, stroke: 3359061, text: "#e2e8f0", medal: `${i + 1}` };
+  }
+
   // public/js/player.js
   var PLAYER_KEY = "bf-player";
   var MIN_NAME_LEN = 2;
@@ -1030,37 +1126,47 @@
           ease: "Sine.easeInOut"
         });
       }
+      const logoGlow = this.add.circle(width / 2, height * 0.17, 90, 6514417, 0.12).setDepth(0);
+      this.tweens.add({
+        targets: logoGlow,
+        scale: { from: 0.9, to: 1.1 },
+        alpha: { from: 0.08, to: 0.2 },
+        duration: 2400,
+        yoyo: true,
+        repeat: -1
+      });
       this.add.text(width / 2, height * 0.14, "BLOCK", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "50px",
+        fontSize: "52px",
         fontStyle: "800",
         color: "#e0e7ff"
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(2);
       this.add.text(width / 2, height * 0.2, "FORGE", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "50px",
+        fontSize: "52px",
         fontStyle: "800",
         color: "#38bdf8"
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(2);
       const p = loadProgress();
       const rank = getRank(p.xp || 0);
       const nextXp = nextRankXp(p.xp || 0);
       const prevXp = rank.xp;
       const barW = width - 64;
       const ratio = Math.min(1, (p.xp - prevXp) / Math.max(1, nextXp - prevXp));
-      this.add.text(width / 2, height * 0.27, rank.name, {
+      drawGlassPanel(this, width / 2, height * 0.31, barW + 24, 72, { depth: 1, stroke: 6514417 });
+      this.add.text(width / 2, height * 0.275, rank.name, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "16px",
+        fontSize: "17px",
         fontStyle: "700",
         color: "#fde047"
-      }).setOrigin(0.5);
-      this.add.rectangle(width / 2, height * 0.305, barW, 8, 1976635).setOrigin(0.5);
-      this.add.rectangle(32 + barW * ratio * 0.5, height * 0.305, barW * ratio, 8, 8490232).setOrigin(0, 0.5);
-      this.add.text(width / 2, height * 0.325, `${p.xp || 0} / ${nextXp} XP`, {
+      }).setOrigin(0.5).setDepth(2);
+      this.add.rectangle(width / 2, height * 0.31, barW, 10, 1976635).setOrigin(0.5).setDepth(2);
+      this.add.rectangle(32 + barW * ratio * 0.5, height * 0.31, barW * ratio, 10, 8490232).setOrigin(0, 0.5).setDepth(2);
+      this.add.text(width / 2, height * 0.335, `${p.xp || 0} / ${nextXp} XP`, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "11px",
-        color: "#64748b"
-      }).setOrigin(0.5);
+        color: "#94a3b8"
+      }).setOrigin(0.5).setDepth(2);
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const streak = p.streakDays || 0;
       const streakTxt = streak > 1 ? `  \xB7  \u{1F525} ${streak} day streak` : "";
@@ -1068,32 +1174,27 @@
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         color: "#64748b"
-      }).setOrigin(0.5);
-      this.makeButton(width / 2, height * 0.42, "\u25B6  CAMPAIGN", 6514417, () => transitionTo(this, "Map"));
+      }).setOrigin(0.5).setDepth(2);
+      const go = (fn) => () => {
+        bgm.unlock();
+        fn();
+      };
+      makeGlowButton(this, width / 2, height * 0.42, "\u25B6  CAMPAIGN", 6514417, go(() => transitionTo(this, "Map")));
       const dailyBest = getDailyBest(p);
       const dailyFresh = isDailyFresh(p);
       const dailyLabel = dailyFresh ? "\u2600  DAILY CHALLENGE  \xB7  NEW" : `\u2600  DAILY  \xB7  Best ${dailyBest}`;
-      this.makeButton(
+      makeGlowButton(
+        this,
         width / 2,
         height * 0.51,
         dailyLabel,
-        dailyFresh ? 11817737 : 1976635,
-        () => transitionTo(this, "Game", { mode: "daily" })
+        dailyFresh ? 11817737 : 3359061,
+        go(() => transitionTo(this, "Game", { mode: "daily" }))
       );
-      this.makeButton(
-        width / 2,
-        height * 0.6,
-        "\u221E  ENDLESS",
-        1976635,
-        () => transitionTo(this, "Game", { mode: "endless" })
-      );
-      this.makeButton(
-        width / 2,
-        height * 0.69,
-        "\u{1F3C6}  GLOBAL RANKINGS",
-        3359061,
+      makeGlowButton(this, width / 2, height * 0.6, "\u221E  ENDLESS", 1982639, go(() => transitionTo(this, "Game", { mode: "endless" })));
+      makeGlowButton(this, width / 2, height * 0.69, "\u{1F3C6}  LIVE RANKINGS", 8141549, go(
         () => transitionTo(this, "Leaderboard", { board: "endless" })
-      );
+      ));
       this.makeNameBadge(width / 2, height * 0.775);
       this.buildAudioToggles(width, height);
       this.add.text(width / 2, height * 0.9, "Chain clears \xB7 Daily challenge \xB7 global rankings", {
@@ -1155,33 +1256,6 @@
         bg.setStrokeStyle(1, on ? 8490232 : 4674921);
         txt.setText(`${on ? "ON" : "OFF"} \xB7 ${label}`);
         txt.setColor(on ? "#fff" : "#64748b");
-      });
-    }
-    makeButton(x, y, label, color, cb) {
-      const w = 280;
-      const h = 50;
-      const bg = this.add.rectangle(x, y, w, h, color, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(2, 16777215, 0.08);
-      const txt = this.add.text(x, y, label, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: label.length > 22 ? "14px" : "17px",
-        fontStyle: "700",
-        color: "#fff",
-        align: "center",
-        wordWrap: { width: w - 20 }
-      }).setOrigin(0.5);
-      bg.on("pointerover", () => this.tweens.add({ targets: bg, scaleX: 1.03, scaleY: 1.03, duration: 100 }));
-      bg.on("pointerout", () => this.tweens.add({ targets: bg, scaleX: 1, scaleY: 1, duration: 100 }));
-      bg.on("pointerdown", () => {
-        sfx.ensure();
-        bgm.unlock();
-        this.tweens.add({
-          targets: [bg, txt],
-          scaleX: 0.96,
-          scaleY: 0.96,
-          duration: 60,
-          yoyo: true,
-          onComplete: cb
-        });
       });
     }
   };
@@ -1451,12 +1525,43 @@
     if (mode === "endless") return "endless";
     return null;
   }
+  function gistId() {
+    const id = typeof window !== "undefined" ? window.BF_GIST_ID : "";
+    return typeof id === "string" && id.length > 8 ? id : "";
+  }
+  async function fetchLeaderboardFromGist(board) {
+    const id = gistId();
+    if (!id) return null;
+    try {
+      const res = await fetch(`https://api.github.com/gists/${id}`);
+      if (!res.ok) return null;
+      const g = await res.json();
+      const f = g.files?.["leaderboard.json"] || Object.values(g.files || {})[0];
+      let data = {};
+      if (f?.content) data = JSON.parse(f.content);
+      else if (f?.raw_url) {
+        const raw = await fetch(f.raw_url);
+        data = JSON.parse(await raw.text());
+      }
+      const key = String(board).slice(0, 32);
+      const rows = (data[key] || []).sort((a, b) => b.score - a.score || a.updatedAt - b.updatedAt).slice(0, 50);
+      return { board, rows, source: "gist" };
+    } catch {
+      return null;
+    }
+  }
   async function fetchLeaderboard(board) {
     try {
       const res = await fetch(apiUrl(`/api/leaderboard/${encodeURIComponent(board)}`));
-      if (!res.ok) throw new Error("fetch failed");
-      return await res.json();
+      if (res.ok) return await res.json();
+      if (res.status === 503) {
+        const fallback = await fetchLeaderboardFromGist(board);
+        if (fallback) return fallback;
+      }
+      throw new Error(`http_${res.status}`);
     } catch {
+      const fallback = await fetchLeaderboardFromGist(board);
+      if (fallback) return fallback;
       return { board, rows: [], offline: true };
     }
   }
@@ -1471,6 +1576,18 @@
       return await res.json();
     } catch {
       return { ok: false, offline: true };
+    }
+  }
+  async function fetchMyRank(board, playerId) {
+    try {
+      const res = await fetch(
+        apiUrl(`/api/leaderboard/${encodeURIComponent(board)}/rank/${encodeURIComponent(playerId)}`)
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.rank;
+    } catch {
+      return null;
     }
   }
 
@@ -2241,68 +2358,138 @@ ${prog}`);
       drawBackdrop(this, W, 780);
       const goMenu = () => transitionTo(this, "Menu");
       addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
-      this.add.text(W / 2, 54, "GLOBAL RANKINGS", {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "24px",
-        fontStyle: "700",
-        color: "#38bdf8"
-      }).setOrigin(0.5);
-      this.listContainer = this.add.container(0, 0).setDepth(5);
-      this.statusText = this.add.text(W / 2, 68, "Loading...", {
+      drawTitleGlow(this, W / 2, 58, "GLOBAL RANKINGS", "Live worldwide scores");
+      this.liveDot = this.add.circle(W / 2 - 72, 88, 5, 4906624, 1).setDepth(20);
+      this.statusText = this.add.text(W / 2 - 58, 88, "Connecting\u2026", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "12px",
+        fontStyle: "600",
+        color: "#94a3b8"
+      }).setOrigin(0, 0.5).setDepth(20);
+      this.myRankText = this.add.text(W / 2, 108, "", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "13px",
-        color: "#64748b"
-      }).setOrigin(0.5);
+        fontStyle: "700",
+        color: "#fde047"
+      }).setOrigin(0.5).setDepth(20);
       const dailyBoard = `daily-${dailySeed()}`;
-      this.makeTab(W / 2 - 90, 96, "ENDLESS", "endless", this.board === "endless");
-      this.makeTab(W / 2 + 90, 96, "DAILY", dailyBoard, this.board === dailyBoard);
+      this.makeTab(W / 2 - 90, 128, "ENDLESS", "endless", this.board === "endless");
+      this.makeTab(W / 2 + 90, 128, "DAILY", dailyBoard, this.board === dailyBoard);
+      drawGlassPanel(this, W / 2, 430, W - 28, 520, { depth: 2, stroke: 4674921 });
+      this.listContainer = this.add.container(0, 0).setDepth(8);
+      this.podiumContainer = this.add.container(0, 0).setDepth(9);
+      const refreshBg = this.add.rectangle(W - 36, 128, 36, 36, 3359061, 1).setStrokeStyle(1, 6583435).setInteractive({ useHandCursor: true }).setDepth(20);
+      this.add.text(W - 36, 128, "\u21BB", { fontSize: "20px", color: "#e2e8f0" }).setOrigin(0.5).setDepth(21);
+      refreshBg.on("pointerdown", () => {
+        sfx.play("click");
+        this.scene.restart({ board: this.board });
+      });
       this.initBoard();
       fadeInScene(this);
+      this.tweens.add({
+        targets: this.liveDot,
+        alpha: { from: 1, to: 0.35 },
+        duration: 800,
+        yoyo: true,
+        repeat: -1
+      });
+    }
+    makeTab(x, y, label, board, active) {
+      makePillTab(this, x, y, label, active, () => {
+        if (this.board !== board) this.scene.restart({ board });
+      });
     }
     async initBoard() {
       if (!hasName()) await ensureName();
       await this.loadBoard(this.board);
+      const me = getPlayer();
+      const rank = await fetchMyRank(this.board, me.id);
+      if (rank) {
+        this.myRankText.setText(`Your rank: #${rank.rank}  \xB7  ${rank.score} pts  \xB7  ${rank.total} players`);
+      } else if (hasName()) {
+        this.myRankText.setText("Play endless or daily to claim your rank!");
+      }
     }
-    makeTab(x, y, label, board, active) {
-      const bg = this.add.rectangle(x, y, 150, 36, active ? 6514417 : 1976635).setInteractive({ useHandCursor: true }).setStrokeStyle(1, 4674921);
-      this.add.text(x, y, label, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "13px",
-        fontStyle: "700",
-        color: "#fff"
-      }).setOrigin(0.5);
-      bg.on("pointerdown", () => {
-        if (this.board !== board) this.scene.restart({ board });
+    drawPodium(rows) {
+      this.podiumContainer.removeAll(true);
+      const top3 = rows.slice(0, 3);
+      if (!top3.length) return;
+      const slots = [
+        { x: W / 2 - 100, y: 200, h: 72, i: 1 },
+        { x: W / 2, y: 178, h: 96, i: 0 },
+        { x: W / 2 + 100, y: 208, h: 64, i: 2 }
+      ];
+      slots.forEach((slot) => {
+        const row = top3[slot.i];
+        if (!row) return;
+        const rc = rankColors(slot.i);
+        const block = this.add.rectangle(slot.x, slot.y, 88, slot.h, rc.bg, 0.95).setStrokeStyle(2, rc.stroke);
+        this.podiumContainer.add(block);
+        this.podiumContainer.add(
+          this.add.text(slot.x, slot.y - slot.h * 0.35, rc.medal, { fontSize: "22px" }).setOrigin(0.5)
+        );
+        this.podiumContainer.add(
+          this.add.text(slot.x, slot.y + 4, row.name, {
+            fontFamily: "Outfit, sans-serif",
+            fontSize: "11px",
+            fontStyle: "700",
+            color: rc.text
+          }).setOrigin(0.5)
+        );
+        this.podiumContainer.add(
+          this.add.text(slot.x, slot.y + slot.h * 0.32, String(row.score), {
+            fontFamily: "Outfit, sans-serif",
+            fontSize: "14px",
+            fontStyle: "800",
+            color: rc.text
+          }).setOrigin(0.5)
+        );
       });
     }
     async loadBoard(board) {
+      this.statusText.setText("Loading live scores\u2026");
       const data = await fetchLeaderboard(board);
       this.listContainer.removeAll(true);
+      this.podiumContainer.removeAll(true);
       const me = getPlayer();
       if (data.offline) {
-        this.statusText.setText("Server offline \u2014 run LAUNCH.bat first");
+        this.liveDot.setFillStyle(16281969);
+        this.statusText.setText("Rankings offline \u2014 API not ready yet");
+        this.statusText.setColor("#f87171");
         return;
       }
+      this.liveDot.setFillStyle(data.source === "gist" ? 16498468 : 4906624);
       const rows = data.rows || [];
-      this.statusText.setText(rows.length ? `Top ${Math.min(15, rows.length)} \xB7 worldwide` : "Be the first on the board!");
-      rows.slice(0, 15).forEach((row, i) => {
-        const y = 130 + i * 38;
+      const src = data.source === "gist" ? "read-only preview" : "live";
+      this.statusText.setText(
+        rows.length ? `Top ${Math.min(12, rows.length)} \xB7 ${src} \xB7 worldwide` : "Be the first on the board!"
+      );
+      this.statusText.setColor("#94a3b8");
+      this.drawPodium(rows);
+      rows.slice(0, 12).forEach((row, i) => {
+        const y = 268 + i * 40;
         const isMe = row.playerId === me.id;
+        const rc = rankColors(i);
+        const rowW = W - 52;
+        const bgColor = isMe ? 4405450 : rc.bg;
+        const alpha = isMe ? 0.55 : i < 3 ? 0.25 : 0.92;
         this.listContainer.add(
-          this.add.rectangle(W / 2, y, W - 40, 34, isMe ? 6514417 : 1120295, isMe ? 0.35 : 0.9).setStrokeStyle(1, isMe ? 8490232 : 3359061)
+          this.add.rectangle(W / 2, y, rowW, 36, bgColor, alpha).setStrokeStyle(1, isMe ? 10859772 : rc.stroke, 0.7)
         );
-        const medal = i === 0 ? "\u{1F947}" : i === 1 ? "\u{1F948}" : i === 2 ? "\u{1F949}" : `${i + 1}.`;
-        this.listContainer.add(this.add.text(36, y, medal, { fontSize: "14px", color: "#94a3b8" }).setOrigin(0, 0.5));
+        const rankLabel = i < 3 ? rc.medal : `${i + 1}`;
         this.listContainer.add(
-          this.add.text(72, y, row.name, {
+          this.add.text(40, y, rankLabel, { fontSize: i < 3 ? "16px" : "13px", color: "#94a3b8" }).setOrigin(0, 0.5)
+        );
+        this.listContainer.add(
+          this.add.text(76, y, row.name, {
             fontFamily: "Outfit, sans-serif",
             fontSize: "14px",
-            fontStyle: isMe ? "700" : "600",
+            fontStyle: isMe ? "800" : "600",
             color: isMe ? "#fde047" : "#e2e8f0"
           }).setOrigin(0, 0.5)
         );
         this.listContainer.add(
-          this.add.text(W - 36, y, String(row.score), {
+          this.add.text(W - 40, y, String(row.score), {
             fontFamily: "Outfit, sans-serif",
             fontSize: "15px",
             fontStyle: "800",
