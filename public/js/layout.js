@@ -28,49 +28,49 @@ export function measureSafeInsets() {
 function insetY() {
   const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
   return {
-    top: 12 + (ins.topGame || 0),
-    bottom: 16 + (ins.bottomGame || 0),
+    top: 14 + (ins.topGame || 0),
+    bottom: 18 + (ins.bottomGame || 0),
   };
 }
 
-/** Stack-based menu — fixed gaps, no overlapping fractions. */
+/** Stack-based menu — roomy spacing */
 export function menuLayout(height = H) {
   const { top, bottom } = insetY();
   let y = top;
 
-  const logoY1 = y + 22;
-  y += 44;
-  const logoY2 = y + 22;
-  y += 52;
+  const logoY1 = y + 24;
+  y += 46;
+  const logoY2 = y + 24;
+  y += 50;
 
-  const rankCardY = y + 48;
-  const rankCardH = 100;
-  y += rankCardH + 10;
+  const rankCardH = 128;
+  const rankCardY = y + rankCardH / 2;
+  y += rankCardH + 14;
 
-  const statsY = y + 12;
-  y += 26;
+  const statsY = y + 14;
+  y += 30;
 
-  const btnGap = 52;
-  const btnCampaign = y + 28;
+  const btnGap = 58;
+  const btnCampaign = y + 30;
   const btnDaily = btnCampaign + btnGap;
   const btnEndless = btnDaily + btnGap;
   const btnRankings = btnEndless + btnGap;
-  y = btnRankings + 36;
+  y = btnRankings + 40;
 
-  const nameY = Math.min(y + 20, height - bottom - 88);
-  const audioY = height - bottom - 28;
-  const footerY = height - bottom - 58;
+  const nameY = Math.min(y + 22, height - bottom - 92);
+  const audioY = height - bottom - 30;
+  const footerY = height - bottom - 62;
 
-  const compact = height - top - bottom < 640;
+  const compact = height - top - bottom < 680;
 
   return {
     compact,
     logoY1,
     logoY2,
-    logoSize: compact ? "34px" : "42px",
+    logoSize: compact ? "36px" : "44px",
     rankCardY,
     rankCardH,
-    rankCardW: W - 36,
+    rankCardW: W - 28,
     statsY,
     btnCampaign,
     btnDaily,
@@ -80,28 +80,28 @@ export function menuLayout(height = H) {
     audioY,
     footerY,
     btnGap,
-    btnH: compact ? 44 : 48,
-    btnW: W - 48,
+    btnH: compact ? 50 : 54,
+    btnW: W - 32,
   };
 }
 
 export const HUD_HEADER = {
   navY: 26,
-  titleY: 76,
-  scoreLabelY: 68,
-  scoreValueY: 86,
-  streakY: 68,
-  goalY: 78,
-  movesY: 104,
+  titleY: 78,
+  scoreLabelY: 70,
+  scoreValueY: 90,
+  streakY: 70,
+  goalY: 80,
+  movesY: 106,
 };
 
 export function mapLayout(width = W, height = H) {
   const { top } = insetY();
   return {
-    titleY: top + 62,
-    starsY: top + 94,
-    barY: top + 114,
-    startY: top + 138,
+    titleY: top + 64,
+    starsY: top + 98,
+    barY: top + 118,
+    startY: top + 142,
     width,
     height,
   };
@@ -109,19 +109,19 @@ export function mapLayout(width = W, height = H) {
 
 export function leaderboardLayout(height = H) {
   const { top, bottom } = insetY();
-  const headerBottom = top + 148;
-  const listStart = headerBottom + 118;
-  const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 36));
+  const headerBottom = top + 156;
+  const listStart = headerBottom + 120;
+  const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 40));
 
   return {
-    headerY: top + 52,
-    statusY: top + 100,
-    myRankY: top + 118,
-    tabsY: top + 136,
-    refreshY: top + 136,
-    podiumY: headerBottom + 8,
+    headerY: top + 54,
+    statusY: top + 104,
+    myRankY: top + 124,
+    tabsY: top + 144,
+    refreshY: top + 144,
+    podiumY: headerBottom + 10,
     listStart,
-    listRow: 36,
+    listRow: 40,
     panelY: listStart + ((height - bottom - 8) - listStart) / 2,
     panelH: height - listStart - bottom - 12,
     maxRows,

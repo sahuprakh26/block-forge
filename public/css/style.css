@@ -24,14 +24,16 @@ body {
   height: 100%;
   max-width: 430px;
   margin: 0 auto;
-  filter: drop-shadow(0 8px 40px rgba(99, 102, 241, 0.2));
   background: #060912;
+  /* No filter here — blur on canvas/text */
 }
 
 #game-container canvas {
   display: block;
   margin: 0 auto;
   touch-action: none;
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
 }
 
 body.native-app {

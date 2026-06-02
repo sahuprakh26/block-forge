@@ -184,16 +184,18 @@ export default class LeaderboardScene extends Phaser.Scene {
       const rankLabel = i < 3 ? rc.medal : `${i + 1}`;
       this.listContainer.add(
         this.add
-          .text(40, y, rankLabel, { fontSize: i < 3 ? "15px" : "12px", color: "#94a3b8" })
+          .text(40, y, rankLabel, { fontSize: i < 3 ? "17px" : "14px", color: "#94a3b8" })
           .setOrigin(0, 0.5)
       );
       this.listContainer.add(
         this.add
-          .text(76, y, row.name, {
+          .text(80, y, row.name, {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "13px",
+            fontSize: "15px",
             fontStyle: isMe ? "800" : "600",
-            color: isMe ? "#fde047" : "#e2e8f0",
+            color: isMe ? "#fde047" : "#f1f5f9",
+            stroke: "#0f172a",
+            strokeThickness: 1,
           })
           .setOrigin(0, 0.5)
       );
@@ -201,9 +203,11 @@ export default class LeaderboardScene extends Phaser.Scene {
         this.add
           .text(W - 40, y, String(row.score), {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "14px",
+            fontSize: "16px",
             fontStyle: "800",
             color: "#38bdf8",
+            stroke: "#0f172a",
+            strokeThickness: 1,
           })
           .setOrigin(1, 0.5)
       );

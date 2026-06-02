@@ -2,6 +2,7 @@ import { sfx } from "./audio.js";
 import { bgm } from "./music.js";
 import { W, H } from "./config.js";
 import { measureSafeInsets } from "./layout.js";
+import { uiResolution } from "./textUtil.js";
 import BootScene from "./scenes/BootScene.js";
 import MenuScene from "./scenes/MenuScene.js";
 import MapScene from "./scenes/MapScene.js";
@@ -57,14 +58,26 @@ function startGame() {
   }
 
   const config = {
-    type: Phaser.CANVAS,
+    type: Phaser.AUTO,
     width: W,
     height: H,
     parent: "game-container",
     backgroundColor: "#060912",
     scene: [BootScene, MenuScene, MapScene, GameScene, LeaderboardScene],
-    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    render: { antialias: true, pixelArt: false, transparent: false },
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: W,
+      height: H,
+    },
+    render: {
+      antialias: true,
+      pixelArt: false,
+      transparent: false,
+      roundPixels: false,
+      powerPreference: "high-performance",
+    },
+    resolution: uiResolution(),
   };
 
   try {

@@ -608,40 +608,40 @@
   function insetY() {
     const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
     return {
-      top: 12 + (ins.topGame || 0),
-      bottom: 16 + (ins.bottomGame || 0)
+      top: 14 + (ins.topGame || 0),
+      bottom: 18 + (ins.bottomGame || 0)
     };
   }
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
     let y = top;
-    const logoY1 = y + 22;
-    y += 44;
-    const logoY2 = y + 22;
-    y += 52;
-    const rankCardY = y + 48;
-    const rankCardH = 100;
-    y += rankCardH + 10;
-    const statsY = y + 12;
-    y += 26;
-    const btnGap = 52;
-    const btnCampaign = y + 28;
+    const logoY1 = y + 24;
+    y += 46;
+    const logoY2 = y + 24;
+    y += 50;
+    const rankCardH = 128;
+    const rankCardY = y + rankCardH / 2;
+    y += rankCardH + 14;
+    const statsY = y + 14;
+    y += 30;
+    const btnGap = 58;
+    const btnCampaign = y + 30;
     const btnDaily = btnCampaign + btnGap;
     const btnEndless = btnDaily + btnGap;
     const btnRankings = btnEndless + btnGap;
-    y = btnRankings + 36;
-    const nameY = Math.min(y + 20, height - bottom - 88);
-    const audioY = height - bottom - 28;
-    const footerY = height - bottom - 58;
-    const compact = height - top - bottom < 640;
+    y = btnRankings + 40;
+    const nameY = Math.min(y + 22, height - bottom - 92);
+    const audioY = height - bottom - 30;
+    const footerY = height - bottom - 62;
+    const compact = height - top - bottom < 680;
     return {
       compact,
       logoY1,
       logoY2,
-      logoSize: compact ? "34px" : "42px",
+      logoSize: compact ? "36px" : "44px",
       rankCardY,
       rankCardH,
-      rankCardW: W - 36,
+      rankCardW: W - 28,
       statsY,
       btnCampaign,
       btnDaily,
@@ -651,47 +651,67 @@
       audioY,
       footerY,
       btnGap,
-      btnH: compact ? 44 : 48,
-      btnW: W - 48
+      btnH: compact ? 50 : 54,
+      btnW: W - 32
     };
   }
   var HUD_HEADER = {
     navY: 26,
-    titleY: 76,
-    scoreLabelY: 68,
-    scoreValueY: 86,
-    streakY: 68,
-    goalY: 78,
-    movesY: 104
+    titleY: 78,
+    scoreLabelY: 70,
+    scoreValueY: 90,
+    streakY: 70,
+    goalY: 80,
+    movesY: 106
   };
   function mapLayout(width = W, height = H) {
     const { top } = insetY();
     return {
-      titleY: top + 62,
-      starsY: top + 94,
-      barY: top + 114,
-      startY: top + 138,
+      titleY: top + 64,
+      starsY: top + 98,
+      barY: top + 118,
+      startY: top + 142,
       width,
       height
     };
   }
   function leaderboardLayout(height = H) {
     const { top, bottom } = insetY();
-    const headerBottom = top + 148;
-    const listStart = headerBottom + 118;
-    const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 36));
+    const headerBottom = top + 156;
+    const listStart = headerBottom + 120;
+    const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 40));
     return {
-      headerY: top + 52,
-      statusY: top + 100,
-      myRankY: top + 118,
-      tabsY: top + 136,
-      refreshY: top + 136,
-      podiumY: headerBottom + 8,
+      headerY: top + 54,
+      statusY: top + 104,
+      myRankY: top + 124,
+      tabsY: top + 144,
+      refreshY: top + 144,
+      podiumY: headerBottom + 10,
       listStart,
-      listRow: 36,
+      listRow: 40,
       panelY: listStart + (height - bottom - 8 - listStart) / 2,
       panelH: height - listStart - bottom - 12,
       maxRows
+    };
+  }
+
+  // public/js/textUtil.js
+  function uiResolution() {
+    if (typeof window === "undefined") return 1;
+    return Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+  }
+  function applyCrispText(textObj) {
+    const r = uiResolution();
+    if (r > 1 && textObj.setResolution) textObj.setResolution(r);
+    return textObj;
+  }
+  function uiTextStyle(overrides = {}) {
+    return {
+      fontFamily: "Outfit, sans-serif",
+      color: "#e2e8f0",
+      stroke: "#0f172a",
+      strokeThickness: 2,
+      ...overrides
     };
   }
 
@@ -1001,74 +1021,79 @@
   function drawGlassPanel(scene, x, y, w, h, opts = {}) {
     const depth = opts.depth ?? 4;
     const fill = opts.fill ?? 988970;
-    const alpha = opts.alpha ?? 0.9;
+    const alpha = opts.alpha ?? 0.92;
     const stroke = opts.stroke ?? 6514417;
     const panel = scene.add.container(x, y).setDepth(depth);
-    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.5);
-    const shine = scene.add.rectangle(0, -h * 0.36, w - 10, h * 0.2, 16777215, 0.05);
-    panel.add([outer, shine]);
+    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.55);
+    panel.add([outer]);
     return panel;
   }
   function drawRankCard(scene, x, y, w, h, progress, xp) {
     const { rank, next, nextXp, ratio } = progress;
     const depth = 6;
     const c = scene.add.container(x, y).setDepth(depth);
+    const pad = 16;
+    const left = -w / 2 + pad;
+    const innerW = w - pad * 2;
+    const top = -h / 2 + 12;
     c.add(
-      scene.add.rectangle(0, 0, w, h, 791074, 0.94).setStrokeStyle(2, rank.stroke || rank.color, 0.85)
+      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, rank.stroke || rank.color, 0.9)
     );
-    c.add(scene.add.rectangle(-w / 2 + 5, 0, 5, h - 14, rank.color, 1).setOrigin(0, 0.5));
-    c.add(scene.add.circle(-w / 2 + 54, 0, 30, rank.color, 0.18));
-    const badgeX = -w / 2 + 54;
-    c.add(scene.add.circle(badgeX, 0, 26, rank.color, 1).setStrokeStyle(2, rank.stroke || 16777215, 0.55));
-    c.add(scene.add.text(badgeX, 0, rank.icon, { fontSize: "20px" }).setOrigin(0.5));
-    const textX = -w / 2 + 98;
-    c.add(
-      scene.add.text(textX, -20, rank.name.toUpperCase(), {
+    c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
+    const badgeX = left + 34;
+    const badgeY = top + 38;
+    c.add(scene.add.circle(badgeX, badgeY, 30, rank.color, 1).setStrokeStyle(2, rank.stroke || 16777215, 0.7));
+    applyCrispText(scene.add.text(badgeX, badgeY, rank.icon, { fontSize: "28px" }).setOrigin(0.5));
+    const textX = left + 76;
+    applyCrispText(
+      scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
-        fontSize: "20px",
+        fontSize: "28px",
         fontStyle: "800",
-        color: rank.text || "#fff"
-      }).setOrigin(0, 0.5)
+        color: rank.text || "#fff",
+        strokeThickness: 3
+      })).setOrigin(0, 0.5)
     );
-    c.add(
-      scene.add.text(textX, 2, next ? `Next \u2192 ${next.name}` : "MAX TIER REACHED", {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "11px",
-        color: "#64748b"
-      }).setOrigin(0, 0.5)
+    applyCrispText(
+      scene.add.text(textX, top + 52, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
+        fontSize: "16px",
+        color: "#94a3b8",
+        strokeThickness: 1
+      })).setOrigin(0, 0.5)
     );
-    const barW = w - 112;
-    const barMidX = textX + barW / 2;
-    const barY = 26;
-    c.add(scene.add.rectangle(barMidX, barY, barW, 9, 1976635).setOrigin(0.5));
-    if (ratio > 0.02) {
-      c.add(scene.add.rectangle(textX + barW * ratio / 2, barY, barW * ratio, 9, rank.color).setOrigin(0, 0.5));
-    }
-    c.add(
-      scene.add.text(barMidX, barY + 16, `${xp} / ${nextXp} XP`, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "10px",
-        color: "#94a3b8"
-      }).setOrigin(0.5)
+    const barY = top + 78;
+    const barH = 16;
+    c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
+    const fillW = Math.max(6, innerW * ratio);
+    c.add(scene.add.rectangle(left, barY, fillW, barH, rank.color).setOrigin(0, 0.5));
+    applyCrispText(
+      scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
+        fontSize: "16px",
+        fontStyle: "700",
+        color: "#e2e8f0",
+        strokeThickness: 1
+      })).setOrigin(0, 0.5)
     );
     return c;
   }
   function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
-    const w = opts.width ?? 280;
-    const h = opts.height ?? 48;
+    const w = opts.width ?? 300;
+    const h = opts.height ?? 54;
     const depth = opts.depth ?? 10;
     const container = scene.add.container(x, y).setDepth(depth);
-    const shadow = scene.add.rectangle(2, 5, w, h, 0, 0.4);
-    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.16).setInteractive({ useHandCursor: true });
-    const gloss = scene.add.rectangle(0, -h * 0.24, w - 14, h * 0.32, 16777215, 0.12);
-    const txt = scene.add.text(0, 0, label, {
-      fontFamily: "Outfit, sans-serif",
-      fontSize: opts.fontSize ?? (label.length > 20 ? "13px" : "16px"),
-      fontStyle: "700",
-      color: "#fff",
-      align: "center",
-      wordWrap: { width: w - 28 }
-    }).setOrigin(0.5);
+    const shadow = scene.add.rectangle(2, 5, w, h, 0, 0.35);
+    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.18).setInteractive({ useHandCursor: true });
+    const gloss = scene.add.rectangle(0, -h * 0.22, w - 12, h * 0.3, 16777215, 0.1);
+    const txt = applyCrispText(
+      scene.add.text(0, 0, label, uiTextStyle({
+        fontSize: opts.fontSize ?? "17px",
+        fontStyle: "700",
+        color: "#fff",
+        align: "center",
+        wordWrap: { width: w - 24 },
+        strokeThickness: 2
+      })).setOrigin(0.5)
+    );
     container.add([shadow, bg, gloss, txt]);
     const press = () => {
       sfx.ensure();
@@ -1084,20 +1109,19 @@
     };
     bg.on("pointerdown", press);
     txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
-    bg.on("pointerover", () => scene.tweens.add({ targets: container, scaleX: 1.02, scaleY: 1.02, duration: 100 }));
-    bg.on("pointerout", () => scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 }));
     return container;
   }
   function makePillTab(scene, x, y, label, active, onClick) {
-    const w = 140;
-    const h = 36;
+    const w = 148;
+    const h = 40;
     const bg = scene.add.rectangle(x, y, w, h, active ? 6514417 : 1976635, active ? 1 : 0.92).setStrokeStyle(2, active ? 10859772 : 4674921, active ? 0.9 : 0.5).setInteractive({ useHandCursor: true }).setDepth(15);
-    const txt = scene.add.text(x, y, label, {
-      fontFamily: "Outfit, sans-serif",
-      fontSize: "12px",
-      fontStyle: "700",
-      color: active ? "#fff" : "#94a3b8"
-    }).setOrigin(0.5).setDepth(16);
+    const txt = applyCrispText(
+      scene.add.text(x, y, label, uiTextStyle({
+        fontSize: "14px",
+        fontStyle: "700",
+        color: active ? "#fff" : "#94a3b8"
+      })).setOrigin(0.5).setDepth(16)
+    );
     const fire = () => {
       sfx.play("click");
       onClick();
@@ -1107,20 +1131,23 @@
     return { bg, txt };
   }
   function drawScreenHeader(scene, x, y, title, subtitle) {
-    scene.add.text(x, y, title, {
-      fontFamily: "Syne, sans-serif",
-      fontSize: "24px",
-      fontStyle: "800",
-      color: "#38bdf8",
-      stroke: "#0f172a",
-      strokeThickness: 4
-    }).setOrigin(0.5).setDepth(5);
+    applyCrispText(
+      scene.add.text(x, y, title, uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: "28px",
+        fontStyle: "800",
+        color: "#38bdf8",
+        strokeThickness: 4
+      })).setOrigin(0.5).setDepth(5)
+    );
     if (subtitle) {
-      scene.add.text(x, y + 30, subtitle, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        color: "#64748b"
-      }).setOrigin(0.5).setDepth(5);
+      applyCrispText(
+        scene.add.text(x, y + 34, subtitle, uiTextStyle({
+          fontSize: "14px",
+          color: "#94a3b8",
+          strokeThickness: 1
+        })).setOrigin(0.5).setDepth(5)
+      );
     }
   }
   function rankColors(i) {
@@ -1263,7 +1290,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.0";
+  var APP_VERSION = "1.2.1";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1273,44 +1300,42 @@
     create() {
       const L = menuLayout(H);
       drawBackdrop(this, W, H);
-      const logoGlow = this.add.circle(W / 2, (L.logoY1 + L.logoY2) / 2, 64, 6514417, 0.1).setDepth(0);
-      this.tweens.add({
-        targets: logoGlow,
-        scale: { from: 0.94, to: 1.05 },
-        alpha: { from: 0.06, to: 0.15 },
-        duration: 2400,
-        yoyo: true,
-        repeat: -1
-      });
-      this.add.text(W / 2, L.logoY1, "BLOCK", {
-        fontFamily: "Syne, sans-serif",
-        fontSize: L.logoSize,
-        fontStyle: "800",
-        color: "#e0e7ff"
-      }).setOrigin(0.5).setDepth(2);
-      this.add.text(W / 2, L.logoY2, "FORGE", {
-        fontFamily: "Syne, sans-serif",
-        fontSize: L.logoSize,
-        fontStyle: "800",
-        color: "#38bdf8"
-      }).setOrigin(0.5).setDepth(2);
+      applyCrispText(
+        this.add.text(W / 2, L.logoY1, "BLOCK", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: L.logoSize,
+          fontStyle: "800",
+          color: "#e0e7ff",
+          strokeThickness: 4
+        })).setOrigin(0.5).setDepth(2)
+      );
+      applyCrispText(
+        this.add.text(W / 2, L.logoY2, "FORGE", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: L.logoSize,
+          fontStyle: "800",
+          color: "#38bdf8",
+          strokeThickness: 4
+        })).setOrigin(0.5).setDepth(2)
+      );
       const p = loadProgress();
       const xp = p.xp || 0;
-      const prog = rankProgress(xp);
-      drawRankCard(this, W / 2, L.rankCardY, L.rankCardW, L.rankCardH, prog, xp);
+      drawRankCard(this, W / 2, L.rankCardY, L.rankCardW, L.rankCardH, rankProgress(xp), xp);
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const streak = p.streakDays || 0;
       const streakTxt = streak > 1 ? ` \xB7 \u{1F525} ${streak}d` : "";
-      this.add.text(W / 2, L.statsY, `\u2605 ${totalStars}  \xB7  Endless best ${p.endlessBest || 0}${streakTxt}`, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        color: "#64748b"
-      }).setOrigin(0.5).setDepth(2);
+      applyCrispText(
+        this.add.text(W / 2, L.statsY, `\u2605 ${totalStars}  \xB7  Endless best ${p.endlessBest || 0}${streakTxt}`, uiTextStyle({
+          fontSize: "14px",
+          color: "#94a3b8",
+          strokeThickness: 1
+        })).setOrigin(0.5).setDepth(2)
+      );
       const go = (fn) => () => {
         bgm.unlock();
         fn();
       };
-      const btnOpts = { width: L.btnW, height: L.btnH, fontSize: L.compact ? "13px" : "15px" };
+      const btnOpts = { width: L.btnW, height: L.btnH, fontSize: "17px" };
       makeGlowButton(this, W / 2, L.btnCampaign, "\u25B6  CAMPAIGN", 6514417, go(() => transitionTo(this, "Map")), btnOpts);
       const dailyBest = getDailyBest(p);
       const dailyFresh = isDailyFresh(p);
@@ -1336,11 +1361,13 @@
       );
       this.makeNameBadge(W / 2, L.nameY);
       this.buildAudioToggles(L.audioY);
-      this.add.text(W / 2, L.footerY, `v${APP_VERSION} \xB7 Iron \u2192 Gold \u2192 Immortal`, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "10px",
-        color: "#475569"
-      }).setOrigin(0.5);
+      applyCrispText(
+        this.add.text(W / 2, L.footerY, `v${APP_VERSION} \xB7 Iron \u2192 Gold \u2192 Immortal`, uiTextStyle({
+          fontSize: "12px",
+          color: "#64748b",
+          strokeThickness: 0
+        })).setOrigin(0.5)
+      );
       this.input.once("pointerdown", () => bgm.unlock());
       if (bgm.isOn()) bgm.unlock();
       fadeInScene(this);
@@ -1349,16 +1376,16 @@
       const player = getPlayer();
       const named = hasName();
       const label = named ? player.name : "Set your name";
-      const w = 240;
-      const h = 38;
+      const w = 260;
+      const h = 42;
       const bg = this.add.rectangle(x, y, w, h, named ? 1976635 : 8138002, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, named ? 4674921 : 16347926, 0.6).setDepth(8);
-      this.add.text(x - w / 2 + 16, y, "\u{1F464}", { fontSize: "16px" }).setOrigin(0, 0.5).setDepth(9);
-      this.add.text(x - 8, y, label, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "14px",
-        fontStyle: "600",
-        color: named ? "#e2e8f0" : "#fdba74"
-      }).setOrigin(0.5).setDepth(9);
+      applyCrispText(
+        this.add.text(x, y, `\u{1F464}  ${label}`, uiTextStyle({
+          fontSize: "16px",
+          fontStyle: "600",
+          color: named ? "#f1f5f9" : "#fdba74"
+        })).setOrigin(0.5).setDepth(9)
+      );
       bg.on("pointerdown", () => {
         promptName(named ? player.name : "").then(() => this.scene.restart());
       });
@@ -1366,33 +1393,32 @@
       bg.on("pointerout", () => bg.setFillStyle(named ? 1976635 : 8138002));
     }
     buildAudioToggles(y) {
-      this.makeToggle(W / 2 - 54, y, sfx.isOn(), "SFX", (on) => {
+      this.makeToggle(W / 2 - 58, y, sfx.isOn(), "SFX", (on) => {
         sfx.toggle(on);
         sfx.play("click");
       });
-      this.makeToggle(W / 2 + 54, y, bgm.isOn(), "MUSIC", (on) => {
+      this.makeToggle(W / 2 + 58, y, bgm.isOn(), "MUSIC", (on) => {
         bgm.toggle(on);
         if (on) bgm.unlock();
       });
     }
     makeToggle(x, y, on, label, cb) {
-      const w = 88;
-      const h = 28;
+      const w = 100;
+      const h = 34;
       const bg = this.add.rectangle(x, y, w, h, on ? 6514417 : 1976635, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, on ? 8490232 : 4674921).setDepth(8);
-      const txt = this.add.text(x, y, `${on ? "ON" : "OFF"} ${label}`, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "10px",
-        fontStyle: "700",
-        color: on ? "#fff" : "#64748b"
-      }).setOrigin(0.5).setDepth(9);
+      applyCrispText(
+        this.add.text(x, y, `${on ? "ON" : "OFF"} ${label}`, uiTextStyle({
+          fontSize: "12px",
+          fontStyle: "700",
+          color: on ? "#fff" : "#94a3b8"
+        })).setOrigin(0.5).setDepth(9)
+      );
       bg.on("pointerdown", () => {
         const next = !on;
         cb(next);
         on = next;
         bg.setFillStyle(on ? 6514417 : 1976635);
         bg.setStrokeStyle(1, on ? 8490232 : 4674921);
-        txt.setText(`${on ? "ON" : "OFF"} ${label}`);
-        txt.setColor(on ? "#fff" : "#64748b");
       });
     }
   };
@@ -2635,22 +2661,26 @@ ${prog}`);
         );
         const rankLabel = i < 3 ? rc.medal : `${i + 1}`;
         this.listContainer.add(
-          this.add.text(40, y, rankLabel, { fontSize: i < 3 ? "15px" : "12px", color: "#94a3b8" }).setOrigin(0, 0.5)
+          this.add.text(40, y, rankLabel, { fontSize: i < 3 ? "17px" : "14px", color: "#94a3b8" }).setOrigin(0, 0.5)
         );
         this.listContainer.add(
-          this.add.text(76, y, row.name, {
+          this.add.text(80, y, row.name, {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "13px",
+            fontSize: "15px",
             fontStyle: isMe ? "800" : "600",
-            color: isMe ? "#fde047" : "#e2e8f0"
+            color: isMe ? "#fde047" : "#f1f5f9",
+            stroke: "#0f172a",
+            strokeThickness: 1
           }).setOrigin(0, 0.5)
         );
         this.listContainer.add(
           this.add.text(W - 40, y, String(row.score), {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "14px",
+            fontSize: "16px",
             fontStyle: "800",
-            color: "#38bdf8"
+            color: "#38bdf8",
+            stroke: "#0f172a",
+            strokeThickness: 1
           }).setOrigin(1, 0.5)
         );
       });
@@ -2704,14 +2734,26 @@ ${prog}`);
       return;
     }
     const config = {
-      type: Phaser.CANVAS,
+      type: Phaser.AUTO,
       width: W,
       height: H,
       parent: "game-container",
       backgroundColor: "#060912",
       scene: [BootScene, MenuScene, MapScene, GameScene, LeaderboardScene],
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-      render: { antialias: true, pixelArt: false, transparent: false }
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: W,
+        height: H
+      },
+      render: {
+        antialias: true,
+        pixelArt: false,
+        transparent: false,
+        roundPixels: false,
+        powerPreference: "high-performance"
+      },
+      resolution: uiResolution()
     };
     try {
       const game = new Phaser.Game(config);
