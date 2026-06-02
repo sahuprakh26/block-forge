@@ -3,10 +3,10 @@ import { uiTextStyle } from "./textUtil.js";
 /** Balanced game-screen type scale (caption < body < heading < stat). */
 export const GAME_UI = {
   font: {
-    caption: "11px",
+    caption: "12px",
     body: "13px",
-    heading: "15px",
-    stat: "24px",
+    heading: "14px",
+    stat: "20px",
   },
   color: {
     muted: "#94a3b8",
@@ -56,8 +56,8 @@ export function gameHudStyle(role, overrides = {}) {
     goalLabel: {
       fontFamily: "Syne, sans-serif",
       fontSize: GAME_UI.font.caption,
-      fontStyle: "700",
-      color: GAME_UI.color.bright,
+      fontStyle: "800",
+      color: GAME_UI.color.muted,
     },
     goalStat: {
       fontFamily: "Syne, sans-serif",

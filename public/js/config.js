@@ -1,5 +1,7 @@
 export const GRID = 8;
-export const CELL = 52;
+export const CELL = 48;
+/** Tray block size (px per cell) — ~79% of board CELL so dock pieces stay readable */
+export const TRAY_CELL = 38;
 export const BOARD_PAD = 7;
 export const W = 430;
 export const H = 780;

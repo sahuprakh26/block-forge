@@ -1,4 +1,4 @@
-import { H, W, GRID, CELL, BOARD_PAD } from "./config.js";
+import { H, W, GRID, CELL, TRAY_CELL, BOARD_PAD } from "./config.js";
 import { MENU_LOGO } from "./uiTheme.js";
 
 export function measureSafeInsets() {
@@ -115,25 +115,35 @@ export function gameLayout(height = H) {
   const navY = 22 + safeTop;
   const navClearY = 46 + safeTop;
   const headerTop = navClearY + 6;
-  const headerH = 68;
+  const headerH = 58;
   const headerBottom = headerTop + headerH;
-  const goalBarY = headerBottom + 10;
-  const hudBottom = goalBarY + 10;
+  const goalBarY = headerBottom + 8;
+  const hudBottom = goalBarY + 8;
 
-  const trayH = 130;
-  const trayBottom = height - Math.max(14, safeBottom) - 12;
-  const trayTop = trayBottom - trayH;
-  const trayCenterY = trayTop + trayH / 2;
-  const trayLabelY = trayTop + 16;
-  const trayPiecesY = trayTop + trayH * 0.66;
-  const trayInnerH = trayH - 34;
-  const trayScale = Math.min(0.56, (trayInnerH * 0.92) / (5 * CELL));
+  const trayScale = TRAY_CELL / CELL;
+  const trayLabelBand = 22;
+  const trayPieceBand = 5 * TRAY_CELL + 12;
+  let trayH = trayLabelBand + trayPieceBand + 8;
   const trayW = W - margin * 2;
+  const bottomPad = Math.max(14, safeBottom) + 12;
 
-  const playTop = hudBottom + 8;
-  const playBottom = trayTop - 12;
+  let trayBottom = height - bottomPad;
+  let trayTop = trayBottom - trayH;
+  let trayLabelY = trayTop + 12;
+  let traySlotY = trayTop + trayLabelBand + trayPieceBand / 2;
+  let trayPiecesY = traySlotY;
+  let trayCenterY = trayTop + trayH / 2;
+
+  const playTop = hudBottom + 6;
+  let playBottom = trayTop - 10;
   let boardY = playTop + (playBottom - playTop - boardH) / 2;
+
   boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
+  const boardBottom = boardY + boardH;
+  if (boardBottom > trayTop - 10) {
+    boardY = trayTop - 10 - boardH;
+    boardY = Math.max(playTop, boardY);
+  }
 
   return {
     margin,
@@ -145,27 +155,30 @@ export function gameLayout(height = H) {
     panelY: headerTop + headerH / 2,
     panelW: trayW,
     scoreX: margin,
-    scoreLabelY: headerTop + 12,
-    scoreValueY: headerTop + 36,
+    scoreLabelY: headerTop + 10,
+    scoreValueY: headerTop + 28,
     centerX: W / 2,
-    levelTitleY: headerTop + 12,
-    levelSubY: headerTop + 32,
+    levelTitleY: headerTop + 10,
+    levelSubY: headerTop + 28,
     goalX: W - margin,
-    goalLabelY: headerTop + 12,
-    goalProgY: headerTop + 36,
+    goalLabelY: headerTop + 10,
+    goalProgY: headerTop + 28,
     goalBarY,
     goalBarW: trayW,
     streakY: goalBarY - 6,
     boardY,
     boardH,
     boardBottom: boardY + boardH,
+    trayScale,
     trayTop,
     trayCenterY,
     trayH,
     trayW,
     trayLabelY,
+    traySlotY,
     trayPiecesY,
     trayScale,
+    trayPieceBand,
     slotXs: [W * 0.2, W * 0.5, W * 0.8],
   };
 }

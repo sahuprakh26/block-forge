@@ -4,7 +4,8 @@
 
   // public/js/config.js
   var GRID = 8;
-  var CELL = 52;
+  var CELL = 48;
+  var TRAY_CELL = 38;
   var BOARD_PAD = 7;
   var W = 430;
   var H = 780;
@@ -958,23 +959,31 @@
     const navY = 22 + safeTop;
     const navClearY = 46 + safeTop;
     const headerTop = navClearY + 6;
-    const headerH = 68;
+    const headerH = 58;
     const headerBottom = headerTop + headerH;
-    const goalBarY = headerBottom + 10;
-    const hudBottom = goalBarY + 10;
-    const trayH = 130;
-    const trayBottom = height - Math.max(14, safeBottom) - 12;
-    const trayTop = trayBottom - trayH;
-    const trayCenterY = trayTop + trayH / 2;
-    const trayLabelY = trayTop + 16;
-    const trayPiecesY = trayTop + trayH * 0.66;
-    const trayInnerH = trayH - 34;
-    const trayScale = Math.min(0.56, trayInnerH * 0.92 / (5 * CELL));
+    const goalBarY = headerBottom + 8;
+    const hudBottom = goalBarY + 8;
+    const trayScale = TRAY_CELL / CELL;
+    const trayLabelBand = 22;
+    const trayPieceBand = 5 * TRAY_CELL + 12;
+    let trayH = trayLabelBand + trayPieceBand + 8;
     const trayW = W - margin * 2;
-    const playTop = hudBottom + 8;
-    const playBottom = trayTop - 12;
+    const bottomPad = Math.max(14, safeBottom) + 12;
+    let trayBottom = height - bottomPad;
+    let trayTop = trayBottom - trayH;
+    let trayLabelY = trayTop + 12;
+    let traySlotY = trayTop + trayLabelBand + trayPieceBand / 2;
+    let trayPiecesY = traySlotY;
+    let trayCenterY = trayTop + trayH / 2;
+    const playTop = hudBottom + 6;
+    let playBottom = trayTop - 10;
     let boardY = playTop + (playBottom - playTop - boardH) / 2;
     boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
+    const boardBottom = boardY + boardH;
+    if (boardBottom > trayTop - 10) {
+      boardY = trayTop - 10 - boardH;
+      boardY = Math.max(playTop, boardY);
+    }
     return {
       margin,
       navY,
@@ -985,27 +994,30 @@
       panelY: headerTop + headerH / 2,
       panelW: trayW,
       scoreX: margin,
-      scoreLabelY: headerTop + 12,
-      scoreValueY: headerTop + 36,
+      scoreLabelY: headerTop + 10,
+      scoreValueY: headerTop + 28,
       centerX: W / 2,
-      levelTitleY: headerTop + 12,
-      levelSubY: headerTop + 32,
+      levelTitleY: headerTop + 10,
+      levelSubY: headerTop + 28,
       goalX: W - margin,
-      goalLabelY: headerTop + 12,
-      goalProgY: headerTop + 36,
+      goalLabelY: headerTop + 10,
+      goalProgY: headerTop + 28,
       goalBarY,
       goalBarW: trayW,
       streakY: goalBarY - 6,
       boardY,
       boardH,
       boardBottom: boardY + boardH,
+      trayScale,
       trayTop,
       trayCenterY,
       trayH,
       trayW,
       trayLabelY,
+      traySlotY,
       trayPiecesY,
       trayScale,
+      trayPieceBand,
       slotXs: [W * 0.2, W * 0.5, W * 0.8]
     };
   }
@@ -1501,7 +1513,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.4.4";
+  var APP_VERSION = "1.5.0";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1880,10 +1892,10 @@
   // public/js/gameUi.js
   var GAME_UI = {
     font: {
-      caption: "11px",
+      caption: "12px",
       body: "13px",
-      heading: "15px",
-      stat: "24px"
+      heading: "14px",
+      stat: "20px"
     },
     color: {
       muted: "#94a3b8",
@@ -1932,8 +1944,8 @@
       goalLabel: {
         fontFamily: "Syne, sans-serif",
         fontSize: GAME_UI.font.caption,
-        fontStyle: "700",
-        color: GAME_UI.color.bright
+        fontStyle: "800",
+        color: GAME_UI.color.muted
       },
       goalStat: {
         fontFamily: "Syne, sans-serif",
@@ -2182,9 +2194,7 @@
     drawTrayArea() {
       const L = this.layout;
       this.add.rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 988970, 0.94).setStrokeStyle(2, 4674921, 1).setDepth(1);
-      const slotTop = L.trayTop + 30;
-      const slotH = L.trayH - 34;
-      this.add.rectangle(W / 2, slotTop + slotH / 2, L.trayW - 12, slotH, 1120295, 0.6).setDepth(1);
+      this.add.rectangle(W / 2, L.traySlotY, L.trayW - 12, L.trayPieceBand, 1120295, 0.65).setDepth(1);
       applyCrispText(
         this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel")).setOrigin(0.5).setDepth(2)
       );
@@ -2240,7 +2250,7 @@
         container.setData("shape", shape);
         container.setData("homeX", this.layout.slotXs[i]);
         container.setData("homeY", this.layout.trayPiecesY);
-        const hit = Math.round(110 * this.layout.trayScale + 88);
+        const hit = Math.round(TRAY_CELL * 4.5);
         container.setInteractive(
           new Phaser.Geom.Rectangle(-hit / 2, -hit / 2, hit, hit),
           Phaser.Geom.Rectangle.Contains
@@ -2293,7 +2303,8 @@
         this.dragging = go;
         go.setDepth(40);
         this.tweens.killTweensOf(go);
-        go.list.forEach((img) => img.setScale(0.92));
+        const ps = go.getData("pieceScale") || this.layout.trayScale;
+        go.list.forEach((img) => img.setScale(Math.min(1, ps * 1.08)));
         sfx.play("pickup");
       });
       this.input.on("drag", (pointer, go) => {

@@ -1,4 +1,4 @@
-import { GRID, CELL, BOARD_PAD, W, COLORS } from "../config.js";
+import { GRID, CELL, TRAY_CELL, BOARD_PAD, W, COLORS } from "../config.js";
 import { randomTray, mulberry32, dailySeed } from "../shapes.js";
 import { getLevel, goalHudTitle, goalProgress, starThresholds } from "../levels.js";
 import {
@@ -118,10 +118,8 @@ export default class GameScene extends Phaser.Scene {
       .rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 0x0f172a, 0.94)
       .setStrokeStyle(2, 0x475569, 1)
       .setDepth(1);
-    const slotTop = L.trayTop + 30;
-    const slotH = L.trayH - 34;
     this.add
-      .rectangle(W / 2, slotTop + slotH / 2, L.trayW - 12, slotH, 0x111827, 0.6)
+      .rectangle(W / 2, L.traySlotY, L.trayW - 12, L.trayPieceBand, 0x111827, 0.65)
       .setDepth(1);
     applyCrispText(
       this.add
@@ -185,7 +183,7 @@ export default class GameScene extends Phaser.Scene {
       container.setData("shape", shape);
       container.setData("homeX", this.layout.slotXs[i]);
       container.setData("homeY", this.layout.trayPiecesY);
-      const hit = Math.round(110 * this.layout.trayScale + 88);
+      const hit = Math.round(TRAY_CELL * 4.5);
       container.setInteractive(
         new Phaser.Geom.Rectangle(-hit / 2, -hit / 2, hit, hit),
         Phaser.Geom.Rectangle.Contains
@@ -245,7 +243,8 @@ export default class GameScene extends Phaser.Scene {
       this.dragging = go;
       go.setDepth(40);
       this.tweens.killTweensOf(go);
-      go.list.forEach((img) => img.setScale(0.92));
+      const ps = go.getData("pieceScale") || this.layout.trayScale;
+      go.list.forEach((img) => img.setScale(Math.min(1, ps * 1.08)));
       sfx.play("pickup");
     });
 
