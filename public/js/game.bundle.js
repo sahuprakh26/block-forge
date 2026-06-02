@@ -964,27 +964,30 @@
     };
   }
   var HUD_HEADER = {
-    navY: 28,
-    barY: 88,
-    barH: 58,
+    navY: 24,
+    barY: 86,
+    barH: 76,
+    scoreX: 118,
     scoreLabelY: 58,
-    scoreValueY: 78,
-    titleY: 62,
-    goalTitleY: 54,
-    goalProgY: 74,
-    movesY: 100,
+    scoreValueY: 84,
+    titleY: 58,
+    levelNameY: 78,
+    goalX: 312,
+    goalLabelY: 58,
+    goalProgY: 84,
+    movesY: 108,
     streakY: 108,
-    goalBarY: 118
+    goalBarY: 124
   };
   function gameLayout() {
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const boardY = 126;
+    const boardY = 136;
     const boardBottom = boardY + boardH;
-    const trayGap = 10;
-    const trayH = 148;
+    const trayGap = 12;
+    const trayH = 172;
     const trayLabelY = boardBottom + trayGap;
-    const trayCenterY = trayLabelY + 24 + trayH / 2;
-    const trayPiecesY = trayCenterY + 32;
+    const trayCenterY = trayLabelY + 22 + trayH / 2;
+    const trayPiecesY = trayCenterY + 28;
     return {
       boardY,
       boardBottom,
@@ -1461,7 +1464,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.9";
+  var APP_VERSION = "1.3.0";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1608,24 +1611,24 @@
     }
     return null;
   }
-  function goalText(goal) {
+  function goalHudTitle(goal) {
     if (!goal) return "";
     switch (goal.type) {
       case "score":
-        return `Reach ${goal.target} points`;
+        return `SCORE ${goal.target}`;
       case "lines":
-        return `Clear ${goal.target} lines`;
+        return `CLEAR ${goal.target} LINES`;
       case "combo":
-        return `Get ${goal.target}x combo`;
+        return `${goal.target}x COMBO`;
       default:
-        return "Complete goal";
+        return "GOAL";
     }
   }
   function goalProgress(goal, score, lines, maxCombo) {
     if (!goal) return "";
     if (goal.type === "score") return `${score} / ${goal.target}`;
-    if (goal.type === "lines") return `${lines} / ${goal.target} lines`;
-    return `Combo ${maxCombo} / ${goal.target}x`;
+    if (goal.type === "lines") return `${lines} / ${goal.target}`;
+    return `${maxCombo} / ${goal.target}x`;
   }
   function starThresholds(level, goal) {
     if (goal.type === "score") {
@@ -1731,8 +1734,9 @@
     });
   }
   function addGameTopNav(scene, { onBack, onQuit, backLabel = "\u2190 BACK" }) {
-    addNavButton(scene, 58, 28, backLabel, 4674921, onBack, 100);
-    if (onQuit) addNavButton(scene, W - 58, 28, "QUIT", 12131356, onQuit, 84);
+    const y = 24;
+    addNavButton(scene, 52, y, backLabel, 4674921, onBack, 92);
+    if (onQuit) addNavButton(scene, W - 52, y, "QUIT", 12131356, onQuit, 76);
   }
 
   // public/js/scenes/MapScene.js
@@ -1920,7 +1924,7 @@
   }
 
   // public/js/scenes/GameScene.js
-  var TRAY_SCALE = 0.84;
+  var TRAY_SCALE = 1.05;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -2021,11 +2025,29 @@
       };
       addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
       const H2 = HUD_HEADER;
-      this.add.rectangle(W / 2, H2.barY, W - 12, H2.barH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      this.add.rectangle(W / 2, H2.barY, W - 16, H2.barH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      applyCrispText(
+        this.add.text(H2.scoreX, H2.scoreLabelY, "SCORE", uiTextStyle({
+          fontSize: "11px",
+          fontStyle: "700",
+          color: "#94a3b8",
+          letterSpacing: 1
+        })).setOrigin(0, 0.5).setDepth(50)
+      );
+      this.scoreText = applyCrispText(
+        this.add.text(H2.scoreX, H2.scoreValueY, "0", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "30px",
+          fontStyle: "800",
+          color: "#ffffff",
+          stroke: "#0f172a",
+          strokeThickness: 3
+        })).setOrigin(0, 0.5).setDepth(50)
+      );
       applyCrispText(
         this.add.text(W / 2, H2.titleY, title, uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "17px",
+          fontSize: "16px",
           fontStyle: "800",
           color: "#38bdf8",
           strokeThickness: 2
@@ -2033,30 +2055,16 @@
       );
       if (this.mode === "level" && this.level?.name) {
         applyCrispText(
-          this.add.text(W / 2, H2.titleY + 18, this.level.name, uiTextStyle({
-            fontSize: "11px",
-            fontStyle: "600",
-            color: "#64748b"
+          this.add.text(W / 2, H2.levelNameY, this.level.name.toUpperCase(), uiTextStyle({
+            fontFamily: "Outfit, sans-serif",
+            fontSize: "13px",
+            fontStyle: "800",
+            color: "#fb923c",
+            stroke: "#0f172a",
+            strokeThickness: 2
           })).setOrigin(0.5).setDepth(50)
         );
       }
-      applyCrispText(
-        this.add.text(20, H2.scoreLabelY, "SCORE", uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8"
-        })).setOrigin(0, 0.5).setDepth(50)
-      );
-      this.scoreText = applyCrispText(
-        this.add.text(20, H2.scoreValueY, "0", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "34px",
-          fontStyle: "800",
-          color: "#ffffff",
-          stroke: "#0f172a",
-          strokeThickness: 3
-        })).setOrigin(0, 0.5).setDepth(50)
-      );
       this.streakBadge = applyCrispText(
         this.add.text(W / 2, H2.streakY, "", uiTextStyle({
           fontSize: "13px",
@@ -2075,22 +2083,25 @@
         goalTitle = "TODAY";
         goalProg = db > 0 ? `Beat ${db}` : "Score high";
       } else if (this.level?.goal) {
-        goalTitle = goalText(this.level.goal);
+        goalTitle = goalHudTitle(this.level.goal);
         goalProg = goalProgress(this.level.goal, 0, 0, 0);
       }
       applyCrispText(
-        this.add.text(W - 20, H2.goalTitleY, goalTitle, uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8",
-          align: "right"
+        this.add.text(H2.goalX, H2.goalLabelY, goalTitle, uiTextStyle({
+          fontFamily: "Outfit, sans-serif",
+          fontSize: "11px",
+          fontStyle: "800",
+          color: "#e2e8f0",
+          align: "right",
+          letterSpacing: 0.5
         })).setOrigin(1, 0.5).setDepth(50)
       );
       this.goalProgressText = applyCrispText(
-        this.add.text(W - 20, H2.goalProgY, goalProg, uiTextStyle({
-          fontSize: "17px",
+        this.add.text(H2.goalX, H2.goalProgY, goalProg, uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "22px",
           fontStyle: "800",
-          color: "#38bdf8",
+          color: "#4ade80",
           align: "right",
           stroke: "#0f172a",
           strokeThickness: 2
@@ -2126,7 +2137,7 @@
         container.setData("homeX", slotXs[i]);
         container.setData("homeY", this.layout.trayPiecesY);
         container.setInteractive(
-          new Phaser.Geom.Rectangle(-100, -100, 200, 200),
+          new Phaser.Geom.Rectangle(-130, -130, 260, 260),
           Phaser.Geom.Rectangle.Contains
         );
         this.input.setDraggable(container);

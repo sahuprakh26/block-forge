@@ -44,12 +44,27 @@ export function goalText(goal) {
   }
 }
 
+/** One-line goal for game HUD (readable, no truncation). */
+export function goalHudTitle(goal) {
+  if (!goal) return "";
+  switch (goal.type) {
+    case "score":
+      return `SCORE ${goal.target}`;
+    case "lines":
+      return `CLEAR ${goal.target} LINES`;
+    case "combo":
+      return `${goal.target}x COMBO`;
+    default:
+      return "GOAL";
+  }
+}
+
 /** Short progress line for HUD (large font). */
 export function goalProgress(goal, score, lines, maxCombo) {
   if (!goal) return "";
   if (goal.type === "score") return `${score} / ${goal.target}`;
-  if (goal.type === "lines") return `${lines} / ${goal.target} lines`;
-  return `Combo ${maxCombo} / ${goal.target}x`;
+  if (goal.type === "lines") return `${lines} / ${goal.target}`;
+  return `${maxCombo} / ${goal.target}x`;
 }
 
 export function starThresholds(level, goal) {

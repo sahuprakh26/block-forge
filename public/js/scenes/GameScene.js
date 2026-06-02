@@ -1,6 +1,6 @@
 import { GRID, CELL, BOARD_PAD, W, COLORS } from "../config.js";
 import { randomTray, mulberry32, dailySeed } from "../shapes.js";
-import { getLevel, goalText, goalProgress, starThresholds } from "../levels.js";
+import { getLevel, goalHudTitle, goalProgress, starThresholds } from "../levels.js";
 import {
   loadProgress,
   setStars,
@@ -34,7 +34,7 @@ import { ensureName } from "../namePrompt.js";
 import { HUD_HEADER, gameLayout } from "../layout.js";
 import { applyCrispText, uiTextStyle } from "../textUtil.js";
 
-const TRAY_SCALE = 0.84;
+const TRAY_SCALE = 1.05;
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -160,15 +160,40 @@ export default class GameScene extends Phaser.Scene {
 
     const H = HUD_HEADER;
     this.add
-      .rectangle(W / 2, H.barY, W - 12, H.barH, 0x0f172a, 0.92)
+      .rectangle(W / 2, H.barY, W - 16, H.barH, 0x0f172a, 0.92)
       .setStrokeStyle(1, 0x334155, 0.6)
       .setDepth(45);
 
     applyCrispText(
       this.add
+        .text(H.scoreX, H.scoreLabelY, "SCORE", uiTextStyle({
+          fontSize: "11px",
+          fontStyle: "700",
+          color: "#94a3b8",
+          letterSpacing: 1,
+        }))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+    this.scoreText = applyCrispText(
+      this.add
+        .text(H.scoreX, H.scoreValueY, "0", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "30px",
+          fontStyle: "800",
+          color: "#ffffff",
+          stroke: "#0f172a",
+          strokeThickness: 3,
+        }))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+
+    applyCrispText(
+      this.add
         .text(W / 2, H.titleY, title, uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "17px",
+          fontSize: "16px",
           fontStyle: "800",
           color: "#38bdf8",
           strokeThickness: 2,
@@ -180,39 +205,18 @@ export default class GameScene extends Phaser.Scene {
     if (this.mode === "level" && this.level?.name) {
       applyCrispText(
         this.add
-          .text(W / 2, H.titleY + 18, this.level.name, uiTextStyle({
-            fontSize: "11px",
-            fontStyle: "600",
-            color: "#64748b",
+          .text(W / 2, H.levelNameY, this.level.name.toUpperCase(), uiTextStyle({
+            fontFamily: "Outfit, sans-serif",
+            fontSize: "13px",
+            fontStyle: "800",
+            color: "#fb923c",
+            stroke: "#0f172a",
+            strokeThickness: 2,
           }))
           .setOrigin(0.5)
           .setDepth(50)
       );
     }
-
-    applyCrispText(
-      this.add
-        .text(20, H.scoreLabelY, "SCORE", uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8",
-        }))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
-    this.scoreText = applyCrispText(
-      this.add
-        .text(20, H.scoreValueY, "0", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "34px",
-          fontStyle: "800",
-          color: "#ffffff",
-          stroke: "#0f172a",
-          strokeThickness: 3,
-        }))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
 
     this.streakBadge = applyCrispText(
       this.add
@@ -237,27 +241,30 @@ export default class GameScene extends Phaser.Scene {
       goalTitle = "TODAY";
       goalProg = db > 0 ? `Beat ${db}` : "Score high";
     } else if (this.level?.goal) {
-      goalTitle = goalText(this.level.goal);
+      goalTitle = goalHudTitle(this.level.goal);
       goalProg = goalProgress(this.level.goal, 0, 0, 0);
     }
 
     applyCrispText(
       this.add
-        .text(W - 20, H.goalTitleY, goalTitle, uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8",
+        .text(H.goalX, H.goalLabelY, goalTitle, uiTextStyle({
+          fontFamily: "Outfit, sans-serif",
+          fontSize: "11px",
+          fontStyle: "800",
+          color: "#e2e8f0",
           align: "right",
+          letterSpacing: 0.5,
         }))
         .setOrigin(1, 0.5)
         .setDepth(50)
     );
     this.goalProgressText = applyCrispText(
       this.add
-        .text(W - 20, H.goalProgY, goalProg, uiTextStyle({
-          fontSize: "17px",
+        .text(H.goalX, H.goalProgY, goalProg, uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "22px",
           fontStyle: "800",
-          color: "#38bdf8",
+          color: "#4ade80",
           align: "right",
           stroke: "#0f172a",
           strokeThickness: 2,
@@ -302,7 +309,7 @@ export default class GameScene extends Phaser.Scene {
       container.setData("homeX", slotXs[i]);
       container.setData("homeY", this.layout.trayPiecesY);
       container.setInteractive(
-        new Phaser.Geom.Rectangle(-100, -100, 200, 200),
+        new Phaser.Geom.Rectangle(-130, -130, 260, 260),
         Phaser.Geom.Rectangle.Contains
       );
       this.input.setDraggable(container);

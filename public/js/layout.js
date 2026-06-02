@@ -83,31 +83,34 @@ export function menuLayout(height = H) {
   };
 }
 
-/** Top HUD band — must end above game board (see gameLayout). */
+/** Top HUD — nav row, then 3-column bar (score | level | goal). */
 export const HUD_HEADER = {
-  navY: 28,
-  barY: 88,
-  barH: 58,
+  navY: 24,
+  barY: 86,
+  barH: 76,
+  scoreX: 118,
   scoreLabelY: 58,
-  scoreValueY: 78,
-  titleY: 62,
-  goalTitleY: 54,
-  goalProgY: 74,
-  movesY: 100,
+  scoreValueY: 84,
+  titleY: 58,
+  levelNameY: 78,
+  goalX: 312,
+  goalLabelY: 58,
+  goalProgY: 84,
+  movesY: 108,
   streakY: 108,
-  goalBarY: 118,
+  goalBarY: 124,
 };
 
 /** Board + tray vertical slots so nothing overlaps. */
 export function gameLayout() {
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const boardY = 126;
+  const boardY = 136;
   const boardBottom = boardY + boardH;
-  const trayGap = 10;
-  const trayH = 148;
+  const trayGap = 12;
+  const trayH = 172;
   const trayLabelY = boardBottom + trayGap;
-  const trayCenterY = trayLabelY + 24 + trayH / 2;
-  const trayPiecesY = trayCenterY + 32;
+  const trayCenterY = trayLabelY + 22 + trayH / 2;
+  const trayPiecesY = trayCenterY + 28;
 
   return {
     boardY,
