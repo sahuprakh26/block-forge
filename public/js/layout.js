@@ -43,9 +43,9 @@ export function menuLayout(height = H) {
   const logoY = y + MENU_LOGO.centerToBottom;
   y += logoZone + 14;
 
-  const rankCardH = 92;
+  const rankCardH = 76;
   const rankCardY = y + rankCardH / 2;
-  y += rankCardH + 12;
+  y += rankCardH + 10;
 
   const statsY = y + 10;
   y += 24;

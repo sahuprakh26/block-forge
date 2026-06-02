@@ -759,58 +759,48 @@
     panel.add([outer]);
     return panel;
   }
-  function drawRankCard(scene, x, y, w, h, progress, xp) {
+  function drawRankCard(scene, x, y, w, _h, progress, xp) {
     const { rank, next, nextXp, ratio } = progress;
-    const depth = 6;
-    const c = scene.add.container(x, y).setDepth(depth);
-    const pad = 12;
-    const left = -w / 2 + pad;
-    const innerW = w - pad * 2;
-    const top = -h / 2 + 8;
-    const frameStroke = rank.stroke || rank.color;
-    c.add(
-      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.9)
-    );
-    c.add(scene.add.rectangle(left, top + 2, 4, h - 16, rank.color, 1).setOrigin(0, 0));
-    const badgeX = left + 26;
-    const badgeY = top + 28;
-    drawRankEmblem(scene, c, badgeX, badgeY, rank, 22);
-    const textX = left + 58;
+    const c = scene.add.container(x, y).setDepth(6);
+    const barW = Math.min(w - 32, 320);
+    const left = -barW / 2;
+    drawRankEmblem(scene, c, left + 24, -6, rank, 22);
+    const textX = left + 54;
     const titleColor = rank.text || "#fff";
     const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
     applyCrispText(
-      scene.add.text(textX, top + 18, rank.name.toUpperCase(), uiTextStyle({
+      scene.add.text(textX, -8, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: "20px",
         fontStyle: "800",
         color: titleColor,
         stroke: titleStroke,
-        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 2
+        strokeThickness: 2
       })).setOrigin(0, 0.5)
     );
     applyCrispText(
-      scene.add.text(textX, top + 36, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
+      scene.add.text(textX, 10, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
         fontSize: "12px",
         color: "#94a3b8",
         strokeThickness: 1
       })).setOrigin(0, 0.5)
     );
-    const barY = top + 54;
+    const barY = 32;
     const barH = 10;
-    c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
-    const fillW = Math.max(4, innerW * ratio);
+    c.add(scene.add.rectangle(left, barY, barW, barH, 1976635, 0.85).setOrigin(0, 0.5));
+    const fillW = Math.max(4, barW * ratio);
     const barColor = rank.metal === "gold" ? 16766720 : rank.metal === "immortal" ? 16436245 : rank.color;
     c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
     if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 6) {
       c.add(scene.add.rectangle(left, barY - 2, fillW, barH * 0.4, 16775620, 0.45).setOrigin(0, 0.5));
     }
     applyCrispText(
-      scene.add.text(left, barY + 16, `${xp} / ${nextXp} XP`, uiTextStyle({
+      scene.add.text(0, barY + 16, `${xp} / ${nextXp} XP`, uiTextStyle({
         fontSize: "12px",
         fontStyle: "700",
         color: "#cbd5e1",
         strokeThickness: 1
-      })).setOrigin(0, 0.5)
+      })).setOrigin(0.5)
     );
     return c;
   }
@@ -939,9 +929,9 @@
     const logoZone = MENU_LOGO.height + 8;
     const logoY = y + MENU_LOGO.centerToBottom;
     y += logoZone + 14;
-    const rankCardH = 92;
+    const rankCardH = 76;
     const rankCardY = y + rankCardH / 2;
-    y += rankCardH + 12;
+    y += rankCardH + 10;
     const statsY = y + 10;
     y += 24;
     const btnGap = 58;
@@ -1448,7 +1438,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.6";
+  var APP_VERSION = "1.2.7";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
