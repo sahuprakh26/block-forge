@@ -24,7 +24,7 @@ export default class LeaderboardScene extends Phaser.Scene {
     const goMenu = () => transitionTo(this, "Menu");
     addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
 
-    drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "Live worldwide scores");
+    drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "● Live worldwide scores", true);
 
     this.liveDot = this.add.circle(W / 2 - 76, L.statusY, 5, 0x4ade80, 1).setDepth(20);
     this.statusText = this.add

@@ -2,45 +2,77 @@ import { W } from "./config.js";
 import { sfx } from "./audio.js";
 import { applyCrispText, uiTextStyle } from "./textUtil.js";
 
-/** Shiny tier medal (replaces emoji) */
+/** Shiny tier medal — real gold / silver / bronze look */
 export function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
   const g = scene.add.graphics();
   const r = radius;
+  const metal = rank.metal || "default";
 
-  if (rank.metal === "gold") {
-    g.fillStyle(0xb45309, 1);
-    g.fillCircle(x, y + 2, r);
-    g.fillStyle(0xff8f00, 1);
-    g.fillCircle(x, y, r - 2);
-    g.fillStyle(0xffd700, 1);
-    g.fillCircle(x, y - 1, r - 6);
-    g.fillStyle(0xfff59d, 0.85);
-    g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.38);
+  const fillMedal = (layers) => {
+    layers.forEach((layer, i) => {
+      g.fillStyle(layer.color, layer.alpha ?? 1);
+      g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink || i * 2));
+    });
+  };
+
+  if (metal === "gold") {
+    fillMedal([
+      { color: 0x5c3d00, dy: 3 },
+      { color: 0xb8860b, shrink: 0 },
+      { color: 0xffb300, shrink: 2 },
+      { color: 0xffd700, shrink: 6 },
+    ]);
+    g.fillStyle(0xfffde7, 0.9);
+    g.fillCircle(x - r * 0.25, y - r * 0.3, r * 0.42);
+    g.fillStyle(0xffa000, 0.35);
+    g.fillCircle(x + r * 0.15, y + r * 0.2, r * 0.55);
     g.lineStyle(3, 0xffea00, 1);
     g.strokeCircle(x, y, r - 2);
-    g.lineStyle(1, 0xffffff, 0.45);
-    g.strokeCircle(x - 2, y - 3, r - 8);
-  } else if (rank.metal === "silver") {
-    g.fillStyle(0x475569, 1);
-    g.fillCircle(x, y + 2, r);
-    g.fillStyle(0x94a3b8, 1);
-    g.fillCircle(x, y, r - 2);
-    g.fillStyle(0xe2e8f0, 0.7);
-    g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.32);
-    g.lineStyle(3, rank.stroke, 1);
+    g.lineStyle(2, 0xffffff, 0.5);
+    g.strokeCircle(x - 2, y - 4, r - 9);
+  } else if (metal === "silver") {
+    fillMedal([
+      { color: 0x334155, dy: 3 },
+      { color: 0x64748b, shrink: 0 },
+      { color: 0xcbd5e1, shrink: 4 },
+    ]);
+    g.fillStyle(0xffffff, 0.75);
+    g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.36);
+    g.lineStyle(3, 0xf1f5f9, 1);
     g.strokeCircle(x, y, r - 2);
-  } else if (rank.metal === "bronze") {
-    g.fillStyle(0x78350f, 1);
-    g.fillCircle(x, y + 2, r);
-    g.fillStyle(rank.color, 1);
-    g.fillCircle(x, y, r - 2);
-    g.fillStyle(0xfdba74, 0.5);
-    g.fillCircle(x - r * 0.18, y - r * 0.22, r * 0.3);
-    g.lineStyle(3, rank.stroke, 1);
+  } else if (metal === "bronze") {
+    fillMedal([
+      { color: 0x451a03, dy: 3 },
+      { color: 0x9a3412, shrink: 0 },
+      { color: 0xd97706, shrink: 4 },
+    ]);
+    g.fillStyle(0xfcd34d, 0.45);
+    g.fillCircle(x - r * 0.2, y - r * 0.22, r * 0.32);
+    g.lineStyle(3, 0xfb923c, 1);
+    g.strokeCircle(x, y, r - 2);
+  } else if (metal === "diamond") {
+    fillMedal([
+      { color: 0x0c4a6e, dy: 3 },
+      { color: 0x0284c7, shrink: 0 },
+      { color: 0x7dd3fc, shrink: 5 },
+    ]);
+    g.fillStyle(0xe0f2fe, 0.85);
+    g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.35);
+    g.lineStyle(3, 0xbae6fd, 1);
+    g.strokeCircle(x, y, r - 2);
+  } else if (metal === "platinum") {
+    fillMedal([
+      { color: 0x164e63, dy: 3 },
+      { color: 0x0891b2, shrink: 0 },
+      { color: 0x67e8f9, shrink: 5 },
+    ]);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(x - r * 0.2, y - r * 0.26, r * 0.34);
+    g.lineStyle(3, 0xa5f3fc, 1);
     g.strokeCircle(x, y, r - 2);
   } else {
-    g.fillStyle(0x0f172a, 0.5);
-    g.fillCircle(x, y + 2, r);
+    g.fillStyle(0x020617, 0.6);
+    g.fillCircle(x, y + 3, r);
     g.fillStyle(rank.color, 1);
     g.fillCircle(x, y, r - 2);
     g.lineStyle(3, rank.stroke || 0xffffff, 1);
@@ -48,53 +80,70 @@ export function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
   }
 
   parent.add(g);
-  const letterSize = rank.letter?.length > 1 ? "14px" : "22px";
+  const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
   const lbl = applyCrispText(
     scene.add
-      .text(x, y, rank.letter || rank.name[0], uiTextStyle({
+      .text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: letterSize,
         fontStyle: "800",
         color: rank.text || "#fff",
-        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: rank.metal === "gold" ? 2 : 3,
+        stroke: metal === "gold" ? "#5c4200" : "#0f172a",
+        strokeThickness: metal === "gold" ? 3 : 3,
       }))
       .setOrigin(0.5)
   );
   parent.add(lbl);
 }
 
-/** Block Forge logo — 3 blocks + title */
+/** Polished game logo — big blocks + BLOCK / FORGE */
 export function drawMenuLogo(scene, x, y) {
   const c = scene.add.container(x, y).setDepth(4);
-  const hasBlocks = scene.textures.exists("block-0");
-  if (hasBlocks) {
-    c.add(scene.add.image(-28, -6, "block-0").setScale(0.62).setAngle(-8));
-    c.add(scene.add.image(30, -10, "block-1").setScale(0.62).setAngle(6));
-    c.add(scene.add.image(0, 22, "block-3").setScale(0.68));
-  } else {
-    const g = scene.add.graphics();
-    g.fillStyle(0x818cf8, 1);
-    g.fillRoundedRect(-40, -8, 22, 22, 5);
-    g.fillStyle(0x38bdf8, 1);
-    g.fillRoundedRect(18, -12, 22, 22, 5);
-    g.fillStyle(0xfde047, 1);
-    g.fillRoundedRect(-8, 14, 24, 24, 6);
-    c.add(g);
+
+  const glow = scene.add.ellipse(0, 8, 200, 72, 0x6366f1, 0.22);
+  c.add(glow);
+  scene.tweens.add({ targets: glow, alpha: { from: 0.15, to: 0.32 }, duration: 2200, yoyo: true, repeat: -1 });
+
+  const blockScale = 0.92;
+  if (scene.textures.exists("block-0")) {
+    const b0 = scene.add.image(-34, -4, "block-0").setScale(blockScale).setAngle(-12);
+    const b1 = scene.add.image(36, -8, "block-1").setScale(blockScale).setAngle(10);
+    const b2 = scene.add.image(0, 26, "block-3").setScale(blockScale * 1.05);
+    c.add([b0, b1, b2]);
+    scene.tweens.add({ targets: b0, y: b0.y - 4, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    scene.tweens.add({ targets: b1, y: b1.y - 5, duration: 2000, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    scene.tweens.add({ targets: b2, y: b2.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
   }
-  const title = applyCrispText(
-    scene.add
-      .text(0, 58, "BLOCK FORGE", uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: "38px",
-        fontStyle: "800",
-        color: "#38bdf8",
-        stroke: "#0f172a",
-        strokeThickness: 5,
-      }))
-      .setOrigin(0.5)
+
+  c.add(
+    applyCrispText(
+      scene.add
+        .text(0, 62, "BLOCK", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "40px",
+          fontStyle: "800",
+          color: "#e0e7ff",
+          stroke: "#0f172a",
+          strokeThickness: 5,
+        }))
+        .setOrigin(0.5)
+    )
   );
-  c.add(title);
+  c.add(
+    applyCrispText(
+      scene.add
+        .text(0, 98, "FORGE", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "40px",
+          fontStyle: "800",
+          color: "#ffd700",
+          stroke: "#422006",
+          strokeThickness: 5,
+        }))
+        .setOrigin(0.5)
+    )
+  );
+
   return c;
 }
 
@@ -109,7 +158,6 @@ export function drawGlassPanel(scene, x, y, w, h, opts = {}) {
   return panel;
 }
 
-/** Metal tier card — XP bar full width, fills left → right */
 export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const { rank, next, nextXp, ratio } = progress;
   const depth = 6;
@@ -119,25 +167,28 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const innerW = w - pad * 2;
   const top = -h / 2 + 12;
 
+  const frameStroke = rank.metal === "gold" ? 0xffd700 : rank.stroke || rank.color;
   c.add(
     scene.add
       .rectangle(0, 0, w, h, 0x0c1222, 0.96)
-      .setStrokeStyle(2, rank.stroke || rank.color, 0.9)
+      .setStrokeStyle(2, frameStroke, 0.95)
   );
   c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
 
   const badgeX = left + 34;
   const badgeY = top + 38;
-  drawRankEmblem(scene, c, badgeX, badgeY, rank, 32);
+  drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
 
-  const textX = left + 76;
+  const textX = left + 78;
+  const titleColor = rank.metal === "gold" ? "#ffec8b" : rank.text || "#fff";
   applyCrispText(
     scene.add
       .text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: "28px",
         fontStyle: "800",
-        color: rank.text || "#fff",
+        color: titleColor,
+        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
         strokeThickness: 3,
       }))
       .setOrigin(0, 0.5)
@@ -159,7 +210,7 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const barColor = rank.metal === "gold" ? 0xffc107 : rank.color;
   c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
   if (rank.metal === "gold" && fillW > 8) {
-    c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.35, 0xfff9c4, 0.35).setOrigin(0, 0.5));
+    c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.4, 0xfff9c4, 0.45).setOrigin(0, 0.5));
   }
 
   applyCrispText(
@@ -200,6 +251,12 @@ export function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
       .setOrigin(0.5)
   );
   container.add([shadow, bg, gloss, txt]);
+
+  if (opts.live) {
+    const dot = scene.add.circle(-w / 2 + 22, 0, 5, 0x4ade80, 1);
+    container.add(dot);
+    scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 700, yoyo: true, repeat: -1 });
+  }
 
   const press = () => {
     sfx.ensure();
@@ -245,7 +302,7 @@ export function makePillTab(scene, x, y, label, active, onClick) {
   return { bg, txt };
 }
 
-export function drawScreenHeader(scene, x, y, title, subtitle) {
+export function drawScreenHeader(scene, x, y, title, subtitle, live = false) {
   applyCrispText(
     scene.add
       .text(x, y, title, uiTextStyle({
@@ -259,11 +316,16 @@ export function drawScreenHeader(scene, x, y, title, subtitle) {
       .setDepth(5)
   );
   if (subtitle) {
+    const subY = y + 34;
+    if (live) {
+      const dot = scene.add.circle(x - 72, subY, 5, 0x4ade80, 1).setDepth(6);
+      scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 800, yoyo: true, repeat: -1 });
+    }
     applyCrispText(
       scene.add
-        .text(x, y + 34, subtitle, uiTextStyle({
+        .text(x + (live ? 8 : 0), subY, subtitle, uiTextStyle({
           fontSize: "14px",
-          color: "#94a3b8",
+          color: live ? "#86efac" : "#94a3b8",
           strokeThickness: 1,
         }))
         .setOrigin(0.5)
@@ -277,8 +339,8 @@ export function drawTitleGlow(scene, x, y, title, subtitle) {
 }
 
 export function rankColors(i) {
-  if (i === 0) return { bg: 0xfbbf24, stroke: 0xfde047, text: "#0f172a", medal: "🥇" };
-  if (i === 1) return { bg: 0x94a3b8, stroke: 0xe2e8f0, text: "#0f172a", medal: "🥈" };
-  if (i === 2) return { bg: 0xb45309, stroke: 0xfdba74, text: "#fff", medal: "🥉" };
+  if (i === 0) return { bg: 0xffc107, stroke: 0xffea00, text: "#422006", medal: "1" };
+  if (i === 1) return { bg: 0x94a3b8, stroke: 0xe2e8f0, text: "#0f172a", medal: "2" };
+  if (i === 2) return { bg: 0xb45309, stroke: 0xfdba74, text: "#fff", medal: "3" };
   return { bg: 0x111827, stroke: 0x334155, text: "#e2e8f0", medal: `${i + 1}` };
 }

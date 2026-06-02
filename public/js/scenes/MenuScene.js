@@ -67,10 +67,10 @@ export default class MenuScene extends Phaser.Scene {
       this,
       W / 2,
       L.btnRankings,
-      "🏆  LIVE RANKINGS",
+      "LIVE RANKINGS",
       0x7c3aed,
       go(() => transitionTo(this, "Leaderboard", { board: "endless" })),
-      btnOpts
+      { ...btnOpts, live: true }
     );
 
     this.makeNameBadge(W / 2, L.nameY);

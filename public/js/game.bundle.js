@@ -4,8 +4,8 @@
 
   // public/js/config.js
   var GRID = 8;
-  var CELL = 50;
-  var BOARD_PAD = 12;
+  var CELL = 52;
+  var BOARD_PAD = 7;
   var W = 430;
   var H = 780;
   var COLORS = [
@@ -615,8 +615,8 @@
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
     let y = top;
-    const logoY = y + 52;
-    y += 108;
+    const logoY = y + 58;
+    y += 118;
     const rankCardH = 128;
     const rankCardY = y + rankCardH / 2;
     y += rankCardH + 14;
@@ -758,15 +758,15 @@
         );
         g.clear();
         g.fillStyle(dark, 1);
-        g.fillRoundedRect(5, 8, size - 6, size - 6, 10);
+        g.fillRoundedRect(6, 10, size - 8, size - 8, 11);
         g.fillStyle(base, 1);
-        g.fillRoundedRect(2, 2, size - 6, size - 6, 10);
-        g.fillStyle(mid, 0.55);
-        g.fillRoundedRect(4, 4, size - 12, size - 14, 9);
-        g.fillStyle(shine, 0.5);
-        g.fillRoundedRect(6, 5, size - 22, 16, 6);
-        g.fillStyle(16777215, 0.65);
-        g.fillCircle(12, 11, 5);
+        g.fillRoundedRect(3, 3, size - 8, size - 8, 11);
+        g.fillStyle(mid, 0.6);
+        g.fillRoundedRect(5, 5, size - 14, size - 16, 10);
+        g.fillStyle(shine, 0.55);
+        g.fillRoundedRect(7, 6, size - 24, 18, 7);
+        g.fillStyle(16777215, 0.7);
+        g.fillCircle(14, 12, 6);
         g.fillStyle(16777215, 0.12);
         g.fillRoundedRect(7, 18, size - 22, size - 26, 6);
         g.lineStyle(2, 16777215, 0.28);
@@ -1017,87 +1017,129 @@
   function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
     const g = scene.add.graphics();
     const r = radius;
-    if (rank.metal === "gold") {
-      g.fillStyle(11817737, 1);
-      g.fillCircle(x, y + 2, r);
-      g.fillStyle(16748288, 1);
-      g.fillCircle(x, y, r - 2);
-      g.fillStyle(16766720, 1);
-      g.fillCircle(x, y - 1, r - 6);
-      g.fillStyle(16774557, 0.85);
-      g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.38);
+    const metal = rank.metal || "default";
+    const fillMedal = (layers) => {
+      layers.forEach((layer, i) => {
+        g.fillStyle(layer.color, layer.alpha ?? 1);
+        g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink || i * 2));
+      });
+    };
+    if (metal === "gold") {
+      fillMedal([
+        { color: 6044928, dy: 3 },
+        { color: 12092939, shrink: 0 },
+        { color: 16757504, shrink: 2 },
+        { color: 16766720, shrink: 6 }
+      ]);
+      g.fillStyle(16776679, 0.9);
+      g.fillCircle(x - r * 0.25, y - r * 0.3, r * 0.42);
+      g.fillStyle(16752640, 0.35);
+      g.fillCircle(x + r * 0.15, y + r * 0.2, r * 0.55);
       g.lineStyle(3, 16771584, 1);
       g.strokeCircle(x, y, r - 2);
-      g.lineStyle(1, 16777215, 0.45);
-      g.strokeCircle(x - 2, y - 3, r - 8);
-    } else if (rank.metal === "silver") {
-      g.fillStyle(4674921, 1);
-      g.fillCircle(x, y + 2, r);
-      g.fillStyle(9741240, 1);
-      g.fillCircle(x, y, r - 2);
-      g.fillStyle(14870768, 0.7);
-      g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.32);
-      g.lineStyle(3, rank.stroke, 1);
+      g.lineStyle(2, 16777215, 0.5);
+      g.strokeCircle(x - 2, y - 4, r - 9);
+    } else if (metal === "silver") {
+      fillMedal([
+        { color: 3359061, dy: 3 },
+        { color: 6583435, shrink: 0 },
+        { color: 13358561, shrink: 4 }
+      ]);
+      g.fillStyle(16777215, 0.75);
+      g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.36);
+      g.lineStyle(3, 15857145, 1);
       g.strokeCircle(x, y, r - 2);
-    } else if (rank.metal === "bronze") {
-      g.fillStyle(7877903, 1);
-      g.fillCircle(x, y + 2, r);
-      g.fillStyle(rank.color, 1);
-      g.fillCircle(x, y, r - 2);
-      g.fillStyle(16628340, 0.5);
-      g.fillCircle(x - r * 0.18, y - r * 0.22, r * 0.3);
-      g.lineStyle(3, rank.stroke, 1);
+    } else if (metal === "bronze") {
+      fillMedal([
+        { color: 4528643, dy: 3 },
+        { color: 10105874, shrink: 0 },
+        { color: 14251782, shrink: 4 }
+      ]);
+      g.fillStyle(16569165, 0.45);
+      g.fillCircle(x - r * 0.2, y - r * 0.22, r * 0.32);
+      g.lineStyle(3, 16486972, 1);
+      g.strokeCircle(x, y, r - 2);
+    } else if (metal === "diamond") {
+      fillMedal([
+        { color: 805486, dy: 3 },
+        { color: 165063, shrink: 0 },
+        { color: 8246268, shrink: 5 }
+      ]);
+      g.fillStyle(14742270, 0.85);
+      g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.35);
+      g.lineStyle(3, 12248829, 1);
+      g.strokeCircle(x, y, r - 2);
+    } else if (metal === "platinum") {
+      fillMedal([
+        { color: 1461859, dy: 3 },
+        { color: 561586, shrink: 0 },
+        { color: 6809849, shrink: 5 }
+      ]);
+      g.fillStyle(16777215, 0.7);
+      g.fillCircle(x - r * 0.2, y - r * 0.26, r * 0.34);
+      g.lineStyle(3, 10875900, 1);
       g.strokeCircle(x, y, r - 2);
     } else {
-      g.fillStyle(988970, 0.5);
-      g.fillCircle(x, y + 2, r);
+      g.fillStyle(132631, 0.6);
+      g.fillCircle(x, y + 3, r);
       g.fillStyle(rank.color, 1);
       g.fillCircle(x, y, r - 2);
       g.lineStyle(3, rank.stroke || 16777215, 1);
       g.strokeCircle(x, y, r - 2);
     }
     parent.add(g);
-    const letterSize = rank.letter?.length > 1 ? "14px" : "22px";
+    const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
     const lbl = applyCrispText(
-      scene.add.text(x, y, rank.letter || rank.name[0], uiTextStyle({
+      scene.add.text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: letterSize,
         fontStyle: "800",
         color: rank.text || "#fff",
-        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
-        strokeThickness: rank.metal === "gold" ? 2 : 3
+        stroke: metal === "gold" ? "#5c4200" : "#0f172a",
+        strokeThickness: metal === "gold" ? 3 : 3
       })).setOrigin(0.5)
     );
     parent.add(lbl);
   }
   function drawMenuLogo(scene, x, y) {
     const c = scene.add.container(x, y).setDepth(4);
-    const hasBlocks = scene.textures.exists("block-0");
-    if (hasBlocks) {
-      c.add(scene.add.image(-28, -6, "block-0").setScale(0.62).setAngle(-8));
-      c.add(scene.add.image(30, -10, "block-1").setScale(0.62).setAngle(6));
-      c.add(scene.add.image(0, 22, "block-3").setScale(0.68));
-    } else {
-      const g = scene.add.graphics();
-      g.fillStyle(8490232, 1);
-      g.fillRoundedRect(-40, -8, 22, 22, 5);
-      g.fillStyle(3718648, 1);
-      g.fillRoundedRect(18, -12, 22, 22, 5);
-      g.fillStyle(16638023, 1);
-      g.fillRoundedRect(-8, 14, 24, 24, 6);
-      c.add(g);
+    const glow = scene.add.ellipse(0, 8, 200, 72, 6514417, 0.22);
+    c.add(glow);
+    scene.tweens.add({ targets: glow, alpha: { from: 0.15, to: 0.32 }, duration: 2200, yoyo: true, repeat: -1 });
+    const blockScale = 0.92;
+    if (scene.textures.exists("block-0")) {
+      const b0 = scene.add.image(-34, -4, "block-0").setScale(blockScale).setAngle(-12);
+      const b1 = scene.add.image(36, -8, "block-1").setScale(blockScale).setAngle(10);
+      const b2 = scene.add.image(0, 26, "block-3").setScale(blockScale * 1.05);
+      c.add([b0, b1, b2]);
+      scene.tweens.add({ targets: b0, y: b0.y - 4, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      scene.tweens.add({ targets: b1, y: b1.y - 5, duration: 2e3, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      scene.tweens.add({ targets: b2, y: b2.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     }
-    const title = applyCrispText(
-      scene.add.text(0, 58, "BLOCK FORGE", uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: "38px",
-        fontStyle: "800",
-        color: "#38bdf8",
-        stroke: "#0f172a",
-        strokeThickness: 5
-      })).setOrigin(0.5)
+    c.add(
+      applyCrispText(
+        scene.add.text(0, 62, "BLOCK", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "40px",
+          fontStyle: "800",
+          color: "#e0e7ff",
+          stroke: "#0f172a",
+          strokeThickness: 5
+        })).setOrigin(0.5)
+      )
     );
-    c.add(title);
+    c.add(
+      applyCrispText(
+        scene.add.text(0, 98, "FORGE", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "40px",
+          fontStyle: "800",
+          color: "#ffd700",
+          stroke: "#422006",
+          strokeThickness: 5
+        })).setOrigin(0.5)
+      )
+    );
     return c;
   }
   function drawGlassPanel(scene, x, y, w, h, opts = {}) {
@@ -1118,20 +1160,23 @@
     const left = -w / 2 + pad;
     const innerW = w - pad * 2;
     const top = -h / 2 + 12;
+    const frameStroke = rank.metal === "gold" ? 16766720 : rank.stroke || rank.color;
     c.add(
-      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, rank.stroke || rank.color, 0.9)
+      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.95)
     );
     c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
     const badgeX = left + 34;
     const badgeY = top + 38;
-    drawRankEmblem(scene, c, badgeX, badgeY, rank, 32);
-    const textX = left + 76;
+    drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
+    const textX = left + 78;
+    const titleColor = rank.metal === "gold" ? "#ffec8b" : rank.text || "#fff";
     applyCrispText(
       scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
         fontFamily: "Syne, sans-serif",
         fontSize: "28px",
         fontStyle: "800",
-        color: rank.text || "#fff",
+        color: titleColor,
+        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
         strokeThickness: 3
       })).setOrigin(0, 0.5)
     );
@@ -1149,7 +1194,7 @@
     const barColor = rank.metal === "gold" ? 16761095 : rank.color;
     c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
     if (rank.metal === "gold" && fillW > 8) {
-      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.35, 16775620, 0.35).setOrigin(0, 0.5));
+      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.4, 16775620, 0.45).setOrigin(0, 0.5));
     }
     applyCrispText(
       scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
@@ -1180,6 +1225,11 @@
       })).setOrigin(0.5)
     );
     container.add([shadow, bg, gloss, txt]);
+    if (opts.live) {
+      const dot = scene.add.circle(-w / 2 + 22, 0, 5, 4906624, 1);
+      container.add(dot);
+      scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 700, yoyo: true, repeat: -1 });
+    }
     const press = () => {
       sfx.ensure();
       sfx.play("click");
@@ -1215,7 +1265,7 @@
     txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
     return { bg, txt };
   }
-  function drawScreenHeader(scene, x, y, title, subtitle) {
+  function drawScreenHeader(scene, x, y, title, subtitle, live = false) {
     applyCrispText(
       scene.add.text(x, y, title, uiTextStyle({
         fontFamily: "Syne, sans-serif",
@@ -1226,19 +1276,24 @@
       })).setOrigin(0.5).setDepth(5)
     );
     if (subtitle) {
+      const subY = y + 34;
+      if (live) {
+        const dot = scene.add.circle(x - 72, subY, 5, 4906624, 1).setDepth(6);
+        scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 800, yoyo: true, repeat: -1 });
+      }
       applyCrispText(
-        scene.add.text(x, y + 34, subtitle, uiTextStyle({
+        scene.add.text(x + (live ? 8 : 0), subY, subtitle, uiTextStyle({
           fontSize: "14px",
-          color: "#94a3b8",
+          color: live ? "#86efac" : "#94a3b8",
           strokeThickness: 1
         })).setOrigin(0.5).setDepth(5)
       );
     }
   }
   function rankColors(i) {
-    if (i === 0) return { bg: 16498468, stroke: 16638023, text: "#0f172a", medal: "\u{1F947}" };
-    if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "\u{1F948}" };
-    if (i === 2) return { bg: 11817737, stroke: 16628340, text: "#fff", medal: "\u{1F949}" };
+    if (i === 0) return { bg: 16761095, stroke: 16771584, text: "#422006", medal: "1" };
+    if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "2" };
+    if (i === 2) return { bg: 11817737, stroke: 16628340, text: "#fff", medal: "3" };
     return { bg: 1120295, stroke: 3359061, text: "#e2e8f0", medal: `${i + 1}` };
   }
 
@@ -1375,7 +1430,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.2";
+  var APP_VERSION = "1.2.3";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1422,10 +1477,10 @@
         this,
         W / 2,
         L.btnRankings,
-        "\u{1F3C6}  LIVE RANKINGS",
+        "LIVE RANKINGS",
         8141549,
         go(() => transitionTo(this, "Leaderboard", { board: "endless" })),
-        btnOpts
+        { ...btnOpts, live: true }
       );
       this.makeNameBadge(W / 2, L.nameY);
       this.buildAudioToggles(L.audioY);
@@ -1824,8 +1879,8 @@
   }
 
   // public/js/scenes/GameScene.js
-  var TRAY_Y = 562;
-  var TRAY_SCALE = 0.72;
+  var TRAY_Y = 548;
+  var TRAY_SCALE = 0.8;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -1859,7 +1914,7 @@
       this.gameEnded = false;
       this.boardW = GRID * CELL + BOARD_PAD * 2;
       this.boardX = (W - this.boardW) / 2 + BOARD_PAD;
-      this.boardY = 110;
+      this.boardY = 104;
       drawBackdrop(this, W, 780);
       this.hintGfx = this.add.graphics().setDepth(3);
       this.drawBoardFrame();
@@ -2605,7 +2660,7 @@ ${prog}`);
       drawBackdrop(this, W, H);
       const goMenu = () => transitionTo(this, "Menu");
       addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
-      drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "Live worldwide scores");
+      drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "\u25CF Live worldwide scores", true);
       this.liveDot = this.add.circle(W / 2 - 76, L.statusY, 5, 4906624, 1).setDepth(20);
       this.statusText = this.add.text(W / 2 - 58, L.statusY, "Connecting\u2026", {
         fontFamily: "Outfit, sans-serif",

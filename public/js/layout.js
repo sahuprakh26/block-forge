@@ -38,8 +38,8 @@ export function menuLayout(height = H) {
   const { top, bottom } = insetY();
   let y = top;
 
-  const logoY = y + 52;
-  y += 108;
+  const logoY = y + 58;
+  y += 118;
 
   const rankCardH = 128;
   const rankCardY = y + rankCardH / 2;

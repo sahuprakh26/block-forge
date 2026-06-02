@@ -55,15 +55,15 @@ export default class BootScene extends Phaser.Scene {
 
       g.clear();
       g.fillStyle(dark, 1);
-      g.fillRoundedRect(5, 8, size - 6, size - 6, 10);
+      g.fillRoundedRect(6, 10, size - 8, size - 8, 11);
       g.fillStyle(base, 1);
-      g.fillRoundedRect(2, 2, size - 6, size - 6, 10);
-      g.fillStyle(mid, 0.55);
-      g.fillRoundedRect(4, 4, size - 12, size - 14, 9);
-      g.fillStyle(shine, 0.5);
-      g.fillRoundedRect(6, 5, size - 22, 16, 6);
-      g.fillStyle(0xffffff, 0.65);
-      g.fillCircle(12, 11, 5);
+      g.fillRoundedRect(3, 3, size - 8, size - 8, 11);
+      g.fillStyle(mid, 0.6);
+      g.fillRoundedRect(5, 5, size - 14, size - 16, 10);
+      g.fillStyle(shine, 0.55);
+      g.fillRoundedRect(7, 6, size - 24, 18, 7);
+      g.fillStyle(0xffffff, 0.7);
+      g.fillCircle(14, 12, 6);
       g.fillStyle(0xffffff, 0.12);
       g.fillRoundedRect(7, 18, size - 22, size - 26, 6);
       g.lineStyle(2, 0xffffff, 0.28);
