@@ -12,7 +12,7 @@ on:
 
 jobs:
   deploy:
-    if: ${{ secrets.RENDER_API_KEY != '' && secrets.RENDER_SERVICE_ID != '' }}
+    if: ${{ secrets.RENDER_API_KEY != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render deploy
