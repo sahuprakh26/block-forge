@@ -1,2 +1,2 @@
 /** Shown in menu — bump when releasing APK / web bundle */
-export const APP_VERSION = "1.2.4";
+export const APP_VERSION = "1.2.5";

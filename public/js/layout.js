@@ -1,4 +1,5 @@
 import { H, W } from "./config.js";
+import { MENU_LOGO } from "./uiTheme.js";
 
 export function measureSafeInsets() {
   if (typeof document === "undefined") return { top: 0, bottom: 0, topGame: 0, bottomGame: 0 };
@@ -33,17 +34,18 @@ function insetY() {
   };
 }
 
-/** Stack-based menu — roomy spacing */
+/** Stack-based menu — logo zone then rank card (no overlap) */
 export function menuLayout(height = H) {
   const { top, bottom } = insetY();
   let y = top;
 
-  const logoY = y + 58;
-  y += 118;
+  const logoZone = MENU_LOGO.height + 8;
+  const logoY = y + MENU_LOGO.centerToBottom;
+  y += logoZone + 20;
 
   const rankCardH = 128;
   const rankCardY = y + rankCardH / 2;
-  y += rankCardH + 14;
+  y += rankCardH + 16;
 
   const statsY = y + 14;
   y += 30;

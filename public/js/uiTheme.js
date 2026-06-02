@@ -111,31 +111,34 @@ export function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
   parent.add(lbl);
 }
 
-/** Polished game logo — big blocks + BLOCK / FORGE */
+/** Logo footprint for menu layout (center anchor → bottom edge offset) */
+export const MENU_LOGO = { height: 118, centerToBottom: 56 };
+
+/** Polished game logo — blocks + BLOCK / FORGE (fits above rank card) */
 export function drawMenuLogo(scene, x, y) {
-  const c = scene.add.container(x, y).setDepth(4);
+  const c = scene.add.container(x, y).setDepth(8);
 
-  const glow = scene.add.ellipse(0, 8, 200, 72, 0x6366f1, 0.22);
+  const glow = scene.add.ellipse(0, 4, 180, 64, 0x6366f1, 0.2);
   c.add(glow);
-  scene.tweens.add({ targets: glow, alpha: { from: 0.15, to: 0.32 }, duration: 2200, yoyo: true, repeat: -1 });
+  scene.tweens.add({ targets: glow, alpha: { from: 0.12, to: 0.28 }, duration: 2200, yoyo: true, repeat: -1 });
 
-  const blockScale = 0.92;
+  const blockScale = 0.82;
   if (scene.textures.exists("block-0")) {
-    const b0 = scene.add.image(-34, -4, "block-0").setScale(blockScale).setAngle(-12);
-    const b1 = scene.add.image(36, -8, "block-1").setScale(blockScale).setAngle(10);
-    const b2 = scene.add.image(0, 26, "block-3").setScale(blockScale * 1.05);
+    const b0 = scene.add.image(-30, -18, "block-0").setScale(blockScale).setAngle(-12);
+    const b1 = scene.add.image(32, -20, "block-1").setScale(blockScale).setAngle(10);
+    const b2 = scene.add.image(0, 4, "block-3").setScale(blockScale * 1.02);
     c.add([b0, b1, b2]);
-    scene.tweens.add({ targets: b0, y: b0.y - 4, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-    scene.tweens.add({ targets: b1, y: b1.y - 5, duration: 2000, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-    scene.tweens.add({ targets: b2, y: b2.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    scene.tweens.add({ targets: b0, y: b0.y - 3, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    scene.tweens.add({ targets: b1, y: b1.y - 4, duration: 2000, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    scene.tweens.add({ targets: b2, y: b2.y - 2, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
   }
 
   c.add(
     applyCrispText(
       scene.add
-        .text(0, 62, "BLOCK", uiTextStyle({
+        .text(0, 38, "BLOCK", uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "40px",
+          fontSize: "36px",
           fontStyle: "800",
           color: "#e0e7ff",
           stroke: "#0f172a",
@@ -147,9 +150,9 @@ export function drawMenuLogo(scene, x, y) {
   c.add(
     applyCrispText(
       scene.add
-        .text(0, 98, "FORGE", uiTextStyle({
+        .text(0, 72, "FORGE", uiTextStyle({
           fontFamily: "Syne, sans-serif",
-          fontSize: "40px",
+          fontSize: "36px",
           fontStyle: "800",
           color: "#ffeb3b",
           stroke: "#c9a800",

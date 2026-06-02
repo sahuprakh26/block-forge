@@ -584,6 +584,327 @@
   };
   var bgm = new Bgm();
 
+  // public/js/textUtil.js
+  function uiResolution() {
+    if (typeof window === "undefined") return 1;
+    return Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+  }
+  function applyCrispText(textObj) {
+    const r = uiResolution();
+    if (r > 1 && textObj.setResolution) textObj.setResolution(r);
+    return textObj;
+  }
+  function uiTextStyle(overrides = {}) {
+    return {
+      fontFamily: "Outfit, sans-serif",
+      color: "#e2e8f0",
+      stroke: "#0f172a",
+      strokeThickness: 2,
+      ...overrides
+    };
+  }
+
+  // public/js/uiTheme.js
+  function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
+    const g = scene.add.graphics();
+    const r = radius;
+    const metal = rank.metal || "default";
+    const layers = (list) => {
+      list.forEach((layer, i) => {
+        g.fillStyle(layer.color, layer.alpha ?? 1);
+        g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink ?? i * 2));
+      });
+    };
+    const shine = (sx, sy, sr, color = 16777215, alpha = 0.8) => {
+      g.fillStyle(color, alpha);
+      g.fillCircle(x + sx, y + sy, sr);
+    };
+    const ring = (color, width = 3) => {
+      g.lineStyle(width, color, 1);
+      g.strokeCircle(x, y, r - 2);
+    };
+    if (metal === "gold") {
+      layers([
+        { color: 13215744, dy: 2, shrink: 0 },
+        { color: 16766720, shrink: 2 },
+        { color: 16771899, shrink: 5 },
+        { color: 16774557, shrink: 9 }
+      ]);
+      shine(-r * 0.28, -r * 0.32, r * 0.4, 16777215, 0.92);
+      shine(r * 0.12, r * 0.15, r * 0.22, 16775620, 0.55);
+      ring(16771584);
+      g.lineStyle(2, 16777215, 0.55);
+      g.strokeCircle(x - 2, y - 3, r - 10);
+    } else if (metal === "silver") {
+      layers([
+        { color: 4674921, dy: 2, shrink: 0 },
+        { color: 9741240, shrink: 2 },
+        { color: 14870768, shrink: 6 }
+      ]);
+      shine(-r * 0.24, -r * 0.28, r * 0.34);
+      ring(16317180);
+    } else if (metal === "bronze") {
+      layers([
+        { color: 12730636, dy: 2, shrink: 0 },
+        { color: 15357964, shrink: 2 },
+        { color: 16347926, shrink: 6 }
+      ]);
+      shine(-r * 0.22, -r * 0.26, r * 0.32, 16772565, 0.7);
+      ring(16628340);
+    } else if (metal === "iron") {
+      layers([
+        { color: 4144966, dy: 2, shrink: 0 },
+        { color: 7434618, shrink: 2 },
+        { color: 10592682, shrink: 6 }
+      ]);
+      shine(-r * 0.2, -r * 0.25, r * 0.3, 16053493, 0.65);
+      ring(13948120);
+    } else if (metal === "diamond") {
+      layers([
+        { color: 223649, dy: 2, shrink: 0 },
+        { color: 959977, shrink: 2 },
+        { color: 8246268, shrink: 6 }
+      ]);
+      shine(-r * 0.22, -r * 0.28, r * 0.34, 16777215, 0.88);
+      ring(14742270);
+    } else if (metal === "platinum") {
+      layers([
+        { color: 947344, dy: 2, shrink: 0 },
+        { color: 2282478, shrink: 2 },
+        { color: 6809849, shrink: 6 }
+      ]);
+      shine(-r * 0.22, -r * 0.26, r * 0.33, 16777215, 0.85);
+      ring(13630206);
+    } else if (metal === "immortal") {
+      layers([
+        { color: 15381256, dy: 2, shrink: 0 },
+        { color: 16436245, shrink: 2 },
+        { color: 16707722, shrink: 6 }
+      ]);
+      shine(-r * 0.26, -r * 0.3, r * 0.38, 16777215, 0.9);
+      ring(16775620);
+    } else {
+      g.fillStyle(988970, 0.5);
+      g.fillCircle(x, y + 2, r);
+      g.fillStyle(rank.color, 1);
+      g.fillCircle(x, y, r - 2);
+      shine(-r * 0.2, -r * 0.24, r * 0.28, 16777215, 0.5);
+      ring(rank.stroke || 16777215);
+    }
+    parent.add(g);
+    const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
+    const letterFill = metal === "gold" || metal === "immortal" ? "#1e293b" : rank.text || "#fff";
+    const letterStroke = metal === "gold" ? "#ffea00" : metal === "immortal" ? "#fde047" : "#0f172a";
+    const lbl = applyCrispText(
+      scene.add.text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: letterSize,
+        fontStyle: "800",
+        color: letterFill,
+        stroke: letterStroke,
+        strokeThickness: metal === "gold" || metal === "immortal" ? 2 : 3
+      })).setOrigin(0.5)
+    );
+    parent.add(lbl);
+  }
+  var MENU_LOGO = { height: 118, centerToBottom: 56 };
+  function drawMenuLogo(scene, x, y) {
+    const c = scene.add.container(x, y).setDepth(8);
+    const glow = scene.add.ellipse(0, 4, 180, 64, 6514417, 0.2);
+    c.add(glow);
+    scene.tweens.add({ targets: glow, alpha: { from: 0.12, to: 0.28 }, duration: 2200, yoyo: true, repeat: -1 });
+    const blockScale = 0.82;
+    if (scene.textures.exists("block-0")) {
+      const b0 = scene.add.image(-30, -18, "block-0").setScale(blockScale).setAngle(-12);
+      const b1 = scene.add.image(32, -20, "block-1").setScale(blockScale).setAngle(10);
+      const b2 = scene.add.image(0, 4, "block-3").setScale(blockScale * 1.02);
+      c.add([b0, b1, b2]);
+      scene.tweens.add({ targets: b0, y: b0.y - 3, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      scene.tweens.add({ targets: b1, y: b1.y - 4, duration: 2e3, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      scene.tweens.add({ targets: b2, y: b2.y - 2, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
+    c.add(
+      applyCrispText(
+        scene.add.text(0, 38, "BLOCK", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "36px",
+          fontStyle: "800",
+          color: "#e0e7ff",
+          stroke: "#0f172a",
+          strokeThickness: 5
+        })).setOrigin(0.5)
+      )
+    );
+    c.add(
+      applyCrispText(
+        scene.add.text(0, 72, "FORGE", uiTextStyle({
+          fontFamily: "Syne, sans-serif",
+          fontSize: "36px",
+          fontStyle: "800",
+          color: "#ffeb3b",
+          stroke: "#c9a800",
+          strokeThickness: 4
+        })).setOrigin(0.5)
+      )
+    );
+    return c;
+  }
+  function drawGlassPanel(scene, x, y, w, h, opts = {}) {
+    const depth = opts.depth ?? 4;
+    const fill = opts.fill ?? 988970;
+    const alpha = opts.alpha ?? 0.92;
+    const stroke = opts.stroke ?? 6514417;
+    const panel = scene.add.container(x, y).setDepth(depth);
+    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.55);
+    panel.add([outer]);
+    return panel;
+  }
+  function drawRankCard(scene, x, y, w, h, progress, xp) {
+    const { rank, next, nextXp, ratio } = progress;
+    const depth = 6;
+    const c = scene.add.container(x, y).setDepth(depth);
+    const pad = 16;
+    const left = -w / 2 + pad;
+    const innerW = w - pad * 2;
+    const top = -h / 2 + 12;
+    const frameStroke = rank.stroke || rank.color;
+    c.add(
+      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.95)
+    );
+    c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
+    const badgeX = left + 34;
+    const badgeY = top + 38;
+    drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
+    const textX = left + 78;
+    const titleColor = rank.text || "#fff";
+    const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
+    applyCrispText(
+      scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: "28px",
+        fontStyle: "800",
+        color: titleColor,
+        stroke: titleStroke,
+        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 3
+      })).setOrigin(0, 0.5)
+    );
+    applyCrispText(
+      scene.add.text(textX, top + 52, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
+        fontSize: "16px",
+        color: "#94a3b8",
+        strokeThickness: 1
+      })).setOrigin(0, 0.5)
+    );
+    const barY = top + 78;
+    const barH = 16;
+    c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
+    const fillW = Math.max(6, innerW * ratio);
+    const barColor = rank.metal === "gold" ? 16766720 : rank.metal === "immortal" ? 16436245 : rank.color;
+    c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
+    if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 8) {
+      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.42, 16775620, 0.5).setOrigin(0, 0.5));
+    }
+    applyCrispText(
+      scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
+        fontSize: "16px",
+        fontStyle: "700",
+        color: "#e2e8f0",
+        strokeThickness: 1
+      })).setOrigin(0, 0.5)
+    );
+    return c;
+  }
+  function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
+    const w = opts.width ?? 300;
+    const h = opts.height ?? 54;
+    const depth = opts.depth ?? 10;
+    const container = scene.add.container(x, y).setDepth(depth);
+    const shadow = scene.add.rectangle(2, 5, w, h, 0, 0.35);
+    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.18).setInteractive({ useHandCursor: true });
+    const gloss = scene.add.rectangle(0, -h * 0.22, w - 12, h * 0.3, 16777215, 0.1);
+    const txt = applyCrispText(
+      scene.add.text(0, 0, label, uiTextStyle({
+        fontSize: opts.fontSize ?? "17px",
+        fontStyle: "700",
+        color: "#fff",
+        align: "center",
+        wordWrap: { width: w - 24 },
+        strokeThickness: 2
+      })).setOrigin(0.5)
+    );
+    container.add([shadow, bg, gloss, txt]);
+    if (opts.live) {
+      const dot = scene.add.circle(-w / 2 + 22, 0, 5, 4906624, 1);
+      container.add(dot);
+      scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 700, yoyo: true, repeat: -1 });
+    }
+    const press = () => {
+      sfx.ensure();
+      sfx.play("click");
+      scene.tweens.add({
+        targets: container,
+        scaleX: 0.96,
+        scaleY: 0.96,
+        duration: 70,
+        yoyo: true,
+        onComplete: onClick
+      });
+    };
+    bg.on("pointerdown", press);
+    txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
+    return container;
+  }
+  function makePillTab(scene, x, y, label, active, onClick) {
+    const w = 148;
+    const h = 40;
+    const bg = scene.add.rectangle(x, y, w, h, active ? 6514417 : 1976635, active ? 1 : 0.92).setStrokeStyle(2, active ? 10859772 : 4674921, active ? 0.9 : 0.5).setInteractive({ useHandCursor: true }).setDepth(15);
+    const txt = applyCrispText(
+      scene.add.text(x, y, label, uiTextStyle({
+        fontSize: "14px",
+        fontStyle: "700",
+        color: active ? "#fff" : "#94a3b8"
+      })).setOrigin(0.5).setDepth(16)
+    );
+    const fire = () => {
+      sfx.play("click");
+      onClick();
+    };
+    bg.on("pointerdown", fire);
+    txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
+    return { bg, txt };
+  }
+  function drawScreenHeader(scene, x, y, title, subtitle, live = false) {
+    applyCrispText(
+      scene.add.text(x, y, title, uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: "28px",
+        fontStyle: "800",
+        color: "#38bdf8",
+        strokeThickness: 4
+      })).setOrigin(0.5).setDepth(5)
+    );
+    if (subtitle) {
+      const subY = y + 34;
+      if (live) {
+        const dot = scene.add.circle(x - 72, subY, 5, 4906624, 1).setDepth(6);
+        scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 800, yoyo: true, repeat: -1 });
+      }
+      applyCrispText(
+        scene.add.text(x + (live ? 8 : 0), subY, subtitle, uiTextStyle({
+          fontSize: "14px",
+          color: live ? "#86efac" : "#94a3b8",
+          strokeThickness: 1
+        })).setOrigin(0.5).setDepth(5)
+      );
+    }
+  }
+  function rankColors(i) {
+    if (i === 0) return { bg: 16761095, stroke: 16771584, text: "#422006", medal: "1" };
+    if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "2" };
+    if (i === 2) return { bg: 11817737, stroke: 16628340, text: "#fff", medal: "3" };
+    return { bg: 1120295, stroke: 3359061, text: "#e2e8f0", medal: `${i + 1}` };
+  }
+
   // public/js/layout.js
   function measureSafeInsets() {
     if (typeof document === "undefined") return { top: 0, bottom: 0, topGame: 0, bottomGame: 0 };
@@ -615,11 +936,12 @@
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
     let y = top;
-    const logoY = y + 58;
-    y += 118;
+    const logoZone = MENU_LOGO.height + 8;
+    const logoY = y + MENU_LOGO.centerToBottom;
+    y += logoZone + 20;
     const rankCardH = 128;
     const rankCardY = y + rankCardH / 2;
-    y += rankCardH + 14;
+    y += rankCardH + 16;
     const statsY = y + 14;
     y += 30;
     const btnGap = 58;
@@ -688,26 +1010,6 @@
       panelY: listStart + (height - bottom - 8 - listStart) / 2,
       panelH: height - listStart - bottom - 12,
       maxRows
-    };
-  }
-
-  // public/js/textUtil.js
-  function uiResolution() {
-    if (typeof window === "undefined") return 1;
-    return Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-  }
-  function applyCrispText(textObj) {
-    const r = uiResolution();
-    if (r > 1 && textObj.setResolution) textObj.setResolution(r);
-    return textObj;
-  }
-  function uiTextStyle(overrides = {}) {
-    return {
-      fontFamily: "Outfit, sans-serif",
-      color: "#e2e8f0",
-      stroke: "#0f172a",
-      strokeThickness: 2,
-      ...overrides
     };
   }
 
@@ -1013,306 +1315,6 @@
     });
   }
 
-  // public/js/uiTheme.js
-  function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
-    const g = scene.add.graphics();
-    const r = radius;
-    const metal = rank.metal || "default";
-    const layers = (list) => {
-      list.forEach((layer, i) => {
-        g.fillStyle(layer.color, layer.alpha ?? 1);
-        g.fillCircle(x, y + (layer.dy || 0), r - (layer.shrink ?? i * 2));
-      });
-    };
-    const shine = (sx, sy, sr, color = 16777215, alpha = 0.8) => {
-      g.fillStyle(color, alpha);
-      g.fillCircle(x + sx, y + sy, sr);
-    };
-    const ring = (color, width = 3) => {
-      g.lineStyle(width, color, 1);
-      g.strokeCircle(x, y, r - 2);
-    };
-    if (metal === "gold") {
-      layers([
-        { color: 13215744, dy: 2, shrink: 0 },
-        { color: 16766720, shrink: 2 },
-        { color: 16771899, shrink: 5 },
-        { color: 16774557, shrink: 9 }
-      ]);
-      shine(-r * 0.28, -r * 0.32, r * 0.4, 16777215, 0.92);
-      shine(r * 0.12, r * 0.15, r * 0.22, 16775620, 0.55);
-      ring(16771584);
-      g.lineStyle(2, 16777215, 0.55);
-      g.strokeCircle(x - 2, y - 3, r - 10);
-    } else if (metal === "silver") {
-      layers([
-        { color: 4674921, dy: 2, shrink: 0 },
-        { color: 9741240, shrink: 2 },
-        { color: 14870768, shrink: 6 }
-      ]);
-      shine(-r * 0.24, -r * 0.28, r * 0.34);
-      ring(16317180);
-    } else if (metal === "bronze") {
-      layers([
-        { color: 12730636, dy: 2, shrink: 0 },
-        { color: 15357964, shrink: 2 },
-        { color: 16347926, shrink: 6 }
-      ]);
-      shine(-r * 0.22, -r * 0.26, r * 0.32, 16772565, 0.7);
-      ring(16628340);
-    } else if (metal === "iron") {
-      layers([
-        { color: 4144966, dy: 2, shrink: 0 },
-        { color: 7434618, shrink: 2 },
-        { color: 10592682, shrink: 6 }
-      ]);
-      shine(-r * 0.2, -r * 0.25, r * 0.3, 16053493, 0.65);
-      ring(13948120);
-    } else if (metal === "diamond") {
-      layers([
-        { color: 223649, dy: 2, shrink: 0 },
-        { color: 959977, shrink: 2 },
-        { color: 8246268, shrink: 6 }
-      ]);
-      shine(-r * 0.22, -r * 0.28, r * 0.34, 16777215, 0.88);
-      ring(14742270);
-    } else if (metal === "platinum") {
-      layers([
-        { color: 947344, dy: 2, shrink: 0 },
-        { color: 2282478, shrink: 2 },
-        { color: 6809849, shrink: 6 }
-      ]);
-      shine(-r * 0.22, -r * 0.26, r * 0.33, 16777215, 0.85);
-      ring(13630206);
-    } else if (metal === "immortal") {
-      layers([
-        { color: 15381256, dy: 2, shrink: 0 },
-        { color: 16436245, shrink: 2 },
-        { color: 16707722, shrink: 6 }
-      ]);
-      shine(-r * 0.26, -r * 0.3, r * 0.38, 16777215, 0.9);
-      ring(16775620);
-    } else {
-      g.fillStyle(988970, 0.5);
-      g.fillCircle(x, y + 2, r);
-      g.fillStyle(rank.color, 1);
-      g.fillCircle(x, y, r - 2);
-      shine(-r * 0.2, -r * 0.24, r * 0.28, 16777215, 0.5);
-      ring(rank.stroke || 16777215);
-    }
-    parent.add(g);
-    const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
-    const letterFill = metal === "gold" || metal === "immortal" ? "#1e293b" : rank.text || "#fff";
-    const letterStroke = metal === "gold" ? "#ffea00" : metal === "immortal" ? "#fde047" : "#0f172a";
-    const lbl = applyCrispText(
-      scene.add.text(x, y + 1, rank.letter || rank.name[0], uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: letterSize,
-        fontStyle: "800",
-        color: letterFill,
-        stroke: letterStroke,
-        strokeThickness: metal === "gold" || metal === "immortal" ? 2 : 3
-      })).setOrigin(0.5)
-    );
-    parent.add(lbl);
-  }
-  function drawMenuLogo(scene, x, y) {
-    const c = scene.add.container(x, y).setDepth(4);
-    const glow = scene.add.ellipse(0, 8, 200, 72, 6514417, 0.22);
-    c.add(glow);
-    scene.tweens.add({ targets: glow, alpha: { from: 0.15, to: 0.32 }, duration: 2200, yoyo: true, repeat: -1 });
-    const blockScale = 0.92;
-    if (scene.textures.exists("block-0")) {
-      const b0 = scene.add.image(-34, -4, "block-0").setScale(blockScale).setAngle(-12);
-      const b1 = scene.add.image(36, -8, "block-1").setScale(blockScale).setAngle(10);
-      const b2 = scene.add.image(0, 26, "block-3").setScale(blockScale * 1.05);
-      c.add([b0, b1, b2]);
-      scene.tweens.add({ targets: b0, y: b0.y - 4, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-      scene.tweens.add({ targets: b1, y: b1.y - 5, duration: 2e3, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-      scene.tweens.add({ targets: b2, y: b2.y - 3, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
-    }
-    c.add(
-      applyCrispText(
-        scene.add.text(0, 62, "BLOCK", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "40px",
-          fontStyle: "800",
-          color: "#e0e7ff",
-          stroke: "#0f172a",
-          strokeThickness: 5
-        })).setOrigin(0.5)
-      )
-    );
-    c.add(
-      applyCrispText(
-        scene.add.text(0, 98, "FORGE", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "40px",
-          fontStyle: "800",
-          color: "#ffeb3b",
-          stroke: "#c9a800",
-          strokeThickness: 4
-        })).setOrigin(0.5)
-      )
-    );
-    return c;
-  }
-  function drawGlassPanel(scene, x, y, w, h, opts = {}) {
-    const depth = opts.depth ?? 4;
-    const fill = opts.fill ?? 988970;
-    const alpha = opts.alpha ?? 0.92;
-    const stroke = opts.stroke ?? 6514417;
-    const panel = scene.add.container(x, y).setDepth(depth);
-    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.55);
-    panel.add([outer]);
-    return panel;
-  }
-  function drawRankCard(scene, x, y, w, h, progress, xp) {
-    const { rank, next, nextXp, ratio } = progress;
-    const depth = 6;
-    const c = scene.add.container(x, y).setDepth(depth);
-    const pad = 16;
-    const left = -w / 2 + pad;
-    const innerW = w - pad * 2;
-    const top = -h / 2 + 12;
-    const frameStroke = rank.stroke || rank.color;
-    c.add(
-      scene.add.rectangle(0, 0, w, h, 791074, 0.96).setStrokeStyle(2, frameStroke, 0.95)
-    );
-    c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
-    const badgeX = left + 34;
-    const badgeY = top + 38;
-    drawRankEmblem(scene, c, badgeX, badgeY, rank, 34);
-    const textX = left + 78;
-    const titleColor = rank.text || "#fff";
-    const titleStroke = rank.metal === "gold" ? "#c9a800" : rank.metal === "immortal" ? "#ca8a04" : "#0f172a";
-    applyCrispText(
-      scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: "28px",
-        fontStyle: "800",
-        color: titleColor,
-        stroke: titleStroke,
-        strokeThickness: rank.metal === "gold" || rank.metal === "immortal" ? 2 : 3
-      })).setOrigin(0, 0.5)
-    );
-    applyCrispText(
-      scene.add.text(textX, top + 52, next ? `Next: ${next.name}` : "Max tier", uiTextStyle({
-        fontSize: "16px",
-        color: "#94a3b8",
-        strokeThickness: 1
-      })).setOrigin(0, 0.5)
-    );
-    const barY = top + 78;
-    const barH = 16;
-    c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
-    const fillW = Math.max(6, innerW * ratio);
-    const barColor = rank.metal === "gold" ? 16766720 : rank.metal === "immortal" ? 16436245 : rank.color;
-    c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
-    if ((rank.metal === "gold" || rank.metal === "immortal") && fillW > 8) {
-      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.42, 16775620, 0.5).setOrigin(0, 0.5));
-    }
-    applyCrispText(
-      scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
-        fontSize: "16px",
-        fontStyle: "700",
-        color: "#e2e8f0",
-        strokeThickness: 1
-      })).setOrigin(0, 0.5)
-    );
-    return c;
-  }
-  function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
-    const w = opts.width ?? 300;
-    const h = opts.height ?? 54;
-    const depth = opts.depth ?? 10;
-    const container = scene.add.container(x, y).setDepth(depth);
-    const shadow = scene.add.rectangle(2, 5, w, h, 0, 0.35);
-    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.18).setInteractive({ useHandCursor: true });
-    const gloss = scene.add.rectangle(0, -h * 0.22, w - 12, h * 0.3, 16777215, 0.1);
-    const txt = applyCrispText(
-      scene.add.text(0, 0, label, uiTextStyle({
-        fontSize: opts.fontSize ?? "17px",
-        fontStyle: "700",
-        color: "#fff",
-        align: "center",
-        wordWrap: { width: w - 24 },
-        strokeThickness: 2
-      })).setOrigin(0.5)
-    );
-    container.add([shadow, bg, gloss, txt]);
-    if (opts.live) {
-      const dot = scene.add.circle(-w / 2 + 22, 0, 5, 4906624, 1);
-      container.add(dot);
-      scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 700, yoyo: true, repeat: -1 });
-    }
-    const press = () => {
-      sfx.ensure();
-      sfx.play("click");
-      scene.tweens.add({
-        targets: container,
-        scaleX: 0.96,
-        scaleY: 0.96,
-        duration: 70,
-        yoyo: true,
-        onComplete: onClick
-      });
-    };
-    bg.on("pointerdown", press);
-    txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
-    return container;
-  }
-  function makePillTab(scene, x, y, label, active, onClick) {
-    const w = 148;
-    const h = 40;
-    const bg = scene.add.rectangle(x, y, w, h, active ? 6514417 : 1976635, active ? 1 : 0.92).setStrokeStyle(2, active ? 10859772 : 4674921, active ? 0.9 : 0.5).setInteractive({ useHandCursor: true }).setDepth(15);
-    const txt = applyCrispText(
-      scene.add.text(x, y, label, uiTextStyle({
-        fontSize: "14px",
-        fontStyle: "700",
-        color: active ? "#fff" : "#94a3b8"
-      })).setOrigin(0.5).setDepth(16)
-    );
-    const fire = () => {
-      sfx.play("click");
-      onClick();
-    };
-    bg.on("pointerdown", fire);
-    txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
-    return { bg, txt };
-  }
-  function drawScreenHeader(scene, x, y, title, subtitle, live = false) {
-    applyCrispText(
-      scene.add.text(x, y, title, uiTextStyle({
-        fontFamily: "Syne, sans-serif",
-        fontSize: "28px",
-        fontStyle: "800",
-        color: "#38bdf8",
-        strokeThickness: 4
-      })).setOrigin(0.5).setDepth(5)
-    );
-    if (subtitle) {
-      const subY = y + 34;
-      if (live) {
-        const dot = scene.add.circle(x - 72, subY, 5, 4906624, 1).setDepth(6);
-        scene.tweens.add({ targets: dot, alpha: { from: 1, to: 0.35 }, duration: 800, yoyo: true, repeat: -1 });
-      }
-      applyCrispText(
-        scene.add.text(x + (live ? 8 : 0), subY, subtitle, uiTextStyle({
-          fontSize: "14px",
-          color: live ? "#86efac" : "#94a3b8",
-          strokeThickness: 1
-        })).setOrigin(0.5).setDepth(5)
-      );
-    }
-  }
-  function rankColors(i) {
-    if (i === 0) return { bg: 16761095, stroke: 16771584, text: "#422006", medal: "1" };
-    if (i === 1) return { bg: 9741240, stroke: 14870768, text: "#0f172a", medal: "2" };
-    if (i === 2) return { bg: 11817737, stroke: 16628340, text: "#fff", medal: "3" };
-    return { bg: 1120295, stroke: 3359061, text: "#e2e8f0", medal: `${i + 1}` };
-  }
-
   // public/js/player.js
   var PLAYER_KEY = "bf-player";
   var MIN_NAME_LEN = 2;
@@ -1446,7 +1448,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.4";
+  var APP_VERSION = "1.2.5";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
