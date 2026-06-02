@@ -38,10 +38,8 @@ export function menuLayout(height = H) {
   const { top, bottom } = insetY();
   let y = top;
 
-  const logoY1 = y + 24;
-  y += 46;
-  const logoY2 = y + 24;
-  y += 50;
+  const logoY = y + 52;
+  y += 108;
 
   const rankCardH = 128;
   const rankCardY = y + rankCardH / 2;
@@ -65,9 +63,7 @@ export function menuLayout(height = H) {
 
   return {
     compact,
-    logoY1,
-    logoY2,
-    logoSize: compact ? "36px" : "44px",
+    logoY,
     rankCardY,
     rankCardH,
     rankCardW: W - 28,

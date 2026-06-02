@@ -2,6 +2,102 @@ import { W } from "./config.js";
 import { sfx } from "./audio.js";
 import { applyCrispText, uiTextStyle } from "./textUtil.js";
 
+/** Shiny tier medal (replaces emoji) */
+export function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
+  const g = scene.add.graphics();
+  const r = radius;
+
+  if (rank.metal === "gold") {
+    g.fillStyle(0xb45309, 1);
+    g.fillCircle(x, y + 2, r);
+    g.fillStyle(0xff8f00, 1);
+    g.fillCircle(x, y, r - 2);
+    g.fillStyle(0xffd700, 1);
+    g.fillCircle(x, y - 1, r - 6);
+    g.fillStyle(0xfff59d, 0.85);
+    g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.38);
+    g.lineStyle(3, 0xffea00, 1);
+    g.strokeCircle(x, y, r - 2);
+    g.lineStyle(1, 0xffffff, 0.45);
+    g.strokeCircle(x - 2, y - 3, r - 8);
+  } else if (rank.metal === "silver") {
+    g.fillStyle(0x475569, 1);
+    g.fillCircle(x, y + 2, r);
+    g.fillStyle(0x94a3b8, 1);
+    g.fillCircle(x, y, r - 2);
+    g.fillStyle(0xe2e8f0, 0.7);
+    g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.32);
+    g.lineStyle(3, rank.stroke, 1);
+    g.strokeCircle(x, y, r - 2);
+  } else if (rank.metal === "bronze") {
+    g.fillStyle(0x78350f, 1);
+    g.fillCircle(x, y + 2, r);
+    g.fillStyle(rank.color, 1);
+    g.fillCircle(x, y, r - 2);
+    g.fillStyle(0xfdba74, 0.5);
+    g.fillCircle(x - r * 0.18, y - r * 0.22, r * 0.3);
+    g.lineStyle(3, rank.stroke, 1);
+    g.strokeCircle(x, y, r - 2);
+  } else {
+    g.fillStyle(0x0f172a, 0.5);
+    g.fillCircle(x, y + 2, r);
+    g.fillStyle(rank.color, 1);
+    g.fillCircle(x, y, r - 2);
+    g.lineStyle(3, rank.stroke || 0xffffff, 1);
+    g.strokeCircle(x, y, r - 2);
+  }
+
+  parent.add(g);
+  const letterSize = rank.letter?.length > 1 ? "14px" : "22px";
+  const lbl = applyCrispText(
+    scene.add
+      .text(x, y, rank.letter || rank.name[0], uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: letterSize,
+        fontStyle: "800",
+        color: rank.text || "#fff",
+        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
+        strokeThickness: rank.metal === "gold" ? 2 : 3,
+      }))
+      .setOrigin(0.5)
+  );
+  parent.add(lbl);
+}
+
+/** Block Forge logo — 3 blocks + title */
+export function drawMenuLogo(scene, x, y) {
+  const c = scene.add.container(x, y).setDepth(4);
+  const hasBlocks = scene.textures.exists("block-0");
+  if (hasBlocks) {
+    c.add(scene.add.image(-28, -6, "block-0").setScale(0.62).setAngle(-8));
+    c.add(scene.add.image(30, -10, "block-1").setScale(0.62).setAngle(6));
+    c.add(scene.add.image(0, 22, "block-3").setScale(0.68));
+  } else {
+    const g = scene.add.graphics();
+    g.fillStyle(0x818cf8, 1);
+    g.fillRoundedRect(-40, -8, 22, 22, 5);
+    g.fillStyle(0x38bdf8, 1);
+    g.fillRoundedRect(18, -12, 22, 22, 5);
+    g.fillStyle(0xfde047, 1);
+    g.fillRoundedRect(-8, 14, 24, 24, 6);
+    c.add(g);
+  }
+  const title = applyCrispText(
+    scene.add
+      .text(0, 58, "BLOCK FORGE", uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: "38px",
+        fontStyle: "800",
+        color: "#38bdf8",
+        stroke: "#0f172a",
+        strokeThickness: 5,
+      }))
+      .setOrigin(0.5)
+  );
+  c.add(title);
+  return c;
+}
+
 export function drawGlassPanel(scene, x, y, w, h, opts = {}) {
   const depth = opts.depth ?? 4;
   const fill = opts.fill ?? 0x0f172a;
@@ -32,8 +128,7 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
 
   const badgeX = left + 34;
   const badgeY = top + 38;
-  c.add(scene.add.circle(badgeX, badgeY, 30, rank.color, 1).setStrokeStyle(2, rank.stroke || 0xffffff, 0.7));
-  applyCrispText(scene.add.text(badgeX, badgeY, rank.icon, { fontSize: "28px" }).setOrigin(0.5));
+  drawRankEmblem(scene, c, badgeX, badgeY, rank, 32);
 
   const textX = left + 76;
   applyCrispText(
@@ -61,7 +156,11 @@ export function drawRankCard(scene, x, y, w, h, progress, xp) {
   const barH = 16;
   c.add(scene.add.rectangle(left, barY, innerW, barH, 0x1e293b).setOrigin(0, 0.5));
   const fillW = Math.max(6, innerW * ratio);
-  c.add(scene.add.rectangle(left, barY, fillW, barH, rank.color).setOrigin(0, 0.5));
+  const barColor = rank.metal === "gold" ? 0xffc107 : rank.color;
+  c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
+  if (rank.metal === "gold" && fillW > 8) {
+    c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.35, 0xfff9c4, 0.35).setOrigin(0, 0.5));
+  }
 
   applyCrispText(
     scene.add

@@ -1,4 +1,4 @@
-import { COLORS, W, H } from "../config.js";
+import { COLORS, W, H, CELL } from "../config.js";
 
 export default class BootScene extends Phaser.Scene {
   constructor() {
@@ -32,7 +32,7 @@ export default class BootScene extends Phaser.Scene {
 
   generateTextures() {
     const g = this.make.graphics({ x: 0, y: 0, add: false });
-    const size = 44;
+    const size = CELL;
 
     for (let i = 0; i < COLORS.length; i++) {
       const base = COLORS[i];
@@ -60,10 +60,10 @@ export default class BootScene extends Phaser.Scene {
       g.fillRoundedRect(2, 2, size - 6, size - 6, 10);
       g.fillStyle(mid, 0.55);
       g.fillRoundedRect(4, 4, size - 12, size - 14, 9);
-      g.fillStyle(shine, 0.45);
-      g.fillRoundedRect(5, 4, size - 20, 14, 6);
-      g.fillStyle(0xffffff, 0.55);
-      g.fillCircle(11, 10, 4);
+      g.fillStyle(shine, 0.5);
+      g.fillRoundedRect(6, 5, size - 22, 16, 6);
+      g.fillStyle(0xffffff, 0.65);
+      g.fillCircle(12, 11, 5);
       g.fillStyle(0xffffff, 0.12);
       g.fillRoundedRect(7, 18, size - 22, size - 26, 6);
       g.lineStyle(2, 0xffffff, 0.28);

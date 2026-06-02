@@ -2,7 +2,7 @@ import { H, W } from "../config.js";
 import { loadProgress, getDailyBest, isDailyFresh } from "../progress.js";
 import { rankProgress } from "../meta.js";
 import { drawBackdrop, transitionTo, fadeInScene } from "../fx.js";
-import { drawRankCard, makeGlowButton } from "../uiTheme.js";
+import { drawRankCard, drawMenuLogo, makeGlowButton } from "../uiTheme.js";
 import { hasName, getPlayer } from "../player.js";
 import { promptName } from "../namePrompt.js";
 import { sfx } from "../audio.js";
@@ -20,30 +20,7 @@ export default class MenuScene extends Phaser.Scene {
     const L = menuLayout(H);
     drawBackdrop(this, W, H);
 
-    applyCrispText(
-      this.add
-        .text(W / 2, L.logoY1, "BLOCK", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: L.logoSize,
-          fontStyle: "800",
-          color: "#e0e7ff",
-          strokeThickness: 4,
-        }))
-        .setOrigin(0.5)
-        .setDepth(2)
-    );
-    applyCrispText(
-      this.add
-        .text(W / 2, L.logoY2, "FORGE", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: L.logoSize,
-          fontStyle: "800",
-          color: "#38bdf8",
-          strokeThickness: 4,
-        }))
-        .setOrigin(0.5)
-        .setDepth(2)
-    );
+    drawMenuLogo(this, W / 2, L.logoY);
 
     const p = loadProgress();
     const xp = p.xp || 0;

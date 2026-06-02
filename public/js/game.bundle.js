@@ -4,7 +4,7 @@
 
   // public/js/config.js
   var GRID = 8;
-  var CELL = 46;
+  var CELL = 50;
   var BOARD_PAD = 12;
   var W = 430;
   var H = 780;
@@ -136,18 +136,18 @@
 
   // public/js/meta.js
   var RANKS = [
-    { name: "Iron", xp: 0, color: 7041664, stroke: 10265519, icon: "\u2699", text: "#e5e7eb" },
-    { name: "Bronze", xp: 50, color: 11817737, stroke: 15357964, icon: "\u{1F949}", text: "#fed7aa" },
-    { name: "Silver", xp: 120, color: 9741240, stroke: 13358561, icon: "\u{1F948}", text: "#f1f5f9" },
-    { name: "Gold", xp: 220, color: 15381256, stroke: 16436245, icon: "\u{1F947}", text: "#fef9c3" },
-    { name: "Platinum", xp: 360, color: 2282478, stroke: 6809849, icon: "\u{1F4A0}", text: "#cffafe" },
-    { name: "Diamond", xp: 540, color: 3718648, stroke: 8246268, icon: "\u{1F48E}", text: "#e0f2fe" },
-    { name: "Master", xp: 760, color: 11032055, stroke: 12616956, icon: "\u{1F52E}", text: "#f3e8ff" },
-    { name: "Grandmaster", xp: 1020, color: 16020150, stroke: 16361684, icon: "\u{1F451}", text: "#fce7f3" },
-    { name: "Champion", xp: 1320, color: 15680580, stroke: 16281969, icon: "\u{1F3C6}", text: "#fee2e2" },
-    { name: "Legend", xp: 1680, color: 16347926, stroke: 16486972, icon: "\u{1F525}", text: "#ffedd5" },
-    { name: "Mythic", xp: 2100, color: 6514417, stroke: 8490232, icon: "\u2726", text: "#e0e7ff" },
-    { name: "Immortal", xp: 2600, color: 16638023, stroke: 16707722, icon: "\u2600", text: "#fefce8" }
+    { name: "Iron", xp: 0, color: 5395035, stroke: 10592682, text: "#f4f4f5", letter: "I", metal: "iron" },
+    { name: "Bronze", xp: 50, color: 10105874, stroke: 15357964, text: "#ffedd5", letter: "B", metal: "bronze" },
+    { name: "Silver", xp: 120, color: 6583435, stroke: 14870768, text: "#f8fafc", letter: "S", metal: "silver" },
+    { name: "Gold", xp: 220, color: 16757504, stroke: 16771584, text: "#422006", letter: "G", metal: "gold" },
+    { name: "Platinum", xp: 360, color: 440020, stroke: 6809849, text: "#ecfeff", letter: "P", metal: "platinum" },
+    { name: "Diamond", xp: 540, color: 959977, stroke: 8246268, text: "#e0f2fe", letter: "D", metal: "diamond" },
+    { name: "Master", xp: 760, color: 9647082, stroke: 12616956, text: "#faf5ff", letter: "M", metal: "master" },
+    { name: "Grandmaster", xp: 1020, color: 14362487, stroke: 16020150, text: "#fdf2f8", letter: "GM", metal: "grand" },
+    { name: "Champion", xp: 1320, color: 14427686, stroke: 16557477, text: "#fef2f2", letter: "C", metal: "champion" },
+    { name: "Legend", xp: 1680, color: 15357964, stroke: 16628340, text: "#fff7ed", letter: "L", metal: "legend" },
+    { name: "Mythic", xp: 2100, color: 5195493, stroke: 10859772, text: "#eef2ff", letter: "X", metal: "mythic" },
+    { name: "Immortal", xp: 2600, color: 16436245, stroke: 16707722, text: "#422006", letter: "\u2605", metal: "immortal" }
   ];
   var ACHIEVEMENTS = {
     first_clear: { title: "First Spark", desc: "Clear your first line", xp: 30 },
@@ -615,10 +615,8 @@
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
     let y = top;
-    const logoY1 = y + 24;
-    y += 46;
-    const logoY2 = y + 24;
-    y += 50;
+    const logoY = y + 52;
+    y += 108;
     const rankCardH = 128;
     const rankCardY = y + rankCardH / 2;
     y += rankCardH + 14;
@@ -636,9 +634,7 @@
     const compact = height - top - bottom < 680;
     return {
       compact,
-      logoY1,
-      logoY2,
-      logoSize: compact ? "36px" : "44px",
+      logoY,
       rankCardY,
       rankCardH,
       rankCardW: W - 28,
@@ -741,7 +737,7 @@
     }
     generateTextures() {
       const g = this.make.graphics({ x: 0, y: 0, add: false });
-      const size = 44;
+      const size = CELL;
       for (let i = 0; i < COLORS.length; i++) {
         const base = COLORS[i];
         const c = Phaser.Display.Color.IntegerToColor(base);
@@ -767,10 +763,10 @@
         g.fillRoundedRect(2, 2, size - 6, size - 6, 10);
         g.fillStyle(mid, 0.55);
         g.fillRoundedRect(4, 4, size - 12, size - 14, 9);
-        g.fillStyle(shine, 0.45);
-        g.fillRoundedRect(5, 4, size - 20, 14, 6);
-        g.fillStyle(16777215, 0.55);
-        g.fillCircle(11, 10, 4);
+        g.fillStyle(shine, 0.5);
+        g.fillRoundedRect(6, 5, size - 22, 16, 6);
+        g.fillStyle(16777215, 0.65);
+        g.fillCircle(12, 11, 5);
         g.fillStyle(16777215, 0.12);
         g.fillRoundedRect(7, 18, size - 22, size - 26, 6);
         g.lineStyle(2, 16777215, 0.28);
@@ -1018,6 +1014,92 @@
   }
 
   // public/js/uiTheme.js
+  function drawRankEmblem(scene, parent, x, y, rank, radius = 34) {
+    const g = scene.add.graphics();
+    const r = radius;
+    if (rank.metal === "gold") {
+      g.fillStyle(11817737, 1);
+      g.fillCircle(x, y + 2, r);
+      g.fillStyle(16748288, 1);
+      g.fillCircle(x, y, r - 2);
+      g.fillStyle(16766720, 1);
+      g.fillCircle(x, y - 1, r - 6);
+      g.fillStyle(16774557, 0.85);
+      g.fillCircle(x - r * 0.22, y - r * 0.28, r * 0.38);
+      g.lineStyle(3, 16771584, 1);
+      g.strokeCircle(x, y, r - 2);
+      g.lineStyle(1, 16777215, 0.45);
+      g.strokeCircle(x - 2, y - 3, r - 8);
+    } else if (rank.metal === "silver") {
+      g.fillStyle(4674921, 1);
+      g.fillCircle(x, y + 2, r);
+      g.fillStyle(9741240, 1);
+      g.fillCircle(x, y, r - 2);
+      g.fillStyle(14870768, 0.7);
+      g.fillCircle(x - r * 0.2, y - r * 0.25, r * 0.32);
+      g.lineStyle(3, rank.stroke, 1);
+      g.strokeCircle(x, y, r - 2);
+    } else if (rank.metal === "bronze") {
+      g.fillStyle(7877903, 1);
+      g.fillCircle(x, y + 2, r);
+      g.fillStyle(rank.color, 1);
+      g.fillCircle(x, y, r - 2);
+      g.fillStyle(16628340, 0.5);
+      g.fillCircle(x - r * 0.18, y - r * 0.22, r * 0.3);
+      g.lineStyle(3, rank.stroke, 1);
+      g.strokeCircle(x, y, r - 2);
+    } else {
+      g.fillStyle(988970, 0.5);
+      g.fillCircle(x, y + 2, r);
+      g.fillStyle(rank.color, 1);
+      g.fillCircle(x, y, r - 2);
+      g.lineStyle(3, rank.stroke || 16777215, 1);
+      g.strokeCircle(x, y, r - 2);
+    }
+    parent.add(g);
+    const letterSize = rank.letter?.length > 1 ? "14px" : "22px";
+    const lbl = applyCrispText(
+      scene.add.text(x, y, rank.letter || rank.name[0], uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: letterSize,
+        fontStyle: "800",
+        color: rank.text || "#fff",
+        stroke: rank.metal === "gold" ? "#5c4200" : "#0f172a",
+        strokeThickness: rank.metal === "gold" ? 2 : 3
+      })).setOrigin(0.5)
+    );
+    parent.add(lbl);
+  }
+  function drawMenuLogo(scene, x, y) {
+    const c = scene.add.container(x, y).setDepth(4);
+    const hasBlocks = scene.textures.exists("block-0");
+    if (hasBlocks) {
+      c.add(scene.add.image(-28, -6, "block-0").setScale(0.62).setAngle(-8));
+      c.add(scene.add.image(30, -10, "block-1").setScale(0.62).setAngle(6));
+      c.add(scene.add.image(0, 22, "block-3").setScale(0.68));
+    } else {
+      const g = scene.add.graphics();
+      g.fillStyle(8490232, 1);
+      g.fillRoundedRect(-40, -8, 22, 22, 5);
+      g.fillStyle(3718648, 1);
+      g.fillRoundedRect(18, -12, 22, 22, 5);
+      g.fillStyle(16638023, 1);
+      g.fillRoundedRect(-8, 14, 24, 24, 6);
+      c.add(g);
+    }
+    const title = applyCrispText(
+      scene.add.text(0, 58, "BLOCK FORGE", uiTextStyle({
+        fontFamily: "Syne, sans-serif",
+        fontSize: "38px",
+        fontStyle: "800",
+        color: "#38bdf8",
+        stroke: "#0f172a",
+        strokeThickness: 5
+      })).setOrigin(0.5)
+    );
+    c.add(title);
+    return c;
+  }
   function drawGlassPanel(scene, x, y, w, h, opts = {}) {
     const depth = opts.depth ?? 4;
     const fill = opts.fill ?? 988970;
@@ -1042,8 +1124,7 @@
     c.add(scene.add.rectangle(left, top + 4, 6, h - 24, rank.color, 1).setOrigin(0, 0));
     const badgeX = left + 34;
     const badgeY = top + 38;
-    c.add(scene.add.circle(badgeX, badgeY, 30, rank.color, 1).setStrokeStyle(2, rank.stroke || 16777215, 0.7));
-    applyCrispText(scene.add.text(badgeX, badgeY, rank.icon, { fontSize: "28px" }).setOrigin(0.5));
+    drawRankEmblem(scene, c, badgeX, badgeY, rank, 32);
     const textX = left + 76;
     applyCrispText(
       scene.add.text(textX, top + 24, rank.name.toUpperCase(), uiTextStyle({
@@ -1065,7 +1146,11 @@
     const barH = 16;
     c.add(scene.add.rectangle(left, barY, innerW, barH, 1976635).setOrigin(0, 0.5));
     const fillW = Math.max(6, innerW * ratio);
-    c.add(scene.add.rectangle(left, barY, fillW, barH, rank.color).setOrigin(0, 0.5));
+    const barColor = rank.metal === "gold" ? 16761095 : rank.color;
+    c.add(scene.add.rectangle(left, barY, fillW, barH, barColor).setOrigin(0, 0.5));
+    if (rank.metal === "gold" && fillW > 8) {
+      c.add(scene.add.rectangle(left, barY - 3, fillW, barH * 0.35, 16775620, 0.35).setOrigin(0, 0.5));
+    }
     applyCrispText(
       scene.add.text(left, barY + 24, `${xp} / ${nextXp} XP`, uiTextStyle({
         fontSize: "16px",
@@ -1290,7 +1375,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.2.1";
+  var APP_VERSION = "1.2.2";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1300,24 +1385,7 @@
     create() {
       const L = menuLayout(H);
       drawBackdrop(this, W, H);
-      applyCrispText(
-        this.add.text(W / 2, L.logoY1, "BLOCK", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: L.logoSize,
-          fontStyle: "800",
-          color: "#e0e7ff",
-          strokeThickness: 4
-        })).setOrigin(0.5).setDepth(2)
-      );
-      applyCrispText(
-        this.add.text(W / 2, L.logoY2, "FORGE", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: L.logoSize,
-          fontStyle: "800",
-          color: "#38bdf8",
-          strokeThickness: 4
-        })).setOrigin(0.5).setDepth(2)
-      );
+      drawMenuLogo(this, W / 2, L.logoY);
       const p = loadProgress();
       const xp = p.xp || 0;
       drawRankCard(this, W / 2, L.rankCardY, L.rankCardW, L.rankCardH, rankProgress(xp), xp);
@@ -1756,8 +1824,8 @@
   }
 
   // public/js/scenes/GameScene.js
-  var TRAY_Y = 580;
-  var TRAY_SCALE = 0.62;
+  var TRAY_Y = 562;
+  var TRAY_SCALE = 0.72;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -1791,7 +1859,7 @@
       this.gameEnded = false;
       this.boardW = GRID * CELL + BOARD_PAD * 2;
       this.boardX = (W - this.boardW) / 2 + BOARD_PAD;
-      this.boardY = 118;
+      this.boardY = 110;
       drawBackdrop(this, W, 780);
       this.hintGfx = this.add.graphics().setDepth(3);
       this.drawBoardFrame();
@@ -2451,7 +2519,7 @@ ${prog}`);
       }).setOrigin(0.5).setDepth(102);
       if (this.sessionXp > 0) {
         const tier = rankProgress(this.progress.xp || 0).rank;
-        this.add.text(W / 2, won ? 402 : 394, `${tier.icon}  ${tier.name} tier`, {
+        this.add.text(W / 2, won ? 402 : 394, `${tier.name} tier`, {
           fontFamily: "Outfit, sans-serif",
           fontSize: "13px",
           fontStyle: "700",

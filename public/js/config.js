@@ -1,5 +1,5 @@
 export const GRID = 8;
-export const CELL = 46;
+export const CELL = 50;
 export const BOARD_PAD = 12;
 export const W = 430;
 export const H = 780;

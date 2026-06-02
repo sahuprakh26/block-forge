@@ -33,8 +33,8 @@ import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
 import { HUD_HEADER } from "../layout.js";
 
-const TRAY_Y = 580;
-const TRAY_SCALE = 0.62;
+const TRAY_Y = 562;
+const TRAY_SCALE = 0.72;
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -71,7 +71,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameEnded = false;
     this.boardW = GRID * CELL + BOARD_PAD * 2;
     this.boardX = (W - this.boardW) / 2 + BOARD_PAD;
-    this.boardY = 118;
+    this.boardY = 110;
 
     drawBackdrop(this, W, 780);
     this.hintGfx = this.add.graphics().setDepth(3);
@@ -857,7 +857,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.sessionXp > 0) {
       const tier = rankProgress(this.progress.xp || 0).rank;
       this.add
-        .text(W / 2, won ? 402 : 394, `${tier.icon}  ${tier.name} tier`, {
+        .text(W / 2, won ? 402 : 394, `${tier.name} tier`, {
           fontFamily: "Outfit, sans-serif",
           fontSize: "13px",
           fontStyle: "700",
