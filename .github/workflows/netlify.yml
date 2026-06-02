@@ -1,42 +1,13 @@
-name: Global Netlify Deploy
+# Netlify live site deploys via GitHub → Netlify (project: blackforgee26).
+# Do NOT use netlify deploy --allow-anonymous here — it creates unclaimed Drop URLs (401).
+
+name: Netlify Drop (disabled)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, master]
 
 jobs:
-  deploy:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npm ci && npm run build
-      - name: Bundle APK for anonymous download page
-        run: |
-          mkdir -p public/download
-          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
-            cp android/app/build/outputs/apk/debug/app-debug.apk public/download/BlockForge.apk
-          fi
-
-      - name: Deploy global site (Rs 0, no PC)
-        id: drop
-        run: |
-          npm install -g netlify-cli
-          OUT=$(netlify deploy --prod --dir=public --allow-anonymous 2>&1) || true
-          echo "$OUT"
-          URL=$(echo "$OUT" | grep -Eo 'https?://[a-z0-9-]+\.netlify\.app' | tail -1)
-          if [ -n "$URL" ]; then
-            echo "url=${URL}" >> "$GITHUB_OUTPUT"
-            echo "Public (anonymous) URL: $URL"
-          fi
-
-      - name: Save global URL
-        if: steps.drop.outputs.url != ''
-        run: |
-          gh variable set BF_GAME_URL --body "${{ steps.drop.outputs.url }}"
-          gh variable set BF_API_URL --body "${{ steps.drop.outputs.url }}"
-        env:
-          GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
+      - run: echo "Use https://blackforgee26.netlify.app — connected in Netlify dashboard."
