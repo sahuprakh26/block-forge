@@ -1,0 +1,16 @@
+node_modules/
+public/config.js
+.env
+config/api-url.txt
+config/cloud.env
+data/leaderboard.json
+
+# Android / Capacitor
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+*.keystore
+*.jks
+release/

@@ -1,0 +1,38 @@
+{
+  "name": "block-forge",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Block Forge — hybrid block puzzle with campaign progression",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/write-runtime-config.js && esbuild public/js/main.js --bundle --format=iife --platform=browser --inject:public/js/phaser-shim.js --outfile=public/js/game.bundle.js",
+    "build:android": "node scripts/write-runtime-config.js --android && esbuild public/js/main.js --bundle --format=iife --platform=browser --inject:public/js/phaser-shim.js --outfile=public/js/game.bundle.js",
+    "build:android:release": "node scripts/write-runtime-config.js --android --release && esbuild public/js/main.js --bundle --format=iife --platform=browser --inject:public/js/phaser-shim.js --outfile=public/js/game.bundle.js",
+    "cap:sync": "npm run build:android && npx cap sync android",
+    "cap:sync:release": "npm run build:android:release && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "android:run": "npm run cap:sync && npx cap run android",
+    "android:build": "npm run cap:sync && cd android && gradlew.bat assembleDebug",
+    "android:release": "npm run cap:sync && cd android && gradlew.bat bundleRelease",
+    "test:phones": "node scripts/test-phone-layouts.js",
+    "start": "npm run build && node server.js",
+    "start:prod": "npm run build && node server.js"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.0",
+    "esbuild": "^0.25.0",
+    "playwright": "^1.60.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/splash-screen": "^7.0.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "phaser": "^3.80.1"
+  }
+}

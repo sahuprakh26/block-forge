@@ -1,0 +1,20 @@
+{
+  "appId": "com.blockforge.game",
+  "appName": "Block Forge",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#060912"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#060912",
+      "showSpinner": false
+    }
+  }
+}

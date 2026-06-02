@@ -1,0 +1,1 @@
+var Phaser = window.Phaser;
