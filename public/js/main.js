@@ -1,6 +1,7 @@
 import { sfx } from "./audio.js";
 import { bgm } from "./music.js";
 import { W, H } from "./config.js";
+import { measureSafeInsets } from "./layout.js";
 import BootScene from "./scenes/BootScene.js";
 import MenuScene from "./scenes/MenuScene.js";
 import MapScene from "./scenes/MapScene.js";
@@ -70,8 +71,14 @@ function startGame() {
     const game = new Phaser.Game(config);
     window.__bfGame = game;
     window.__bfReady = true;
+    const applyInsets = () => {
+      window.__bfSafeInsets = measureSafeInsets();
+    };
+    applyInsets();
+    game.scale.on("resize", applyInsets);
     hideLoading();
     setupNative();
+    applyInsets();
   } catch (e) {
     showBootError(e.message || String(e));
   }

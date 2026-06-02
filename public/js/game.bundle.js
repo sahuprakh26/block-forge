@@ -136,12 +136,18 @@
 
   // public/js/meta.js
   var RANKS = [
-    { name: "Rookie", xp: 0 },
-    { name: "Apprentice", xp: 80 },
-    { name: "Smith", xp: 200 },
-    { name: "Forge Knight", xp: 400 },
-    { name: "Crystal Master", xp: 700 },
-    { name: "Grid Legend", xp: 1200 }
+    { name: "Iron", xp: 0, color: 7041664, stroke: 10265519, icon: "\u2699", text: "#e5e7eb" },
+    { name: "Bronze", xp: 50, color: 11817737, stroke: 15357964, icon: "\u{1F949}", text: "#fed7aa" },
+    { name: "Silver", xp: 120, color: 9741240, stroke: 13358561, icon: "\u{1F948}", text: "#f1f5f9" },
+    { name: "Gold", xp: 220, color: 15381256, stroke: 16436245, icon: "\u{1F947}", text: "#fef9c3" },
+    { name: "Platinum", xp: 360, color: 2282478, stroke: 6809849, icon: "\u{1F4A0}", text: "#cffafe" },
+    { name: "Diamond", xp: 540, color: 3718648, stroke: 8246268, icon: "\u{1F48E}", text: "#e0f2fe" },
+    { name: "Master", xp: 760, color: 11032055, stroke: 12616956, icon: "\u{1F52E}", text: "#f3e8ff" },
+    { name: "Grandmaster", xp: 1020, color: 16020150, stroke: 16361684, icon: "\u{1F451}", text: "#fce7f3" },
+    { name: "Champion", xp: 1320, color: 15680580, stroke: 16281969, icon: "\u{1F3C6}", text: "#fee2e2" },
+    { name: "Legend", xp: 1680, color: 16347926, stroke: 16486972, icon: "\u{1F525}", text: "#ffedd5" },
+    { name: "Mythic", xp: 2100, color: 6514417, stroke: 8490232, icon: "\u2726", text: "#e0e7ff" },
+    { name: "Immortal", xp: 2600, color: 16638023, stroke: 16707722, icon: "\u2600", text: "#fefce8" }
   ];
   var ACHIEVEMENTS = {
     first_clear: { title: "First Spark", desc: "Clear your first line", xp: 30 },
@@ -157,9 +163,17 @@
     for (const r of RANKS) if (xp >= r.xp) rank = r;
     return rank;
   }
-  function nextRankXp(xp) {
-    for (const r of RANKS) if (r.xp > xp) return r.xp;
-    return RANKS[RANKS.length - 1].xp + 500;
+  function getNextRank(xp) {
+    for (const r of RANKS) if (r.xp > xp) return r;
+    return null;
+  }
+  function rankProgress(xp) {
+    const rank = getRank(xp);
+    const next = getNextRank(xp);
+    const prevXp = rank.xp;
+    const nextXp = next ? next.xp : prevXp + 800;
+    const ratio = Math.min(1, (xp - prevXp) / Math.max(1, nextXp - prevXp));
+    return { rank, next, prevXp, nextXp, ratio };
   }
   function streakMult(clearStreak) {
     if (clearStreak < 2) return 1;
@@ -570,6 +584,117 @@
   };
   var bgm = new Bgm();
 
+  // public/js/layout.js
+  function measureSafeInsets() {
+    if (typeof document === "undefined") return { top: 0, bottom: 0, topGame: 0, bottomGame: 0 };
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)";
+    document.body.appendChild(el);
+    const cs = getComputedStyle(el);
+    const top = parseFloat(cs.paddingTop) || 0;
+    const bottom = parseFloat(cs.paddingBottom) || 0;
+    el.remove();
+    const game = window.__bfGame;
+    const sh = game?.scale?.displaySize?.height || window.innerHeight || H;
+    const gh = game?.scale?.gameSize?.height || H;
+    const ratio = gh / Math.max(1, sh);
+    return {
+      top,
+      bottom,
+      topGame: Math.round(top * ratio),
+      bottomGame: Math.round(bottom * ratio)
+    };
+  }
+  function insetY() {
+    const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
+    return {
+      top: 12 + (ins.topGame || 0),
+      bottom: 16 + (ins.bottomGame || 0)
+    };
+  }
+  function menuLayout(height = H) {
+    const { top, bottom } = insetY();
+    let y = top;
+    const logoY1 = y + 22;
+    y += 44;
+    const logoY2 = y + 22;
+    y += 52;
+    const rankCardY = y + 48;
+    const rankCardH = 100;
+    y += rankCardH + 10;
+    const statsY = y + 12;
+    y += 26;
+    const btnGap = 52;
+    const btnCampaign = y + 28;
+    const btnDaily = btnCampaign + btnGap;
+    const btnEndless = btnDaily + btnGap;
+    const btnRankings = btnEndless + btnGap;
+    y = btnRankings + 36;
+    const nameY = Math.min(y + 20, height - bottom - 88);
+    const audioY = height - bottom - 28;
+    const footerY = height - bottom - 58;
+    const compact = height - top - bottom < 640;
+    return {
+      compact,
+      logoY1,
+      logoY2,
+      logoSize: compact ? "34px" : "42px",
+      rankCardY,
+      rankCardH,
+      rankCardW: W - 36,
+      statsY,
+      btnCampaign,
+      btnDaily,
+      btnEndless,
+      btnRankings,
+      nameY,
+      audioY,
+      footerY,
+      btnGap,
+      btnH: compact ? 44 : 48,
+      btnW: W - 48
+    };
+  }
+  var HUD_HEADER = {
+    navY: 26,
+    titleY: 76,
+    scoreLabelY: 68,
+    scoreValueY: 86,
+    streakY: 68,
+    goalY: 78,
+    movesY: 104
+  };
+  function mapLayout(width = W, height = H) {
+    const { top } = insetY();
+    return {
+      titleY: top + 62,
+      starsY: top + 94,
+      barY: top + 114,
+      startY: top + 138,
+      width,
+      height
+    };
+  }
+  function leaderboardLayout(height = H) {
+    const { top, bottom } = insetY();
+    const headerBottom = top + 148;
+    const listStart = headerBottom + 118;
+    const maxRows = Math.max(5, Math.floor((height - listStart - bottom - 16) / 36));
+    return {
+      headerY: top + 52,
+      statusY: top + 100,
+      myRankY: top + 118,
+      tabsY: top + 136,
+      refreshY: top + 136,
+      podiumY: headerBottom + 8,
+      listStart,
+      listRow: 36,
+      panelY: listStart + (height - bottom - 8 - listStart) / 2,
+      panelH: height - listStart - bottom - 12,
+      maxRows
+    };
+  }
+
   // public/js/scenes/BootScene.js
   var BootScene = class extends Phaser.Scene {
     constructor() {
@@ -876,29 +1001,73 @@
   function drawGlassPanel(scene, x, y, w, h, opts = {}) {
     const depth = opts.depth ?? 4;
     const fill = opts.fill ?? 988970;
-    const alpha = opts.alpha ?? 0.88;
+    const alpha = opts.alpha ?? 0.9;
     const stroke = opts.stroke ?? 6514417;
     const panel = scene.add.container(x, y).setDepth(depth);
-    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.45);
-    const shine = scene.add.rectangle(0, -h * 0.38, w - 8, h * 0.22, 16777215, 0.04);
+    const outer = scene.add.rectangle(0, 0, w, h, fill, alpha).setStrokeStyle(2, stroke, 0.5);
+    const shine = scene.add.rectangle(0, -h * 0.36, w - 10, h * 0.2, 16777215, 0.05);
     panel.add([outer, shine]);
     return panel;
   }
+  function drawRankCard(scene, x, y, w, h, progress, xp) {
+    const { rank, next, nextXp, ratio } = progress;
+    const depth = 6;
+    const c = scene.add.container(x, y).setDepth(depth);
+    c.add(
+      scene.add.rectangle(0, 0, w, h, 791074, 0.94).setStrokeStyle(2, rank.stroke || rank.color, 0.85)
+    );
+    c.add(scene.add.rectangle(-w / 2 + 5, 0, 5, h - 14, rank.color, 1).setOrigin(0, 0.5));
+    c.add(scene.add.circle(-w / 2 + 54, 0, 30, rank.color, 0.18));
+    const badgeX = -w / 2 + 54;
+    c.add(scene.add.circle(badgeX, 0, 26, rank.color, 1).setStrokeStyle(2, rank.stroke || 16777215, 0.55));
+    c.add(scene.add.text(badgeX, 0, rank.icon, { fontSize: "20px" }).setOrigin(0.5));
+    const textX = -w / 2 + 98;
+    c.add(
+      scene.add.text(textX, -20, rank.name.toUpperCase(), {
+        fontFamily: "Syne, sans-serif",
+        fontSize: "20px",
+        fontStyle: "800",
+        color: rank.text || "#fff"
+      }).setOrigin(0, 0.5)
+    );
+    c.add(
+      scene.add.text(textX, 2, next ? `Next \u2192 ${next.name}` : "MAX TIER REACHED", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "11px",
+        color: "#64748b"
+      }).setOrigin(0, 0.5)
+    );
+    const barW = w - 112;
+    const barMidX = textX + barW / 2;
+    const barY = 26;
+    c.add(scene.add.rectangle(barMidX, barY, barW, 9, 1976635).setOrigin(0.5));
+    if (ratio > 0.02) {
+      c.add(scene.add.rectangle(textX + barW * ratio / 2, barY, barW * ratio, 9, rank.color).setOrigin(0, 0.5));
+    }
+    c.add(
+      scene.add.text(barMidX, barY + 16, `${xp} / ${nextXp} XP`, {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "10px",
+        color: "#94a3b8"
+      }).setOrigin(0.5)
+    );
+    return c;
+  }
   function makeGlowButton(scene, x, y, label, color, onClick, opts = {}) {
     const w = opts.width ?? 280;
-    const h = opts.height ?? 52;
+    const h = opts.height ?? 48;
     const depth = opts.depth ?? 10;
     const container = scene.add.container(x, y).setDepth(depth);
-    const shadow = scene.add.rectangle(2, 4, w, h, 0, 0.35);
-    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.14).setInteractive({ useHandCursor: true });
-    const gloss = scene.add.rectangle(0, -h * 0.22, w - 12, h * 0.35, 16777215, 0.1);
+    const shadow = scene.add.rectangle(2, 5, w, h, 0, 0.4);
+    const bg = scene.add.rectangle(0, 0, w, h, color, 1).setStrokeStyle(2, 16777215, 0.16).setInteractive({ useHandCursor: true });
+    const gloss = scene.add.rectangle(0, -h * 0.24, w - 14, h * 0.32, 16777215, 0.12);
     const txt = scene.add.text(0, 0, label, {
       fontFamily: "Outfit, sans-serif",
-      fontSize: opts.fontSize ?? (label.length > 22 ? "14px" : "17px"),
+      fontSize: opts.fontSize ?? (label.length > 20 ? "13px" : "16px"),
       fontStyle: "700",
       color: "#fff",
       align: "center",
-      wordWrap: { width: w - 24 }
+      wordWrap: { width: w - 28 }
     }).setOrigin(0.5);
     container.add([shadow, bg, gloss, txt]);
     const press = () => {
@@ -915,20 +1084,17 @@
     };
     bg.on("pointerdown", press);
     txt.setInteractive({ useHandCursor: true }).on("pointerdown", press);
-    bg.on("pointerover", () => scene.tweens.add({ targets: container, scaleX: 1.03, scaleY: 1.03, duration: 100 }));
+    bg.on("pointerover", () => scene.tweens.add({ targets: container, scaleX: 1.02, scaleY: 1.02, duration: 100 }));
     bg.on("pointerout", () => scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100 }));
     return container;
   }
   function makePillTab(scene, x, y, label, active, onClick) {
-    const w = 148;
-    const h = 38;
+    const w = 140;
+    const h = 36;
     const bg = scene.add.rectangle(x, y, w, h, active ? 6514417 : 1976635, active ? 1 : 0.92).setStrokeStyle(2, active ? 10859772 : 4674921, active ? 0.9 : 0.5).setInteractive({ useHandCursor: true }).setDepth(15);
-    if (active) {
-      scene.add.rectangle(x, y - 2, w - 8, 10, 16777215, 0.08).setDepth(14);
-    }
     const txt = scene.add.text(x, y, label, {
       fontFamily: "Outfit, sans-serif",
-      fontSize: "13px",
+      fontSize: "12px",
       fontStyle: "700",
       color: active ? "#fff" : "#94a3b8"
     }).setOrigin(0.5).setDepth(16);
@@ -940,25 +1106,21 @@
     txt.setInteractive({ useHandCursor: true }).on("pointerdown", fire);
     return { bg, txt };
   }
-  function drawTitleGlow(scene, x, y, title, subtitle) {
-    scene.add.text(x, y - 2, title, {
-      fontFamily: "Syne, sans-serif",
-      fontSize: "26px",
-      fontStyle: "800",
-      color: "#6366f1"
-    }).setOrigin(0.5).setAlpha(0.35).setDepth(2);
+  function drawScreenHeader(scene, x, y, title, subtitle) {
     scene.add.text(x, y, title, {
       fontFamily: "Syne, sans-serif",
-      fontSize: "26px",
+      fontSize: "24px",
       fontStyle: "800",
-      color: "#38bdf8"
-    }).setOrigin(0.5).setDepth(3);
+      color: "#38bdf8",
+      stroke: "#0f172a",
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(5);
     if (subtitle) {
-      scene.add.text(x, y + 28, subtitle, {
+      scene.add.text(x, y + 30, subtitle, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         color: "#64748b"
-      }).setOrigin(0.5).setDepth(3);
+      }).setOrigin(0.5).setDepth(5);
     }
   }
   function rankColors(i) {
@@ -1100,77 +1262,46 @@
     return getPlayer().name;
   }
 
+  // public/js/version.js
+  var APP_VERSION = "1.2.0";
+
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
     constructor() {
       super("Menu");
     }
     create() {
-      const { width, height } = this.scale;
-      drawBackdrop(this, width, height);
-      for (let i = 0; i < 8; i++) {
-        const dot = this.add.circle(
-          Phaser.Math.Between(20, width - 20),
-          Phaser.Math.Between(40, height - 40),
-          Phaser.Math.Between(1, 3),
-          Phaser.Utils.Array.GetRandom([8490232, 3718648, 12616956]),
-          0.12
-        );
-        this.tweens.add({
-          targets: dot,
-          y: dot.y + Phaser.Math.Between(-40, 40),
-          alpha: { from: 0.06, to: 0.22 },
-          duration: Phaser.Math.Between(2500, 5e3),
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.easeInOut"
-        });
-      }
-      const logoGlow = this.add.circle(width / 2, height * 0.17, 90, 6514417, 0.12).setDepth(0);
+      const L = menuLayout(H);
+      drawBackdrop(this, W, H);
+      const logoGlow = this.add.circle(W / 2, (L.logoY1 + L.logoY2) / 2, 64, 6514417, 0.1).setDepth(0);
       this.tweens.add({
         targets: logoGlow,
-        scale: { from: 0.9, to: 1.1 },
-        alpha: { from: 0.08, to: 0.2 },
+        scale: { from: 0.94, to: 1.05 },
+        alpha: { from: 0.06, to: 0.15 },
         duration: 2400,
         yoyo: true,
         repeat: -1
       });
-      this.add.text(width / 2, height * 0.14, "BLOCK", {
+      this.add.text(W / 2, L.logoY1, "BLOCK", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "52px",
+        fontSize: L.logoSize,
         fontStyle: "800",
         color: "#e0e7ff"
       }).setOrigin(0.5).setDepth(2);
-      this.add.text(width / 2, height * 0.2, "FORGE", {
+      this.add.text(W / 2, L.logoY2, "FORGE", {
         fontFamily: "Syne, sans-serif",
-        fontSize: "52px",
+        fontSize: L.logoSize,
         fontStyle: "800",
         color: "#38bdf8"
       }).setOrigin(0.5).setDepth(2);
       const p = loadProgress();
-      const rank = getRank(p.xp || 0);
-      const nextXp = nextRankXp(p.xp || 0);
-      const prevXp = rank.xp;
-      const barW = width - 64;
-      const ratio = Math.min(1, (p.xp - prevXp) / Math.max(1, nextXp - prevXp));
-      drawGlassPanel(this, width / 2, height * 0.31, barW + 24, 72, { depth: 1, stroke: 6514417 });
-      this.add.text(width / 2, height * 0.275, rank.name, {
-        fontFamily: "Syne, sans-serif",
-        fontSize: "17px",
-        fontStyle: "700",
-        color: "#fde047"
-      }).setOrigin(0.5).setDepth(2);
-      this.add.rectangle(width / 2, height * 0.31, barW, 10, 1976635).setOrigin(0.5).setDepth(2);
-      this.add.rectangle(32 + barW * ratio * 0.5, height * 0.31, barW * ratio, 10, 8490232).setOrigin(0, 0.5).setDepth(2);
-      this.add.text(width / 2, height * 0.335, `${p.xp || 0} / ${nextXp} XP`, {
-        fontFamily: "Outfit, sans-serif",
-        fontSize: "11px",
-        color: "#94a3b8"
-      }).setOrigin(0.5).setDepth(2);
+      const xp = p.xp || 0;
+      const prog = rankProgress(xp);
+      drawRankCard(this, W / 2, L.rankCardY, L.rankCardW, L.rankCardH, prog, xp);
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const streak = p.streakDays || 0;
-      const streakTxt = streak > 1 ? `  \xB7  \u{1F525} ${streak} day streak` : "";
-      this.add.text(width / 2, height * 0.355, `\u2605 ${totalStars}  \xB7  Endless ${p.endlessBest || 0}${streakTxt}`, {
+      const streakTxt = streak > 1 ? ` \xB7 \u{1F525} ${streak}d` : "";
+      this.add.text(W / 2, L.statsY, `\u2605 ${totalStars}  \xB7  Endless best ${p.endlessBest || 0}${streakTxt}`, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         color: "#64748b"
@@ -1179,30 +1310,36 @@
         bgm.unlock();
         fn();
       };
-      makeGlowButton(this, width / 2, height * 0.42, "\u25B6  CAMPAIGN", 6514417, go(() => transitionTo(this, "Map")));
+      const btnOpts = { width: L.btnW, height: L.btnH, fontSize: L.compact ? "13px" : "15px" };
+      makeGlowButton(this, W / 2, L.btnCampaign, "\u25B6  CAMPAIGN", 6514417, go(() => transitionTo(this, "Map")), btnOpts);
       const dailyBest = getDailyBest(p);
       const dailyFresh = isDailyFresh(p);
-      const dailyLabel = dailyFresh ? "\u2600  DAILY CHALLENGE  \xB7  NEW" : `\u2600  DAILY  \xB7  Best ${dailyBest}`;
+      const dailyLabel = dailyFresh ? "\u2600  DAILY  \xB7  NEW" : `\u2600  DAILY  \xB7  Best ${dailyBest}`;
       makeGlowButton(
         this,
-        width / 2,
-        height * 0.51,
+        W / 2,
+        L.btnDaily,
         dailyLabel,
         dailyFresh ? 11817737 : 3359061,
-        go(() => transitionTo(this, "Game", { mode: "daily" }))
+        go(() => transitionTo(this, "Game", { mode: "daily" })),
+        btnOpts
       );
-      makeGlowButton(this, width / 2, height * 0.6, "\u221E  ENDLESS", 1982639, go(() => transitionTo(this, "Game", { mode: "endless" })));
-      makeGlowButton(this, width / 2, height * 0.69, "\u{1F3C6}  LIVE RANKINGS", 8141549, go(
-        () => transitionTo(this, "Leaderboard", { board: "endless" })
-      ));
-      this.makeNameBadge(width / 2, height * 0.775);
-      this.buildAudioToggles(width, height);
-      this.add.text(width / 2, height * 0.9, "Chain clears \xB7 Daily challenge \xB7 global rankings", {
+      makeGlowButton(this, W / 2, L.btnEndless, "\u221E  ENDLESS", 1982639, go(() => transitionTo(this, "Game", { mode: "endless" })), btnOpts);
+      makeGlowButton(
+        this,
+        W / 2,
+        L.btnRankings,
+        "\u{1F3C6}  LIVE RANKINGS",
+        8141549,
+        go(() => transitionTo(this, "Leaderboard", { board: "endless" })),
+        btnOpts
+      );
+      this.makeNameBadge(W / 2, L.nameY);
+      this.buildAudioToggles(L.audioY);
+      this.add.text(W / 2, L.footerY, `v${APP_VERSION} \xB7 Iron \u2192 Gold \u2192 Immortal`, {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "12px",
-        color: "#475569",
-        align: "center",
-        wordWrap: { width: width - 40 }
+        fontSize: "10px",
+        color: "#475569"
       }).setOrigin(0.5);
       this.input.once("pointerdown", () => bgm.unlock());
       if (bgm.isOn()) bgm.unlock();
@@ -1211,50 +1348,50 @@
     makeNameBadge(x, y) {
       const player = getPlayer();
       const named = hasName();
-      const label = named ? `\u{1F464}  ${player.name}` : "\u{1F464}  Set your name";
-      const w = 220;
+      const label = named ? player.name : "Set your name";
+      const w = 240;
       const h = 38;
-      const bg = this.add.rectangle(x, y, w, h, named ? 3359061 : 8138002, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, named ? 4674921 : 16347926, 0.5);
-      this.add.text(x, y, label, {
+      const bg = this.add.rectangle(x, y, w, h, named ? 1976635 : 8138002, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, named ? 4674921 : 16347926, 0.6).setDepth(8);
+      this.add.text(x - w / 2 + 16, y, "\u{1F464}", { fontSize: "16px" }).setOrigin(0, 0.5).setDepth(9);
+      this.add.text(x - 8, y, label, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "14px",
         fontStyle: "600",
         color: named ? "#e2e8f0" : "#fdba74"
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(9);
       bg.on("pointerdown", () => {
         promptName(named ? player.name : "").then(() => this.scene.restart());
       });
-      bg.on("pointerover", () => bg.setFillStyle(named ? 4674921 : 10105874));
-      bg.on("pointerout", () => bg.setFillStyle(named ? 3359061 : 8138002));
+      bg.on("pointerover", () => bg.setFillStyle(named ? 3359061 : 10105874));
+      bg.on("pointerout", () => bg.setFillStyle(named ? 1976635 : 8138002));
     }
-    buildAudioToggles(width, height) {
-      const y = height - 28;
-      this.makeToggle(width / 2 - 58, y, sfx.isOn(), "SFX", (on) => {
+    buildAudioToggles(y) {
+      this.makeToggle(W / 2 - 54, y, sfx.isOn(), "SFX", (on) => {
         sfx.toggle(on);
         sfx.play("click");
       });
-      this.makeToggle(width / 2 + 58, y, bgm.isOn(), "MUSIC", (on) => {
+      this.makeToggle(W / 2 + 54, y, bgm.isOn(), "MUSIC", (on) => {
         bgm.toggle(on);
         if (on) bgm.unlock();
       });
     }
     makeToggle(x, y, on, label, cb) {
-      const w = 96;
-      const h = 32;
-      const bg = this.add.rectangle(x, y, w, h, on ? 6514417 : 1976635, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, on ? 8490232 : 4674921);
-      const txt = this.add.text(x, y, `${on ? "ON" : "OFF"} \xB7 ${label}`, {
+      const w = 88;
+      const h = 28;
+      const bg = this.add.rectangle(x, y, w, h, on ? 6514417 : 1976635, 1).setInteractive({ useHandCursor: true }).setStrokeStyle(1, on ? 8490232 : 4674921).setDepth(8);
+      const txt = this.add.text(x, y, `${on ? "ON" : "OFF"} ${label}`, {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "11px",
+        fontSize: "10px",
         fontStyle: "700",
         color: on ? "#fff" : "#64748b"
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(9);
       bg.on("pointerdown", () => {
         const next = !on;
         cb(next);
         on = next;
         bg.setFillStyle(on ? 6514417 : 1976635);
         bg.setStrokeStyle(1, on ? 8490232 : 4674921);
-        txt.setText(`${on ? "ON" : "OFF"} \xB7 ${label}`);
+        txt.setText(`${on ? "ON" : "OFF"} ${label}`);
         txt.setColor(on ? "#fff" : "#64748b");
       });
     }
@@ -1414,31 +1551,32 @@
       super("Map");
     }
     create() {
-      const { width, height } = this.scale;
+      const { width } = this.scale;
+      const M = mapLayout(width, H);
       const p = loadProgress();
       const world = WORLDS[0];
-      drawBackdrop(this, width, height);
+      drawBackdrop(this, width, H);
       const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
       const maxStars = world.levels.length * 3;
       const goMenu = () => transitionTo(this, "Menu");
       addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
-      this.add.text(width / 2, 54, world.name, {
+      this.add.text(width / 2, M.titleY, world.name, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "26px",
+        fontSize: "24px",
         fontStyle: "700",
         color: "#22d3ee"
       }).setOrigin(0.5);
-      this.add.text(width / 2, 62, `${totalStars} / ${maxStars} \u2605`, {
+      this.add.text(width / 2, M.starsY, `${totalStars} / ${maxStars} \u2605`, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "14px",
         color: "#64748b"
       }).setOrigin(0.5);
-      this.add.rectangle(width / 2, 82, width - 60, 5, 1976635).setOrigin(0.5);
-      const progBar = this.add.rectangle(30, 82, 0, 5, 16498468).setOrigin(0, 0.5);
+      this.add.rectangle(width / 2, M.barY, width - 60, 5, 1976635).setOrigin(0.5);
+      const progBar = this.add.rectangle(30, M.barY, 0, 5, 16498468).setOrigin(0, 0.5);
       progBar.width = (width - 60) * (totalStars / maxStars);
       const cols = 5;
       const startX = 52;
-      const startY = 118;
+      const startY = M.startY;
       const gap = 68;
       const nodes = world.levels.map((_, i) => {
         const col = i % cols;
@@ -1690,25 +1828,30 @@
         else this.showConfirmExit();
       };
       addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
-      this.add.text(W / 2, 54, title, {
+      const H2 = HUD_HEADER;
+      this.add.text(W / 2, H2.titleY, title, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "17px",
+        fontSize: "16px",
         fontStyle: "700",
         color: "#38bdf8"
       }).setOrigin(0.5).setDepth(50);
-      this.scoreText = this.add.text(24, 56, "0", {
+      this.add.text(24, H2.scoreLabelY, "SCORE", {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "28px",
+        fontSize: "10px",
+        color: "#64748b"
+      }).setDepth(50);
+      this.scoreText = this.add.text(24, H2.scoreValueY, "0", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "26px",
         fontStyle: "800",
         color: "#e2e8f0"
-      });
-      this.add.text(24, 48, "SCORE", { fontFamily: "Outfit, sans-serif", fontSize: "10px", color: "#64748b" });
-      this.streakBadge = this.add.text(W / 2, 48, "", {
+      }).setDepth(50);
+      this.streakBadge = this.add.text(W / 2, H2.streakY, "", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         fontStyle: "700",
         color: "#f97316"
-      }).setOrigin(0.5).setAlpha(0);
+      }).setOrigin(0.5).setAlpha(0).setDepth(50);
       let goalLabel;
       if (this.mode === "endless") {
         const best = this.progress.endlessBest || 0;
@@ -1719,16 +1862,16 @@
       } else {
         goalLabel = goalText(this.level?.goal);
       }
-      this.goalText = this.add.text(W - 24, 56, goalLabel, {
+      this.goalText = this.add.text(W - 24, H2.goalY, goalLabel, {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "13px",
+        fontSize: "12px",
         fontStyle: "600",
         color: "#94a3b8",
         align: "right",
-        wordWrap: { width: 180 }
-      }).setOrigin(1, 0);
+        wordWrap: { width: 160 }
+      }).setOrigin(1, 0).setDepth(50);
       if (this.mode === "level" && this.level.moves) {
-        this.movesText = this.add.text(W / 2, 88, `Moves: ${this.level.moves}`, {
+        this.movesText = this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, {
           fontFamily: "Outfit, sans-serif",
           fontSize: "14px",
           color: "#fbbf24"
@@ -2280,7 +2423,16 @@ ${prog}`);
         fontStyle: "600",
         color: "#e2e8f0"
       }).setOrigin(0.5).setDepth(102);
-      const btnY = won ? 438 : 430;
+      if (this.sessionXp > 0) {
+        const tier = rankProgress(this.progress.xp || 0).rank;
+        this.add.text(W / 2, won ? 402 : 394, `${tier.icon}  ${tier.name} tier`, {
+          fontFamily: "Outfit, sans-serif",
+          fontSize: "13px",
+          fontStyle: "700",
+          color: tier.text || "#fde047"
+        }).setOrigin(0.5).setDepth(102);
+      }
+      const btnY = won ? 448 : 430;
       if (won) {
         this.makeOverlayBtn(W / 2, btnY, "Next level \u2192", () => {
           const next = this.levelId + 1;
@@ -2355,31 +2507,33 @@ ${prog}`);
       this.board = data.board || "endless";
     }
     create() {
-      drawBackdrop(this, W, 780);
+      const L = leaderboardLayout(H);
+      drawBackdrop(this, W, H);
       const goMenu = () => transitionTo(this, "Menu");
       addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "\u2190 BACK" });
-      drawTitleGlow(this, W / 2, 58, "GLOBAL RANKINGS", "Live worldwide scores");
-      this.liveDot = this.add.circle(W / 2 - 72, 88, 5, 4906624, 1).setDepth(20);
-      this.statusText = this.add.text(W / 2 - 58, 88, "Connecting\u2026", {
+      drawScreenHeader(this, W / 2, L.headerY, "GLOBAL RANKINGS", "Live worldwide scores");
+      this.liveDot = this.add.circle(W / 2 - 76, L.statusY, 5, 4906624, 1).setDepth(20);
+      this.statusText = this.add.text(W / 2 - 58, L.statusY, "Connecting\u2026", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         fontStyle: "600",
         color: "#94a3b8"
       }).setOrigin(0, 0.5).setDepth(20);
-      this.myRankText = this.add.text(W / 2, 108, "", {
+      this.myRankText = this.add.text(W / 2, L.myRankY, "", {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "13px",
+        fontSize: "12px",
         fontStyle: "700",
         color: "#fde047"
       }).setOrigin(0.5).setDepth(20);
       const dailyBoard = `daily-${dailySeed()}`;
-      this.makeTab(W / 2 - 90, 128, "ENDLESS", "endless", this.board === "endless");
-      this.makeTab(W / 2 + 90, 128, "DAILY", dailyBoard, this.board === dailyBoard);
-      drawGlassPanel(this, W / 2, 430, W - 28, 520, { depth: 2, stroke: 4674921 });
+      this.makeTab(W / 2 - 90, L.tabsY, "ENDLESS", "endless", this.board === "endless");
+      this.makeTab(W / 2 + 90, L.tabsY, "DAILY", dailyBoard, this.board === dailyBoard);
+      drawGlassPanel(this, W / 2, L.panelY, W - 28, L.panelH, { depth: 2, stroke: 4674921 });
       this.listContainer = this.add.container(0, 0).setDepth(8);
       this.podiumContainer = this.add.container(0, 0).setDepth(9);
-      const refreshBg = this.add.rectangle(W - 36, 128, 36, 36, 3359061, 1).setStrokeStyle(1, 6583435).setInteractive({ useHandCursor: true }).setDepth(20);
-      this.add.text(W - 36, 128, "\u21BB", { fontSize: "20px", color: "#e2e8f0" }).setOrigin(0.5).setDepth(21);
+      this.layout = L;
+      const refreshBg = this.add.rectangle(W - 36, L.refreshY, 36, 36, 3359061, 1).setStrokeStyle(1, 6583435).setInteractive({ useHandCursor: true }).setDepth(20);
+      this.add.text(W - 36, L.refreshY, "\u21BB", { fontSize: "20px", color: "#e2e8f0" }).setOrigin(0.5).setDepth(21);
       refreshBg.on("pointerdown", () => {
         sfx.play("click");
         this.scene.restart({ board: this.board });
@@ -2414,32 +2568,33 @@ ${prog}`);
       this.podiumContainer.removeAll(true);
       const top3 = rows.slice(0, 3);
       if (!top3.length) return;
+      const base = this.layout.podiumY;
       const slots = [
-        { x: W / 2 - 100, y: 200, h: 72, i: 1 },
-        { x: W / 2, y: 178, h: 96, i: 0 },
-        { x: W / 2 + 100, y: 208, h: 64, i: 2 }
+        { x: W / 2 - 96, y: base + 28, h: 56, i: 1 },
+        { x: W / 2, y: base, h: 72, i: 0 },
+        { x: W / 2 + 96, y: base + 32, h: 52, i: 2 }
       ];
       slots.forEach((slot) => {
         const row = top3[slot.i];
         if (!row) return;
         const rc = rankColors(slot.i);
-        const block = this.add.rectangle(slot.x, slot.y, 88, slot.h, rc.bg, 0.95).setStrokeStyle(2, rc.stroke);
+        const block = this.add.rectangle(slot.x, slot.y, 80, slot.h, rc.bg, 0.95).setStrokeStyle(2, rc.stroke);
         this.podiumContainer.add(block);
         this.podiumContainer.add(
-          this.add.text(slot.x, slot.y - slot.h * 0.35, rc.medal, { fontSize: "22px" }).setOrigin(0.5)
+          this.add.text(slot.x, slot.y - slot.h * 0.32, rc.medal, { fontSize: "20px" }).setOrigin(0.5)
         );
         this.podiumContainer.add(
-          this.add.text(slot.x, slot.y + 4, row.name, {
+          this.add.text(slot.x, slot.y + 2, row.name, {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "11px",
+            fontSize: "10px",
             fontStyle: "700",
             color: rc.text
           }).setOrigin(0.5)
         );
         this.podiumContainer.add(
-          this.add.text(slot.x, slot.y + slot.h * 0.32, String(row.score), {
+          this.add.text(slot.x, slot.y + slot.h * 0.28, String(row.score), {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "14px",
+            fontSize: "13px",
             fontStyle: "800",
             color: rc.text
           }).setOrigin(0.5)
@@ -2452,38 +2607,40 @@ ${prog}`);
       this.listContainer.removeAll(true);
       this.podiumContainer.removeAll(true);
       const me = getPlayer();
+      const L = this.layout;
       if (data.offline) {
         this.liveDot.setFillStyle(16281969);
-        this.statusText.setText("Rankings offline \u2014 API not ready yet");
+        this.statusText.setText("Rankings offline \u2014 check connection");
         this.statusText.setColor("#f87171");
         return;
       }
       this.liveDot.setFillStyle(data.source === "gist" ? 16498468 : 4906624);
       const rows = data.rows || [];
-      const src = data.source === "gist" ? "read-only preview" : "live";
+      const src = data.source === "gist" ? "preview" : "live";
       this.statusText.setText(
-        rows.length ? `Top ${Math.min(12, rows.length)} \xB7 ${src} \xB7 worldwide` : "Be the first on the board!"
+        rows.length ? `Top ${Math.min(L.maxRows, rows.length)} \xB7 ${src}` : "Be the first on the board!"
       );
       this.statusText.setColor("#94a3b8");
       this.drawPodium(rows);
-      rows.slice(0, 12).forEach((row, i) => {
-        const y = 268 + i * 40;
+      const listRows = rows.slice(0, L.maxRows);
+      listRows.forEach((row, i) => {
+        const y = L.listStart + i * L.listRow;
         const isMe = row.playerId === me.id;
         const rc = rankColors(i);
         const rowW = W - 52;
         const bgColor = isMe ? 4405450 : rc.bg;
-        const alpha = isMe ? 0.55 : i < 3 ? 0.25 : 0.92;
+        const alpha = isMe ? 0.55 : i < 3 ? 0.2 : 0.9;
         this.listContainer.add(
-          this.add.rectangle(W / 2, y, rowW, 36, bgColor, alpha).setStrokeStyle(1, isMe ? 10859772 : rc.stroke, 0.7)
+          this.add.rectangle(W / 2, y, rowW, 34, bgColor, alpha).setStrokeStyle(1, isMe ? 10859772 : rc.stroke, 0.7)
         );
         const rankLabel = i < 3 ? rc.medal : `${i + 1}`;
         this.listContainer.add(
-          this.add.text(40, y, rankLabel, { fontSize: i < 3 ? "16px" : "13px", color: "#94a3b8" }).setOrigin(0, 0.5)
+          this.add.text(40, y, rankLabel, { fontSize: i < 3 ? "15px" : "12px", color: "#94a3b8" }).setOrigin(0, 0.5)
         );
         this.listContainer.add(
           this.add.text(76, y, row.name, {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "14px",
+            fontSize: "13px",
             fontStyle: isMe ? "800" : "600",
             color: isMe ? "#fde047" : "#e2e8f0"
           }).setOrigin(0, 0.5)
@@ -2491,7 +2648,7 @@ ${prog}`);
         this.listContainer.add(
           this.add.text(W - 40, y, String(row.score), {
             fontFamily: "Outfit, sans-serif",
-            fontSize: "15px",
+            fontSize: "14px",
             fontStyle: "800",
             color: "#38bdf8"
           }).setOrigin(1, 0.5)
@@ -2560,8 +2717,14 @@ ${prog}`);
       const game = new Phaser.Game(config);
       window.__bfGame = game;
       window.__bfReady = true;
+      const applyInsets = () => {
+        window.__bfSafeInsets = measureSafeInsets();
+      };
+      applyInsets();
+      game.scale.on("resize", applyInsets);
       hideLoading();
       setupNative();
+      applyInsets();
     } catch (e) {
       showBootError(e.message || String(e));
     }

@@ -11,7 +11,7 @@ import {
   recordDailyScore,
   getDailyBest,
 } from "../progress.js";
-import { streakMult } from "../meta.js";
+import { streakMult, rankProgress } from "../meta.js";
 import {
   drawBackdrop,
   fadeInScene,
@@ -31,6 +31,7 @@ import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
+import { HUD_HEADER } from "../layout.js";
 
 const TRAY_Y = 580;
 const TRAY_SCALE = 0.62;
@@ -154,33 +155,41 @@ export default class GameScene extends Phaser.Scene {
     };
     addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
 
+    const H = HUD_HEADER;
     this.add
-      .text(W / 2, 54, title, {
+      .text(W / 2, H.titleY, title, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "17px",
+        fontSize: "16px",
         fontStyle: "700",
         color: "#38bdf8",
       })
       .setOrigin(0.5)
       .setDepth(50);
 
-    this.scoreText = this.add.text(24, 56, "0", {
+    this.add.text(24, H.scoreLabelY, "SCORE", {
       fontFamily: "Outfit, sans-serif",
-      fontSize: "28px",
-      fontStyle: "800",
-      color: "#e2e8f0",
-    });
-    this.add.text(24, 48, "SCORE", { fontFamily: "Outfit, sans-serif", fontSize: "10px", color: "#64748b" });
+      fontSize: "10px",
+      color: "#64748b",
+    }).setDepth(50);
+    this.scoreText = this.add
+      .text(24, H.scoreValueY, "0", {
+        fontFamily: "Outfit, sans-serif",
+        fontSize: "26px",
+        fontStyle: "800",
+        color: "#e2e8f0",
+      })
+      .setDepth(50);
 
     this.streakBadge = this.add
-      .text(W / 2, 48, "", {
+      .text(W / 2, H.streakY, "", {
         fontFamily: "Outfit, sans-serif",
         fontSize: "12px",
         fontStyle: "700",
         color: "#f97316",
       })
       .setOrigin(0.5)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setDepth(50);
 
     let goalLabel;
     if (this.mode === "endless") {
@@ -193,19 +202,20 @@ export default class GameScene extends Phaser.Scene {
       goalLabel = goalText(this.level?.goal);
     }
     this.goalText = this.add
-      .text(W - 24, 56, goalLabel, {
+      .text(W - 24, H.goalY, goalLabel, {
         fontFamily: "Outfit, sans-serif",
-        fontSize: "13px",
+        fontSize: "12px",
         fontStyle: "600",
         color: "#94a3b8",
         align: "right",
-        wordWrap: { width: 180 },
+        wordWrap: { width: 160 },
       })
-      .setOrigin(1, 0);
+      .setOrigin(1, 0)
+      .setDepth(50);
 
     if (this.mode === "level" && this.level.moves) {
       this.movesText = this.add
-        .text(W / 2, 88, `Moves: ${this.level.moves}`, {
+        .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, {
           fontFamily: "Outfit, sans-serif",
           fontSize: "14px",
           color: "#fbbf24",
@@ -844,7 +854,20 @@ export default class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(102);
 
-    const btnY = won ? 438 : 430;
+    if (this.sessionXp > 0) {
+      const tier = rankProgress(this.progress.xp || 0).rank;
+      this.add
+        .text(W / 2, won ? 402 : 394, `${tier.icon}  ${tier.name} tier`, {
+          fontFamily: "Outfit, sans-serif",
+          fontSize: "13px",
+          fontStyle: "700",
+          color: tier.text || "#fde047",
+        })
+        .setOrigin(0.5)
+        .setDepth(102);
+    }
+
+    const btnY = won ? 448 : 430;
     if (won) {
       this.makeOverlayBtn(W / 2, btnY, "Next level →", () => {
         const next = this.levelId + 1;

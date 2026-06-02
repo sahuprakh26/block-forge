@@ -4,6 +4,8 @@ import { drawBackdrop, transitionTo, fadeInScene } from "../fx.js";
 import { sfx } from "../audio.js";
 import { bgm } from "../music.js";
 import { addGameTopNav } from "../navUi.js";
+import { mapLayout } from "../layout.js";
+import { H } from "../config.js";
 
 export default class MapScene extends Phaser.Scene {
   constructor() {
@@ -11,10 +13,11 @@ export default class MapScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height } = this.scale;
+    const { width } = this.scale;
+    const M = mapLayout(width, H);
     const p = loadProgress();
     const world = WORLDS[0];
-    drawBackdrop(this, width, height);
+    drawBackdrop(this, width, H);
 
     const totalStars = Object.values(p.stars || {}).reduce((a, b) => a + b, 0);
     const maxStars = world.levels.length * 3;
@@ -23,29 +26,29 @@ export default class MapScene extends Phaser.Scene {
     addGameTopNav(this, { onBack: goMenu, onQuit: goMenu, backLabel: "← BACK" });
 
     this.add
-      .text(width / 2, 54, world.name, {
+      .text(width / 2, M.titleY, world.name, {
         fontFamily: "Syne, sans-serif",
-        fontSize: "26px",
+        fontSize: "24px",
         fontStyle: "700",
         color: "#22d3ee",
       })
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 62, `${totalStars} / ${maxStars} ★`, {
+      .text(width / 2, M.starsY, `${totalStars} / ${maxStars} ★`, {
         fontFamily: "Outfit, sans-serif",
         fontSize: "14px",
         color: "#64748b",
       })
       .setOrigin(0.5);
 
-    this.add.rectangle(width / 2, 82, width - 60, 5, 0x1e293b).setOrigin(0.5);
-    const progBar = this.add.rectangle(30, 82, 0, 5, 0xfbbf24).setOrigin(0, 0.5);
+    this.add.rectangle(width / 2, M.barY, width - 60, 5, 0x1e293b).setOrigin(0.5);
+    const progBar = this.add.rectangle(30, M.barY, 0, 5, 0xfbbf24).setOrigin(0, 0.5);
     progBar.width = (width - 60) * (totalStars / maxStars);
 
     const cols = 5;
     const startX = 52;
-    const startY = 118;
+    const startY = M.startY;
     const gap = 68;
 
     const nodes = world.levels.map((_, i) => {

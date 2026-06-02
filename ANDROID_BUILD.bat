@@ -39,11 +39,15 @@ call gradlew.bat assembleDebug
 if errorlevel 1 goto :fail
 cd ..
 
+if not exist "public\download" mkdir "public\download"
+copy /Y "android\app\build\outputs\apk\debug\app-debug.apk" "public\download\BlockForge.apk" >nul
 echo.
-echo  SUCCESS!
+echo  SUCCESS!  version 1.2.0 (code 3)
 echo  APK: android\app\build\outputs\apk\debug\app-debug.apk
+echo  Web: public\download\BlockForge.apk  (Netlify par deploy ke baad)
 echo.
-echo  Emulator par test: ANDROID_RUN.bat
+echo  Phone USB: INSTALL_APK_USB.bat
+echo  Emulator:  ANDROID_RUN.bat
 echo.
 pause
 exit /b 0
