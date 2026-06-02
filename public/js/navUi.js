@@ -126,8 +126,7 @@ export function showLeaveDialog(scene, { title = "Leave game?", onLeave }) {
   });
 }
 
-export function addGameTopNav(scene, { onBack, onQuit, backLabel = "← BACK" }) {
-  const y = 24;
-  addNavButton(scene, 52, y, backLabel, 0x475569, onBack, 92);
-  if (onQuit) addNavButton(scene, W - 52, y, "QUIT", 0xb91c1c, onQuit, 76);
+export function addGameTopNav(scene, { onBack, onQuit, backLabel = "← BACK", navY = 26 }) {
+  addNavButton(scene, 52, navY, backLabel, 0x475569, onBack, 88);
+  if (onQuit) addNavButton(scene, W - 52, navY, "QUIT", 0xb91c1c, onQuit, 72);
 }

@@ -34,6 +34,11 @@ function insetY() {
   };
 }
 
+function gameSafeY() {
+  const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
+  return { top: ins.topGame || 0, bottom: ins.bottomGame || 0 };
+}
+
 /** Stack-based menu — logo zone then rank card (no overlap) */
 export function menuLayout(height = H) {
   const { top, bottom } = insetY();
@@ -84,73 +89,69 @@ export function menuLayout(height = H) {
 }
 
 /**
- * Game HUD — stacked rows (no side-by-side cramming).
- * Row 1: BACK / QUIT (nav only)
- * Row 2: level title + name (center)
- * Row 3: score (left) · goal (right)
- * Row 4: progress bar
+ * Standard block-puzzle layout (Block Blast / Woodoku style):
+ * 1) Top nav row — BACK | (spacer) | QUIT
+ * 2) Stats strip — SCORE (left) · level info (center) · GOAL (right)
+ * 3) Goal progress bar
+ * 4) Board — vertically centered in play area
+ * 5) Bottom piece dock — label inside, 3 slots
  */
-export const HUD_HEADER = {
-  navY: 26,
-  panelY: 98,
-  panelH: 82,
-  levelTitleY: 66,
-  levelNameY: 82,
-  movesY: 96,
-  scoreX: 28,
-  scoreLabelY: 114,
-  scoreValueY: 132,
-  goalX: W - 28,
-  goalLabelY: 114,
-  goalProgY: 132,
-  streakY: 146,
-  goalBarY: 150,
-};
-
-/** Board + tray — tray box sized to fit pieces; everything stays inside H. */
 export function gameLayout(height = H) {
+  const { top: safeTop, bottom: safeBottom } = gameSafeY();
+  const margin = 16;
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const hudEndY = 152;
-  const bottomPad = 14;
-  const trayLabelSpace = 18;
-  const boardTrayGap = 10;
-  const trayPad = 14;
-  const maxPieceCells = 5;
 
-  const trayH = 142;
-  const trayW = W - 12;
-  const trayInnerH = trayH - trayPad * 2;
-  const trayScale = Math.min(0.62, trayInnerH / (maxPieceCells * CELL));
-  const pieceHalf = (maxPieceCells * CELL * trayScale) / 2;
+  const navY = 26 + safeTop;
+  const headerTop = 44 + safeTop;
+  const headerH = 66;
+  const goalBarY = headerTop + headerH + 8;
+  const hudBottom = goalBarY + 10;
 
-  const trayBottom = height - bottomPad;
-  let trayCenterY = trayBottom - trayH / 2;
-  let trayTop = trayCenterY - trayH / 2;
-  let trayLabelY = trayTop - trayLabelSpace / 2 - 4;
-  let trayPiecesY = trayCenterY;
+  const trayH = 116;
+  const trayBottom = height - Math.max(10, safeBottom) - 10;
+  const trayCenterY = trayBottom - trayH / 2;
+  const trayTop = trayCenterY - trayH / 2;
+  const trayLabelY = trayTop + 14;
+  const trayInnerH = trayH - 36;
+  const trayScale = Math.min(0.54, trayInnerH / (5 * CELL));
+  const trayPiecesY = trayCenterY + 4;
 
-  let boardBottom = trayTop - boardTrayGap;
-  let boardY = boardBottom - boardH;
-
-  if (boardY < hudEndY) {
-    boardY = hudEndY;
-    boardBottom = boardY + boardH;
-    trayTop = boardBottom + boardTrayGap;
-    trayCenterY = trayTop + trayH / 2;
-    trayLabelY = trayTop - trayLabelSpace / 2 - 4;
-    trayPiecesY = trayCenterY;
-  }
+  const playTop = hudBottom;
+  const playBottom = trayTop - 12;
+  let boardY = playTop + Math.max(0, (playBottom - playTop - boardH) / 2);
+  boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
 
   return {
+    margin,
+    navY,
+    headerTop,
+    headerH,
+    panelY: headerTop + headerH / 2,
+    panelW: W - margin * 2,
+    scoreX: margin,
+    scoreLabelY: headerTop + 12,
+    scoreValueY: headerTop + 36,
+    centerX: W / 2,
+    levelTitleY: headerTop + 10,
+    levelNameY: headerTop + 28,
+    movesY: headerTop + 46,
+    goalX: W - margin,
+    goalLabelY: headerTop + 12,
+    goalProgY: headerTop + 36,
+    goalBarY,
+    goalBarW: W - margin * 2,
+    streakY: goalBarY - 4,
     boardY,
-    boardBottom,
     boardH,
-    trayLabelY,
+    boardBottom: boardY + boardH,
+    trayTop,
     trayCenterY,
     trayH,
-    trayW,
+    trayW: W - margin * 2,
+    trayLabelY,
     trayPiecesY,
     trayScale,
+    slotXs: [W * 0.2, W * 0.5, W * 0.8],
   };
 }
 

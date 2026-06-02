@@ -31,7 +31,7 @@ import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
-import { HUD_HEADER, gameLayout } from "../layout.js";
+import { gameLayout } from "../layout.js";
 import { gameHudStyle } from "../gameUi.js";
 import { applyCrispText } from "../textUtil.js";
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
@@ -114,12 +114,12 @@ export default class GameScene extends Phaser.Scene {
   drawTrayArea() {
     const L = this.layout;
     this.add
-      .rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 0x111827, 0.92)
-      .setStrokeStyle(2, 0x64748b, 0.95)
+      .rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 0x0f172a, 0.94)
+      .setStrokeStyle(2, 0x475569, 1)
       .setDepth(1);
     applyCrispText(
       this.add
-        .text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel"))
+        .text(W / 2, L.trayLabelY, "NEXT", gameHudStyle("trayLabel", { fontSize: "10px", letterSpacing: 2 }))
         .setOrigin(0.5)
         .setDepth(2)
     );
@@ -150,17 +150,30 @@ export default class GameScene extends Phaser.Scene {
       if (this.gameEnded) this.exitGame();
       else this.showConfirmExit();
     };
-    addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
+    const L = this.layout;
+    addGameTopNav(this, { onBack: askLeave, onQuit: askLeave, navY: L.navY });
 
-    const H = HUD_HEADER;
     this.add
-      .rectangle(W / 2, H.panelY, W - 16, H.panelH, 0x0f172a, 0.92)
-      .setStrokeStyle(1, 0x334155, 0.6)
+      .rectangle(W / 2, L.panelY, L.panelW, L.headerH, 0x0f172a, 0.94)
+      .setStrokeStyle(1, 0x334155, 0.7)
       .setDepth(45);
 
     applyCrispText(
       this.add
-        .text(W / 2, H.levelTitleY, title, gameHudStyle("heading"))
+        .text(L.scoreX, L.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 }))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+    this.scoreText = applyCrispText(
+      this.add
+        .text(L.scoreX, L.scoreValueY, "0", gameHudStyle("stat"))
+        .setOrigin(0, 0.5)
+        .setDepth(50)
+    );
+
+    applyCrispText(
+      this.add
+        .text(L.centerX, L.levelTitleY, title, gameHudStyle("heading"))
         .setOrigin(0.5)
         .setDepth(50)
     );
@@ -168,43 +181,31 @@ export default class GameScene extends Phaser.Scene {
     if (this.mode === "level" && this.level?.name) {
       applyCrispText(
         this.add
-          .text(W / 2, H.levelNameY, this.level.name, gameHudStyle("body"))
+          .text(L.centerX, L.levelNameY, this.level.name, gameHudStyle("body"))
           .setOrigin(0.5)
           .setDepth(50)
       );
     }
 
-    applyCrispText(
-      this.add
-        .text(H.scoreX, H.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 }))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
-    this.scoreText = applyCrispText(
-      this.add
-        .text(H.scoreX, H.scoreValueY, "0", gameHudStyle("stat"))
-        .setOrigin(0, 0.5)
-        .setDepth(50)
-    );
-
-    this.streakBadge = applyCrispText(
-      this.add
-        .text(W / 2, H.streakY, "", gameHudStyle("body"))
-        .setOrigin(0.5)
-        .setAlpha(0)
-        .setDepth(50)
-    );
+    if (this.mode === "level" && this.level.moves) {
+      this.movesText = applyCrispText(
+        this.add
+          .text(L.centerX, L.movesY, `Moves ${this.level.moves}`, gameHudStyle("moves"))
+          .setOrigin(0.5)
+          .setDepth(50)
+      );
+    }
 
     let goalTitle = "";
     let goalProg = "—";
     if (this.mode === "endless") {
       const best = this.progress.endlessBest || 0;
-      goalTitle = "ENDLESS";
-      goalProg = best > 0 ? `Best ${best}` : "Survive!";
+      goalTitle = "BEST";
+      goalProg = best > 0 ? `${best}` : "—";
     } else if (this.mode === "daily") {
       const db = getDailyBest(this.progress);
       goalTitle = "TODAY";
-      goalProg = db > 0 ? `Beat ${db}` : "Score high";
+      goalProg = db > 0 ? `${db}` : "—";
     } else if (this.level?.goal) {
       goalTitle = goalHudTitle(this.level.goal);
       goalProg = goalProgress(this.level.goal, 0, 0, 0);
@@ -212,30 +213,32 @@ export default class GameScene extends Phaser.Scene {
 
     applyCrispText(
       this.add
-        .text(H.goalX, H.goalLabelY, `GOAL · ${goalTitle}`, gameHudStyle("goalLabel", { align: "right" }))
+        .text(L.goalX, L.goalLabelY, goalTitle, gameHudStyle("goalLabel", { align: "right" }))
         .setOrigin(1, 0.5)
         .setDepth(50)
     );
     this.goalProgressText = applyCrispText(
       this.add
-        .text(H.goalX, H.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" }))
+        .text(L.goalX, L.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" }))
         .setOrigin(1, 0.5)
         .setDepth(50)
     );
 
-    if (this.mode === "level" && this.level.moves) {
-      this.movesText = applyCrispText(
-        this.add
-          .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, gameHudStyle("moves"))
-          .setOrigin(0.5)
-          .setDepth(50)
-      );
-    }
+    this.streakBadge = applyCrispText(
+      this.add
+        .text(L.centerX, L.streakY, "", gameHudStyle("body"))
+        .setOrigin(0.5)
+        .setAlpha(0)
+        .setDepth(50)
+    );
 
     if (this.mode === "level") {
-      this.add.rectangle(W / 2, H.goalBarY, W - 40, 8, 0x1e293b).setOrigin(0.5);
-      this.goalBar = this.add.rectangle(20, H.goalBarY, 0, 8, 0x38bdf8).setOrigin(0, 0.5).setDepth(50);
-      this.goalBarMax = W - 40;
+      this.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 6, 0x1e293b).setOrigin(0.5);
+      this.goalBar = this.add
+        .rectangle(L.margin, L.goalBarY, 0, 6, 0x38bdf8)
+        .setOrigin(0, 0.5)
+        .setDepth(50);
+      this.goalBarMax = L.goalBarW;
     }
   }
 
@@ -247,18 +250,17 @@ export default class GameScene extends Phaser.Scene {
     this.tray = randomTray(3, rng);
     sfx.play("tray");
 
-    const slotXs = [W * 0.22, W * 0.5, W * 0.78];
     this.tray.forEach((shape, i) => {
       const container = this.makePieceContainer(
         shape,
-        slotXs[i],
+        this.layout.slotXs[i],
         this.layout.trayPiecesY,
         this.layout.trayScale,
         true
       );
       container.setData("slot", i);
       container.setData("shape", shape);
-      container.setData("homeX", slotXs[i]);
+      container.setData("homeX", this.layout.slotXs[i]);
       container.setData("homeY", this.layout.trayPiecesY);
       const hit = Math.round(110 * this.layout.trayScale + 88);
       container.setInteractive(

@@ -923,6 +923,10 @@
       bottom: 18 + (ins.bottomGame || 0)
     };
   }
+  function gameSafeY() {
+    const ins = window.__bfSafeInsets || { topGame: 0, bottomGame: 0 };
+    return { top: ins.topGame || 0, bottom: ins.bottomGame || 0 };
+  }
   function menuLayout(height = H) {
     const { top, bottom } = insetY();
     let y = top;
@@ -963,60 +967,58 @@
       btnW: W - 32
     };
   }
-  var HUD_HEADER = {
-    navY: 26,
-    panelY: 98,
-    panelH: 82,
-    levelTitleY: 66,
-    levelNameY: 82,
-    movesY: 96,
-    scoreX: 28,
-    scoreLabelY: 114,
-    scoreValueY: 132,
-    goalX: W - 28,
-    goalLabelY: 114,
-    goalProgY: 132,
-    streakY: 146,
-    goalBarY: 150
-  };
   function gameLayout(height = H) {
+    const { top: safeTop, bottom: safeBottom } = gameSafeY();
+    const margin = 16;
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const hudEndY = 152;
-    const bottomPad = 14;
-    const trayLabelSpace = 18;
-    const boardTrayGap = 10;
-    const trayPad = 14;
-    const maxPieceCells = 5;
-    const trayH = 142;
-    const trayW = W - 12;
-    const trayInnerH = trayH - trayPad * 2;
-    const trayScale = Math.min(0.62, trayInnerH / (maxPieceCells * CELL));
-    const pieceHalf = maxPieceCells * CELL * trayScale / 2;
-    const trayBottom = height - bottomPad;
-    let trayCenterY = trayBottom - trayH / 2;
-    let trayTop = trayCenterY - trayH / 2;
-    let trayLabelY = trayTop - trayLabelSpace / 2 - 4;
-    let trayPiecesY = trayCenterY;
-    let boardBottom = trayTop - boardTrayGap;
-    let boardY = boardBottom - boardH;
-    if (boardY < hudEndY) {
-      boardY = hudEndY;
-      boardBottom = boardY + boardH;
-      trayTop = boardBottom + boardTrayGap;
-      trayCenterY = trayTop + trayH / 2;
-      trayLabelY = trayTop - trayLabelSpace / 2 - 4;
-      trayPiecesY = trayCenterY;
-    }
+    const navY = 26 + safeTop;
+    const headerTop = 44 + safeTop;
+    const headerH = 66;
+    const goalBarY = headerTop + headerH + 8;
+    const hudBottom = goalBarY + 10;
+    const trayH = 116;
+    const trayBottom = height - Math.max(10, safeBottom) - 10;
+    const trayCenterY = trayBottom - trayH / 2;
+    const trayTop = trayCenterY - trayH / 2;
+    const trayLabelY = trayTop + 14;
+    const trayInnerH = trayH - 36;
+    const trayScale = Math.min(0.54, trayInnerH / (5 * CELL));
+    const trayPiecesY = trayCenterY + 4;
+    const playTop = hudBottom;
+    const playBottom = trayTop - 12;
+    let boardY = playTop + Math.max(0, (playBottom - playTop - boardH) / 2);
+    boardY = Math.max(playTop, Math.min(boardY, playBottom - boardH));
     return {
+      margin,
+      navY,
+      headerTop,
+      headerH,
+      panelY: headerTop + headerH / 2,
+      panelW: W - margin * 2,
+      scoreX: margin,
+      scoreLabelY: headerTop + 12,
+      scoreValueY: headerTop + 36,
+      centerX: W / 2,
+      levelTitleY: headerTop + 10,
+      levelNameY: headerTop + 28,
+      movesY: headerTop + 46,
+      goalX: W - margin,
+      goalLabelY: headerTop + 12,
+      goalProgY: headerTop + 36,
+      goalBarY,
+      goalBarW: W - margin * 2,
+      streakY: goalBarY - 4,
       boardY,
-      boardBottom,
       boardH,
-      trayLabelY,
+      boardBottom: boardY + boardH,
+      trayTop,
       trayCenterY,
       trayH,
-      trayW,
+      trayW: W - margin * 2,
+      trayLabelY,
       trayPiecesY,
-      trayScale
+      trayScale,
+      slotXs: [W * 0.2, W * 0.5, W * 0.8]
     };
   }
   function mapLayout(width = W, height = H) {
@@ -1485,7 +1487,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.3.3";
+  var APP_VERSION = "1.4.0";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1754,10 +1756,9 @@
       close();
     });
   }
-  function addGameTopNav(scene, { onBack, onQuit, backLabel = "\u2190 BACK" }) {
-    const y = 24;
-    addNavButton(scene, 52, y, backLabel, 4674921, onBack, 92);
-    if (onQuit) addNavButton(scene, W - 52, y, "QUIT", 12131356, onQuit, 76);
+  function addGameTopNav(scene, { onBack, onQuit, backLabel = "\u2190 BACK", navY = 26 }) {
+    addNavButton(scene, 52, navY, backLabel, 4674921, onBack, 88);
+    if (onQuit) addNavButton(scene, W - 52, navY, "QUIT", 12131356, onQuit, 72);
   }
 
   // public/js/scenes/MapScene.js
@@ -2092,9 +2093,9 @@
     }
     drawTrayArea() {
       const L = this.layout;
-      this.add.rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 1120295, 0.92).setStrokeStyle(2, 6583435, 0.95).setDepth(1);
+      this.add.rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 988970, 0.94).setStrokeStyle(2, 4674921, 1).setDepth(1);
       applyCrispText(
-        this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel")).setOrigin(0.5).setDepth(2)
+        this.add.text(W / 2, L.trayLabelY, "NEXT", gameHudStyle("trayLabel", { fontSize: "10px", letterSpacing: 2 })).setOrigin(0.5).setDepth(2)
       );
     }
     drawBoardFrame() {
@@ -2115,55 +2116,55 @@
         if (this.gameEnded) this.exitGame();
         else this.showConfirmExit();
       };
-      addGameTopNav(this, { onBack: askLeave, onQuit: askLeave });
-      const H2 = HUD_HEADER;
-      this.add.rectangle(W / 2, H2.panelY, W - 16, H2.panelH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
+      const L = this.layout;
+      addGameTopNav(this, { onBack: askLeave, onQuit: askLeave, navY: L.navY });
+      this.add.rectangle(W / 2, L.panelY, L.panelW, L.headerH, 988970, 0.94).setStrokeStyle(1, 3359061, 0.7).setDepth(45);
       applyCrispText(
-        this.add.text(W / 2, H2.levelTitleY, title, gameHudStyle("heading")).setOrigin(0.5).setDepth(50)
+        this.add.text(L.scoreX, L.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 })).setOrigin(0, 0.5).setDepth(50)
+      );
+      this.scoreText = applyCrispText(
+        this.add.text(L.scoreX, L.scoreValueY, "0", gameHudStyle("stat")).setOrigin(0, 0.5).setDepth(50)
+      );
+      applyCrispText(
+        this.add.text(L.centerX, L.levelTitleY, title, gameHudStyle("heading")).setOrigin(0.5).setDepth(50)
       );
       if (this.mode === "level" && this.level?.name) {
         applyCrispText(
-          this.add.text(W / 2, H2.levelNameY, this.level.name, gameHudStyle("body")).setOrigin(0.5).setDepth(50)
+          this.add.text(L.centerX, L.levelNameY, this.level.name, gameHudStyle("body")).setOrigin(0.5).setDepth(50)
         );
       }
-      applyCrispText(
-        this.add.text(H2.scoreX, H2.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 })).setOrigin(0, 0.5).setDepth(50)
-      );
-      this.scoreText = applyCrispText(
-        this.add.text(H2.scoreX, H2.scoreValueY, "0", gameHudStyle("stat")).setOrigin(0, 0.5).setDepth(50)
-      );
-      this.streakBadge = applyCrispText(
-        this.add.text(W / 2, H2.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
-      );
+      if (this.mode === "level" && this.level.moves) {
+        this.movesText = applyCrispText(
+          this.add.text(L.centerX, L.movesY, `Moves ${this.level.moves}`, gameHudStyle("moves")).setOrigin(0.5).setDepth(50)
+        );
+      }
       let goalTitle = "";
       let goalProg = "\u2014";
       if (this.mode === "endless") {
         const best = this.progress.endlessBest || 0;
-        goalTitle = "ENDLESS";
-        goalProg = best > 0 ? `Best ${best}` : "Survive!";
+        goalTitle = "BEST";
+        goalProg = best > 0 ? `${best}` : "\u2014";
       } else if (this.mode === "daily") {
         const db = getDailyBest(this.progress);
         goalTitle = "TODAY";
-        goalProg = db > 0 ? `Beat ${db}` : "Score high";
+        goalProg = db > 0 ? `${db}` : "\u2014";
       } else if (this.level?.goal) {
         goalTitle = goalHudTitle(this.level.goal);
         goalProg = goalProgress(this.level.goal, 0, 0, 0);
       }
       applyCrispText(
-        this.add.text(H2.goalX, H2.goalLabelY, `GOAL \xB7 ${goalTitle}`, gameHudStyle("goalLabel", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
+        this.add.text(L.goalX, L.goalLabelY, goalTitle, gameHudStyle("goalLabel", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
       );
       this.goalProgressText = applyCrispText(
-        this.add.text(H2.goalX, H2.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
+        this.add.text(L.goalX, L.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
       );
-      if (this.mode === "level" && this.level.moves) {
-        this.movesText = applyCrispText(
-          this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, gameHudStyle("moves")).setOrigin(0.5).setDepth(50)
-        );
-      }
+      this.streakBadge = applyCrispText(
+        this.add.text(L.centerX, L.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
+      );
       if (this.mode === "level") {
-        this.add.rectangle(W / 2, H2.goalBarY, W - 40, 8, 1976635).setOrigin(0.5);
-        this.goalBar = this.add.rectangle(20, H2.goalBarY, 0, 8, 3718648).setOrigin(0, 0.5).setDepth(50);
-        this.goalBarMax = W - 40;
+        this.add.rectangle(W / 2, L.goalBarY, L.goalBarW, 6, 1976635).setOrigin(0.5);
+        this.goalBar = this.add.rectangle(L.margin, L.goalBarY, 0, 6, 3718648).setOrigin(0, 0.5).setDepth(50);
+        this.goalBarMax = L.goalBarW;
       }
     }
     spawnTray() {
@@ -2173,18 +2174,17 @@
       const rng = this.dailyRng || Math.random;
       this.tray = randomTray(3, rng);
       sfx.play("tray");
-      const slotXs = [W * 0.22, W * 0.5, W * 0.78];
       this.tray.forEach((shape, i) => {
         const container = this.makePieceContainer(
           shape,
-          slotXs[i],
+          this.layout.slotXs[i],
           this.layout.trayPiecesY,
           this.layout.trayScale,
           true
         );
         container.setData("slot", i);
         container.setData("shape", shape);
-        container.setData("homeX", slotXs[i]);
+        container.setData("homeX", this.layout.slotXs[i]);
         container.setData("homeY", this.layout.trayPiecesY);
         const hit = Math.round(110 * this.layout.trayScale + 88);
         container.setInteractive(
