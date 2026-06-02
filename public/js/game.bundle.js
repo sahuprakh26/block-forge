@@ -692,7 +692,7 @@
       ring(rank.stroke || 16777215);
     }
     parent.add(g);
-    const letterSize = rank.letter?.length > 1 ? "15px" : "24px";
+    const letterSize = rank.letter?.length > 1 ? r < 26 ? "11px" : "15px" : r < 26 ? "17px" : "24px";
     const letterFill = metal === "gold" || metal === "immortal" ? "#1e293b" : rank.text || "#fff";
     const letterStroke = metal === "gold" ? "#ffea00" : metal === "immortal" ? "#fde047" : "#0f172a";
     const lbl = applyCrispText(
