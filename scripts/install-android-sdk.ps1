@@ -1,7 +1,7 @@
 # Silent Android SDK install (no Android Studio GUI)
 $ErrorActionPreference = "Stop"
 $sdk = "$env:LOCALAPPDATA\Android\Sdk"
-$zip = "$env:TEMP\cmdline-tools.zip"
+$zip = "$env:TEMP\cmdline-tools-$([guid]::NewGuid().ToString('N')).zip"
 $url = "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip"
 
 if (Test-Path "$sdk\platform-tools\adb.exe") {
@@ -25,8 +25,9 @@ $env:ANDROID_SDK_ROOT = $sdk
 $mgr = "$sdk\cmdline-tools\latest\bin\sdkmanager.bat"
 
 Write-Host "Installing SDK packages (5-10 min)..."
-cmd /c "echo y| `"$mgr`" --licenses" | Out-Null
-cmd /c "`"$mgr`" `"platform-tools`" `"platforms;android-34`" `"build-tools;34.0.0`" `"emulator`" `"system-images;android-34;google_apis;x86_64`""
+$yes = ("y`n" * 80)
+$yes | & cmd /c "`"$mgr`" --licenses" 2>&1 | Out-Null
+& cmd /c "`"$mgr`" `"platform-tools`" `"platforms;android-34`" `"build-tools;34.0.0`""
 
 if (Test-Path "$sdk\platform-tools\adb.exe") {
   Write-Host "SDK ready: $sdk"

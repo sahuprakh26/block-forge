@@ -1,0 +1,37 @@
+name: Deploy Global API (Cloudflare)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "worker/**"
+      - "wrangler.toml"
+      - ".github/workflows/cloudflare-api.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: deploy
+          secrets: |
+            GITHUB_GIST_ID
+            GITHUB_TOKEN
+        env:
+          GITHUB_GIST_ID: ${{ secrets.BF_GIST_ID }}
+          GITHUB_TOKEN: ${{ secrets.BF_GH_TOKEN }}
+      - name: Save API URL
+        run: |
+          URL="https://block-forge-api.${{ secrets.CF_ACCOUNT_SUBDOMAIN }}.workers.dev"
+          gh variable set BF_API_URL --body "$URL"
+        env:
+          GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}
