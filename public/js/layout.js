@@ -92,38 +92,42 @@ export function menuLayout(height = H) {
  */
 export const HUD_HEADER = {
   navY: 26,
-  panelY: 100,
-  panelH: 86,
+  panelY: 98,
+  panelH: 82,
   levelTitleY: 66,
-  levelNameY: 84,
-  movesY: 100,
+  levelNameY: 82,
+  movesY: 96,
   scoreX: 28,
-  scoreLabelY: 116,
-  scoreValueY: 136,
+  scoreLabelY: 114,
+  scoreValueY: 132,
   goalX: W - 28,
-  goalLabelY: 116,
-  goalProgY: 136,
-  streakY: 148,
-  goalBarY: 152,
+  goalLabelY: 114,
+  goalProgY: 132,
+  streakY: 146,
+  goalBarY: 150,
 };
 
-/** Tray piece half-height (~5-tall shape at tray scale). Keep in sync with GameScene TRAY_SCALE. */
-export const TRAY_LAYOUT_SCALE = 0.98;
-const TRAY_PIECE_HALF = Math.round(2.5 * CELL * TRAY_LAYOUT_SCALE);
-
-/** Board + tray — tray anchored from bottom so it stays on screen. */
+/** Board + tray — tray box sized to fit pieces; everything stays inside H. */
 export function gameLayout(height = H) {
   const boardH = GRID * CELL + BOARD_PAD * 2;
-  const hudEndY = 156;
-  const trayH = 118;
-  const bottomPad = 18;
-  const labelGap = 10;
-  const boardTrayGap = 8;
+  const hudEndY = 152;
+  const bottomPad = 14;
+  const trayLabelSpace = 18;
+  const boardTrayGap = 10;
+  const trayPad = 14;
+  const maxPieceCells = 5;
 
-  let trayPiecesY = height - bottomPad - TRAY_PIECE_HALF;
-  let trayTop = trayPiecesY - trayH * 0.42;
-  let trayCenterY = trayTop + trayH / 2;
-  let trayLabelY = trayTop - labelGap;
+  const trayH = 142;
+  const trayW = W - 12;
+  const trayInnerH = trayH - trayPad * 2;
+  const trayScale = Math.min(0.62, trayInnerH / (maxPieceCells * CELL));
+  const pieceHalf = (maxPieceCells * CELL * trayScale) / 2;
+
+  const trayBottom = height - bottomPad;
+  let trayCenterY = trayBottom - trayH / 2;
+  let trayTop = trayCenterY - trayH / 2;
+  let trayLabelY = trayTop - trayLabelSpace / 2 - 4;
+  let trayPiecesY = trayCenterY;
 
   let boardBottom = trayTop - boardTrayGap;
   let boardY = boardBottom - boardH;
@@ -133,8 +137,8 @@ export function gameLayout(height = H) {
     boardBottom = boardY + boardH;
     trayTop = boardBottom + boardTrayGap;
     trayCenterY = trayTop + trayH / 2;
-    trayLabelY = trayTop - labelGap;
-    trayPiecesY = Math.min(trayPiecesY, trayCenterY);
+    trayLabelY = trayTop - trayLabelSpace / 2 - 4;
+    trayPiecesY = trayCenterY;
   }
 
   return {
@@ -144,7 +148,9 @@ export function gameLayout(height = H) {
     trayLabelY,
     trayCenterY,
     trayH,
+    trayW,
     trayPiecesY,
+    trayScale,
   };
 }
 

@@ -31,10 +31,9 @@ import { addGameTopNav, showLeaveDialog } from "../navUi.js";
 import { boardKey, submitScore as submitLb } from "../leaderboard.js";
 import { getPlayer, hasName } from "../player.js";
 import { ensureName } from "../namePrompt.js";
-import { HUD_HEADER, TRAY_LAYOUT_SCALE, gameLayout } from "../layout.js";
-import { applyCrispText, uiTextStyle } from "../textUtil.js";
-
-const TRAY_SCALE = TRAY_LAYOUT_SCALE;
+import { HUD_HEADER, gameLayout } from "../layout.js";
+import { gameHudStyle } from "../gameUi.js";
+import { applyCrispText } from "../textUtil.js";
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -115,18 +114,12 @@ export default class GameScene extends Phaser.Scene {
   drawTrayArea() {
     const L = this.layout;
     this.add
-      .rectangle(W / 2, L.trayCenterY, W - 20, L.trayH, 0x111827, 0.9)
-      .setStrokeStyle(2, 0x475569, 0.9)
+      .rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 0x111827, 0.92)
+      .setStrokeStyle(2, 0x64748b, 0.95)
       .setDepth(1);
     applyCrispText(
       this.add
-        .text(W / 2, L.trayLabelY, "NEXT PIECES", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "16px",
-          fontStyle: "800",
-          color: "#cbd5e1",
-          letterSpacing: 2,
-        }))
+        .text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel"))
         .setOrigin(0.5)
         .setDepth(2)
     );
@@ -167,13 +160,7 @@ export default class GameScene extends Phaser.Scene {
 
     applyCrispText(
       this.add
-        .text(W / 2, H.levelTitleY, title, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "16px",
-          fontStyle: "800",
-          color: "#38bdf8",
-          strokeThickness: 2,
-        }))
+        .text(W / 2, H.levelTitleY, title, gameHudStyle("heading"))
         .setOrigin(0.5)
         .setDepth(50)
     );
@@ -181,14 +168,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.mode === "level" && this.level?.name) {
       applyCrispText(
         this.add
-          .text(W / 2, H.levelNameY, this.level.name, uiTextStyle({
-            fontFamily: "Syne, sans-serif",
-            fontSize: "14px",
-            fontStyle: "800",
-            color: "#fb923c",
-            stroke: "#0f172a",
-            strokeThickness: 2,
-          }))
+          .text(W / 2, H.levelNameY, this.level.name, gameHudStyle("body"))
           .setOrigin(0.5)
           .setDepth(50)
       );
@@ -196,36 +176,20 @@ export default class GameScene extends Phaser.Scene {
 
     applyCrispText(
       this.add
-        .text(H.scoreX, H.scoreLabelY, "SCORE", uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8",
-          letterSpacing: 1,
-        }))
+        .text(H.scoreX, H.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 }))
         .setOrigin(0, 0.5)
         .setDepth(50)
     );
     this.scoreText = applyCrispText(
       this.add
-        .text(H.scoreX, H.scoreValueY, "0", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "28px",
-          fontStyle: "800",
-          color: "#ffffff",
-          stroke: "#0f172a",
-          strokeThickness: 3,
-        }))
+        .text(H.scoreX, H.scoreValueY, "0", gameHudStyle("stat"))
         .setOrigin(0, 0.5)
         .setDepth(50)
     );
 
     this.streakBadge = applyCrispText(
       this.add
-        .text(W / 2, H.streakY, "", uiTextStyle({
-          fontSize: "13px",
-          fontStyle: "800",
-          color: "#fb923c",
-        }))
+        .text(W / 2, H.streakY, "", gameHudStyle("body"))
         .setOrigin(0.5)
         .setAlpha(0)
         .setDepth(50)
@@ -248,27 +212,13 @@ export default class GameScene extends Phaser.Scene {
 
     applyCrispText(
       this.add
-        .text(H.goalX, H.goalLabelY, `GOAL · ${goalTitle}`, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "13px",
-          fontStyle: "800",
-          color: "#cbd5e1",
-          align: "right",
-        }))
+        .text(H.goalX, H.goalLabelY, `GOAL · ${goalTitle}`, gameHudStyle("goalLabel", { align: "right" }))
         .setOrigin(1, 0.5)
         .setDepth(50)
     );
     this.goalProgressText = applyCrispText(
       this.add
-        .text(H.goalX, H.goalProgY, goalProg, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "30px",
-          fontStyle: "800",
-          color: "#4ade80",
-          align: "right",
-          stroke: "#0f172a",
-          strokeThickness: 2,
-        }))
+        .text(H.goalX, H.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" }))
         .setOrigin(1, 0.5)
         .setDepth(50)
     );
@@ -276,14 +226,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.mode === "level" && this.level.moves) {
       this.movesText = applyCrispText(
         this.add
-          .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, uiTextStyle({
-            fontFamily: "Syne, sans-serif",
-            fontSize: "14px",
-            fontStyle: "800",
-            color: "#fbbf24",
-            stroke: "#0f172a",
-            strokeThickness: 2,
-          }))
+          .text(W / 2, H.movesY, `Moves: ${this.level.moves}`, gameHudStyle("moves"))
           .setOrigin(0.5)
           .setDepth(50)
       );
@@ -306,13 +249,20 @@ export default class GameScene extends Phaser.Scene {
 
     const slotXs = [W * 0.22, W * 0.5, W * 0.78];
     this.tray.forEach((shape, i) => {
-      const container = this.makePieceContainer(shape, slotXs[i], this.layout.trayPiecesY, TRAY_SCALE, true);
+      const container = this.makePieceContainer(
+        shape,
+        slotXs[i],
+        this.layout.trayPiecesY,
+        this.layout.trayScale,
+        true
+      );
       container.setData("slot", i);
       container.setData("shape", shape);
       container.setData("homeX", slotXs[i]);
       container.setData("homeY", this.layout.trayPiecesY);
+      const hit = Math.round(110 * this.layout.trayScale + 88);
       container.setInteractive(
-        new Phaser.Geom.Rectangle(-130, -130, 260, 260),
+        new Phaser.Geom.Rectangle(-hit / 2, -hit / 2, hit, hit),
         Phaser.Geom.Rectangle.Contains
       );
       this.input.setDraggable(container);

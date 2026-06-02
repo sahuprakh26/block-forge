@@ -965,33 +965,38 @@
   }
   var HUD_HEADER = {
     navY: 26,
-    panelY: 100,
-    panelH: 86,
+    panelY: 98,
+    panelH: 82,
     levelTitleY: 66,
-    levelNameY: 84,
-    movesY: 100,
+    levelNameY: 82,
+    movesY: 96,
     scoreX: 28,
-    scoreLabelY: 116,
-    scoreValueY: 136,
+    scoreLabelY: 114,
+    scoreValueY: 132,
     goalX: W - 28,
-    goalLabelY: 116,
-    goalProgY: 136,
-    streakY: 148,
-    goalBarY: 152
+    goalLabelY: 114,
+    goalProgY: 132,
+    streakY: 146,
+    goalBarY: 150
   };
-  var TRAY_LAYOUT_SCALE = 0.98;
-  var TRAY_PIECE_HALF = Math.round(2.5 * CELL * TRAY_LAYOUT_SCALE);
   function gameLayout(height = H) {
     const boardH = GRID * CELL + BOARD_PAD * 2;
-    const hudEndY = 156;
-    const trayH = 118;
-    const bottomPad = 18;
-    const labelGap = 10;
-    const boardTrayGap = 8;
-    let trayPiecesY = height - bottomPad - TRAY_PIECE_HALF;
-    let trayTop = trayPiecesY - trayH * 0.42;
-    let trayCenterY = trayTop + trayH / 2;
-    let trayLabelY = trayTop - labelGap;
+    const hudEndY = 152;
+    const bottomPad = 14;
+    const trayLabelSpace = 18;
+    const boardTrayGap = 10;
+    const trayPad = 14;
+    const maxPieceCells = 5;
+    const trayH = 142;
+    const trayW = W - 12;
+    const trayInnerH = trayH - trayPad * 2;
+    const trayScale = Math.min(0.62, trayInnerH / (maxPieceCells * CELL));
+    const pieceHalf = maxPieceCells * CELL * trayScale / 2;
+    const trayBottom = height - bottomPad;
+    let trayCenterY = trayBottom - trayH / 2;
+    let trayTop = trayCenterY - trayH / 2;
+    let trayLabelY = trayTop - trayLabelSpace / 2 - 4;
+    let trayPiecesY = trayCenterY;
     let boardBottom = trayTop - boardTrayGap;
     let boardY = boardBottom - boardH;
     if (boardY < hudEndY) {
@@ -999,8 +1004,8 @@
       boardBottom = boardY + boardH;
       trayTop = boardBottom + boardTrayGap;
       trayCenterY = trayTop + trayH / 2;
-      trayLabelY = trayTop - labelGap;
-      trayPiecesY = Math.min(trayPiecesY, trayCenterY);
+      trayLabelY = trayTop - trayLabelSpace / 2 - 4;
+      trayPiecesY = trayCenterY;
     }
     return {
       boardY,
@@ -1009,7 +1014,9 @@
       trayLabelY,
       trayCenterY,
       trayH,
-      trayPiecesY
+      trayW,
+      trayPiecesY,
+      trayScale
     };
   }
   function mapLayout(width = W, height = H) {
@@ -1478,7 +1485,7 @@
   }
 
   // public/js/version.js
-  var APP_VERSION = "1.3.2";
+  var APP_VERSION = "1.3.3";
 
   // public/js/scenes/MenuScene.js
   var MenuScene = class extends Phaser.Scene {
@@ -1937,8 +1944,84 @@
     }
   }
 
+  // public/js/gameUi.js
+  var GAME_UI = {
+    font: {
+      caption: "11px",
+      body: "13px",
+      heading: "15px",
+      stat: "24px"
+    },
+    color: {
+      muted: "#94a3b8",
+      title: "#38bdf8",
+      accent: "#fb923c",
+      moves: "#fbbf24",
+      bright: "#cbd5e1",
+      stat: "#ffffff",
+      goal: "#4ade80"
+    }
+  };
+  function gameHudStyle(role, overrides = {}) {
+    const base = {
+      caption: {
+        fontSize: GAME_UI.font.caption,
+        fontStyle: "700",
+        color: GAME_UI.color.muted
+      },
+      body: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.accent
+      },
+      heading: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.heading,
+        fontStyle: "800",
+        color: GAME_UI.color.title,
+        strokeThickness: 2
+      },
+      moves: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.moves
+      },
+      stat: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.stat,
+        fontStyle: "800",
+        color: GAME_UI.color.stat,
+        stroke: "#0f172a",
+        strokeThickness: 3
+      },
+      goalLabel: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.caption,
+        fontStyle: "700",
+        color: GAME_UI.color.bright
+      },
+      goalStat: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.stat,
+        fontStyle: "800",
+        color: GAME_UI.color.goal,
+        stroke: "#0f172a",
+        strokeThickness: 2
+      },
+      trayLabel: {
+        fontFamily: "Syne, sans-serif",
+        fontSize: GAME_UI.font.body,
+        fontStyle: "800",
+        color: GAME_UI.color.bright,
+        letterSpacing: 1
+      }
+    };
+    return uiTextStyle({ ...base[role] || base.body, ...overrides });
+  }
+
   // public/js/scenes/GameScene.js
-  var TRAY_SCALE = TRAY_LAYOUT_SCALE;
   var ENDLESS_MILESTONES = [500, 1e3, 2e3, 5e3, 1e4];
   var GameScene = class extends Phaser.Scene {
     constructor() {
@@ -2009,15 +2092,9 @@
     }
     drawTrayArea() {
       const L = this.layout;
-      this.add.rectangle(W / 2, L.trayCenterY, W - 20, L.trayH, 1120295, 0.9).setStrokeStyle(2, 4674921, 0.9).setDepth(1);
+      this.add.rectangle(W / 2, L.trayCenterY, L.trayW, L.trayH, 1120295, 0.92).setStrokeStyle(2, 6583435, 0.95).setDepth(1);
       applyCrispText(
-        this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "16px",
-          fontStyle: "800",
-          color: "#cbd5e1",
-          letterSpacing: 2
-        })).setOrigin(0.5).setDepth(2)
+        this.add.text(W / 2, L.trayLabelY, "NEXT PIECES", gameHudStyle("trayLabel")).setOrigin(0.5).setDepth(2)
       );
     }
     drawBoardFrame() {
@@ -2042,50 +2119,21 @@
       const H2 = HUD_HEADER;
       this.add.rectangle(W / 2, H2.panelY, W - 16, H2.panelH, 988970, 0.92).setStrokeStyle(1, 3359061, 0.6).setDepth(45);
       applyCrispText(
-        this.add.text(W / 2, H2.levelTitleY, title, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "16px",
-          fontStyle: "800",
-          color: "#38bdf8",
-          strokeThickness: 2
-        })).setOrigin(0.5).setDepth(50)
+        this.add.text(W / 2, H2.levelTitleY, title, gameHudStyle("heading")).setOrigin(0.5).setDepth(50)
       );
       if (this.mode === "level" && this.level?.name) {
         applyCrispText(
-          this.add.text(W / 2, H2.levelNameY, this.level.name, uiTextStyle({
-            fontFamily: "Syne, sans-serif",
-            fontSize: "14px",
-            fontStyle: "800",
-            color: "#fb923c",
-            stroke: "#0f172a",
-            strokeThickness: 2
-          })).setOrigin(0.5).setDepth(50)
+          this.add.text(W / 2, H2.levelNameY, this.level.name, gameHudStyle("body")).setOrigin(0.5).setDepth(50)
         );
       }
       applyCrispText(
-        this.add.text(H2.scoreX, H2.scoreLabelY, "SCORE", uiTextStyle({
-          fontSize: "12px",
-          fontStyle: "700",
-          color: "#94a3b8",
-          letterSpacing: 1
-        })).setOrigin(0, 0.5).setDepth(50)
+        this.add.text(H2.scoreX, H2.scoreLabelY, "SCORE", gameHudStyle("caption", { letterSpacing: 1 })).setOrigin(0, 0.5).setDepth(50)
       );
       this.scoreText = applyCrispText(
-        this.add.text(H2.scoreX, H2.scoreValueY, "0", uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "28px",
-          fontStyle: "800",
-          color: "#ffffff",
-          stroke: "#0f172a",
-          strokeThickness: 3
-        })).setOrigin(0, 0.5).setDepth(50)
+        this.add.text(H2.scoreX, H2.scoreValueY, "0", gameHudStyle("stat")).setOrigin(0, 0.5).setDepth(50)
       );
       this.streakBadge = applyCrispText(
-        this.add.text(W / 2, H2.streakY, "", uiTextStyle({
-          fontSize: "13px",
-          fontStyle: "800",
-          color: "#fb923c"
-        })).setOrigin(0.5).setAlpha(0).setDepth(50)
+        this.add.text(W / 2, H2.streakY, "", gameHudStyle("body")).setOrigin(0.5).setAlpha(0).setDepth(50)
       );
       let goalTitle = "";
       let goalProg = "\u2014";
@@ -2102,35 +2150,14 @@
         goalProg = goalProgress(this.level.goal, 0, 0, 0);
       }
       applyCrispText(
-        this.add.text(H2.goalX, H2.goalLabelY, `GOAL \xB7 ${goalTitle}`, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "13px",
-          fontStyle: "800",
-          color: "#cbd5e1",
-          align: "right"
-        })).setOrigin(1, 0.5).setDepth(50)
+        this.add.text(H2.goalX, H2.goalLabelY, `GOAL \xB7 ${goalTitle}`, gameHudStyle("goalLabel", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
       );
       this.goalProgressText = applyCrispText(
-        this.add.text(H2.goalX, H2.goalProgY, goalProg, uiTextStyle({
-          fontFamily: "Syne, sans-serif",
-          fontSize: "30px",
-          fontStyle: "800",
-          color: "#4ade80",
-          align: "right",
-          stroke: "#0f172a",
-          strokeThickness: 2
-        })).setOrigin(1, 0.5).setDepth(50)
+        this.add.text(H2.goalX, H2.goalProgY, goalProg, gameHudStyle("goalStat", { align: "right" })).setOrigin(1, 0.5).setDepth(50)
       );
       if (this.mode === "level" && this.level.moves) {
         this.movesText = applyCrispText(
-          this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, uiTextStyle({
-            fontFamily: "Syne, sans-serif",
-            fontSize: "14px",
-            fontStyle: "800",
-            color: "#fbbf24",
-            stroke: "#0f172a",
-            strokeThickness: 2
-          })).setOrigin(0.5).setDepth(50)
+          this.add.text(W / 2, H2.movesY, `Moves: ${this.level.moves}`, gameHudStyle("moves")).setOrigin(0.5).setDepth(50)
         );
       }
       if (this.mode === "level") {
@@ -2148,13 +2175,20 @@
       sfx.play("tray");
       const slotXs = [W * 0.22, W * 0.5, W * 0.78];
       this.tray.forEach((shape, i) => {
-        const container = this.makePieceContainer(shape, slotXs[i], this.layout.trayPiecesY, TRAY_SCALE, true);
+        const container = this.makePieceContainer(
+          shape,
+          slotXs[i],
+          this.layout.trayPiecesY,
+          this.layout.trayScale,
+          true
+        );
         container.setData("slot", i);
         container.setData("shape", shape);
         container.setData("homeX", slotXs[i]);
         container.setData("homeY", this.layout.trayPiecesY);
+        const hit = Math.round(110 * this.layout.trayScale + 88);
         container.setInteractive(
-          new Phaser.Geom.Rectangle(-130, -130, 260, 260),
+          new Phaser.Geom.Rectangle(-hit / 2, -hit / 2, hit, hit),
           Phaser.Geom.Rectangle.Contains
         );
         this.input.setDraggable(container);
