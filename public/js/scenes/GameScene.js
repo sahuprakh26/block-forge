@@ -550,16 +550,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   refreshGoalDisplay() {
-    if (this.mode === "endless") {
-      if (this.goalProgressText) {
-        this.goalProgressText.setText(`Score ${this.score}`);
-      }
-      return;
-    }
+    if (this.mode === "endless") return;
     if (this.mode === "daily") {
-      if (this.goalProgressText) {
-        this.goalProgressText.setText(`Score ${this.score}`);
-      }
+      if (this.goalProgressText) this.goalProgressText.setText(String(this.score));
       return;
     }
     if (this.mode !== "level" || !this.level) return;

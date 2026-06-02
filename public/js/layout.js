@@ -120,14 +120,14 @@ export function gameLayout(height = H) {
   const goalBarY = headerBottom + 10;
   const hudBottom = goalBarY + 10;
 
-  const trayH = 126;
+  const trayH = 130;
   const trayBottom = height - Math.max(10, safeBottom) - 8;
   const trayTop = trayBottom - trayH;
   const trayCenterY = trayTop + trayH / 2;
   const trayLabelY = trayTop + 16;
-  const trayPiecesY = trayTop + trayH * 0.68;
-  const trayInnerH = trayH - 36;
-  const trayScale = Math.min(0.5, (trayInnerH * 0.9) / (5 * CELL));
+  const trayPiecesY = trayTop + trayH * 0.66;
+  const trayInnerH = trayH - 34;
+  const trayScale = Math.min(0.56, (trayInnerH * 0.92) / (5 * CELL));
   const trayW = W - margin * 2;
 
   const playTop = hudBottom + 8;
