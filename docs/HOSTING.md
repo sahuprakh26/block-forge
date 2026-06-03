@@ -14,11 +14,16 @@
 | `config/public-url.txt` | Public game link (GitHub Pages URL) |
 | `config/api-url.txt` | Optional leaderboard API (Render / Cloudflare Worker). Empty = gist read-only fallback |
 
-## Rankings without Netlify
+## Full rankings (read + submit, free)
 
-1. **Gist** (free): set `BF_GIST_ID` in GitHub repo secrets — read works in game.
-2. **Cloudflare Worker** (free): deploy `worker/leaderboard-api.js` via `.github/workflows/cloudflare-api.yml` + CF secrets.
-3. **Render** (free tier): `render.yaml` — server sleeps when idle.
+GitHub Pages is static — scores need a small **API** (same GitHub Gist backend).
+
+1. Deploy **Render** (free): `render.yaml` runs `api-server.js` only.
+   - Env: `GITHUB_GIST_ID` = repo secret `BF_GIST_ID`, `GITHUB_TOKEN` = `BF_GH_TOKEN`
+2. Run: `powershell -File scripts/apply-rankings-api.ps1 -ApiUrl https://YOUR.onrender.com`
+3. Or **Cloudflare Worker**: `.github/workflows/cloudflare-api.yml` + `CF_API_TOKEN` / `CF_ACCOUNT_ID`
+
+Quick guide: `SETUP_RANKINGS_FREE.bat`
 
 ## CrazyGames / Poki
 

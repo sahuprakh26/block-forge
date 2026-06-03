@@ -26,11 +26,12 @@ jobs:
         env:
           GITHUB_GIST_ID: ${{ secrets.BF_GIST_ID }}
           GITHUB_TOKEN: ${{ secrets.BF_GH_TOKEN }}
-      - name: Save API URL for game builds
+      - name: Save API URL and rebuild game
         run: |
           URL="${{ steps.wrangler.outputs.deployment-url }}"
           if [ -z "$URL" ]; then URL="https://block-forge-api.workers.dev"; fi
           echo "Worker URL: $URL"
           gh variable set BF_API_URL --body "$URL"
+          gh workflow run "Deploy GitHub Pages"
         env:
           GH_TOKEN: ${{ secrets.BF_GH_TOKEN }}

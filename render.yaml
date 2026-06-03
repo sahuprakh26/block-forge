@@ -3,8 +3,8 @@ services:
     name: block-forge
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: node server.js
+    buildCommand: npm install
+    startCommand: node api-server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
