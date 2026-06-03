@@ -1,5 +1,6 @@
 import { dailySeed } from "./shapes.js";
 import { apiUrl } from "./apiBase.js";
+import { portalAllowsGlobalRankings } from "./portalSdk.js";
 
 export function boardKey(mode) {
   if (mode === "daily") return `daily-${dailySeed()}`;
@@ -38,6 +39,9 @@ async function fetchLeaderboardFromGist(board) {
 }
 
 export async function fetchLeaderboard(board) {
+  if (!portalAllowsGlobalRankings()) {
+    return { board, rows: [], offline: true, portal: true };
+  }
   try {
     const res = await fetch(apiUrl(`/api/leaderboard/${encodeURIComponent(board)}`));
     if (res.ok) return await res.json();
@@ -54,6 +58,9 @@ export async function fetchLeaderboard(board) {
 }
 
 export async function submitScore(board, playerId, name, score) {
+  if (!portalAllowsGlobalRankings()) {
+    return { ok: false, offline: true, portal: true };
+  }
   try {
     const res = await fetch(apiUrl(`/api/leaderboard/${encodeURIComponent(board)}`), {
       method: "POST",

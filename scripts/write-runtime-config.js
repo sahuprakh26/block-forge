@@ -20,9 +20,12 @@ function readUrlFile(file) {
 const isAndroid = process.argv.includes("--android") || process.env.BF_ANDROID_BUILD === "1";
 const isRelease = process.argv.includes("--release") || process.env.BF_ANDROID_RELEASE === "1";
 
+const publicUrl = readUrlFile(publicUrlFile);
 let url = (process.env.BF_API_URL || "").trim();
 if (!url) url = readUrlFile(urlFile);
-if (!url) url = readUrlFile(publicUrlFile);
+// Web: API base is only api-url / BF_API_URL (GitHub Pages is static — no /api there).
+// Android release: fall back to public game URL when no separate API host.
+if (!url && isAndroid) url = publicUrl;
 
 if (isAndroid && isRelease && !url) {
   console.error("");
@@ -51,9 +54,19 @@ function readGistIdFile() {
   );
 }
 const gistId = (process.env.BF_GIST_ID || process.env.GITHUB_GIST_ID || readGistIdFile() || "").trim();
+let sitePrefix = "";
+const pub = (process.env.BF_PUBLIC_URL || publicUrl || "").trim();
+if (pub.includes("github.io")) {
+  try {
+    sitePrefix = new URL(pub).pathname.replace(/\/$/, "") || "";
+  } catch {
+    /* ignore */
+  }
+}
 const body =
   `/** Auto-generated — do not edit */\n` +
   `window.BF_API_BASE = ${JSON.stringify(base)};\n` +
+  `window.BF_SITE_PREFIX = ${JSON.stringify(sitePrefix)};\n` +
   `window.BF_IS_NATIVE = ${JSON.stringify(!!isAndroid)};\n` +
   `window.BF_GIST_ID = ${JSON.stringify(gistId)};\n`;
 fs.writeFileSync(out, body);

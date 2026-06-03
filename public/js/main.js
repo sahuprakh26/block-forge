@@ -3,6 +3,7 @@ import { bgm } from "./music.js";
 import { W, H } from "./config.js";
 import { measureSafeInsets } from "./layout.js";
 import { uiResolution } from "./textUtil.js";
+import { initPortalSdk } from "./portalSdk.js";
 import BootScene from "./scenes/BootScene.js";
 import MenuScene from "./scenes/MenuScene.js";
 import MapScene from "./scenes/MapScene.js";
@@ -67,6 +68,7 @@ function startGame() {
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      autoRound: true,
       width: W,
       height: H,
     },
@@ -74,7 +76,7 @@ function startGame() {
       antialias: true,
       pixelArt: false,
       transparent: false,
-      roundPixels: false,
+      roundPixels: true,
       powerPreference: "high-performance",
     },
     resolution: uiResolution(),
@@ -101,7 +103,10 @@ window.addEventListener("error", (e) => {
   if (!window.__bfReady) showBootError(e.message || "Script error");
 });
 
-startGame();
+Promise.race([
+  initPortalSdk(),
+  new Promise((r) => setTimeout(r, 2000)),
+]).finally(() => startGame());
 
 function unlockAudio() {
   sfx.ensure();

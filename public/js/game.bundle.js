@@ -205,7 +205,10 @@
   };
   function writeSave(data) {
     const d = sanitizeProgress(data);
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 2, d, h: sealSave(d) }));
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 2, d, h: sealSave(d) }));
+    } catch {
+    }
     return d;
   }
   function loadProgress() {
@@ -1077,6 +1080,124 @@
     };
   }
 
+  // public/js/portalSdk.js
+  function getPortal() {
+    if (typeof location === "undefined") return null;
+    const q = new URLSearchParams(location.search);
+    if (q.get("portal") === "poki") return "poki";
+    if (q.get("portal") === "crazy") return "crazy";
+    const h = location.hostname || "";
+    if (/poki\.com|poki-gdn\.com/i.test(h)) return "poki";
+    if (/crazygames\.com/i.test(h)) return "crazy";
+    return null;
+  }
+  function portalAllowsGlobalRankings() {
+    return getPortal() !== "poki";
+  }
+  function crazySdk() {
+    return typeof window !== "undefined" ? window.CrazyGames?.SDK : null;
+  }
+  function crazyEnv() {
+    try {
+      return crazySdk()?.environment;
+    } catch {
+      return null;
+    }
+  }
+  function crazyReady() {
+    const env = crazyEnv();
+    return env === "local" || env === "crazygames";
+  }
+  function applyCrazyMute() {
+    if (!crazyReady()) return;
+    try {
+      if (crazySdk()?.game?.settings?.muteAudio) {
+        sfx.toggle(false);
+        bgm.toggle(false);
+      }
+    } catch (e) {
+      console.warn("[portal] muteAudio", e);
+    }
+  }
+  function waitForCrazySdk(maxMs = 4e3) {
+    if (!/crazygames\.com/i.test(location?.hostname || "")) {
+      return Promise.resolve();
+    }
+    if (crazySdk()) return Promise.resolve();
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      const tick = () => {
+        if (crazySdk() || Date.now() - t0 >= maxMs) resolve();
+        else setTimeout(tick, 50);
+      };
+      tick();
+    });
+  }
+  async function initPortalSdk() {
+    await waitForCrazySdk();
+    const portal = getPortal();
+    if (portal === "poki" && window.PokiSDK?.init) {
+      try {
+        await window.PokiSDK.init();
+      } catch (e) {
+        console.warn("[portal] Poki init", e);
+      }
+    }
+    if (portal === "crazy" || crazyReady()) {
+      if (crazySdk()?.init) {
+        try {
+          await crazySdk().init();
+        } catch (e) {
+          console.warn("[portal] CrazyGames init", e);
+        }
+      }
+      applyCrazyMute();
+      portalGameplayStart();
+    }
+  }
+  function portalGameplayStart() {
+    const portal = getPortal();
+    if (portal === "poki" && window.PokiSDK?.gameplayStart) {
+      try {
+        window.PokiSDK.gameplayStart();
+      } catch (e) {
+        console.warn("[portal] Poki gameplayStart", e);
+      }
+    }
+    if (portal === "crazy" || crazyReady()) {
+      try {
+        crazySdk()?.game?.gameplayStart?.();
+      } catch (e) {
+        console.warn("[portal] Crazy gameplayStart", e);
+      }
+    }
+  }
+  function portalGameplayStop() {
+    const portal = getPortal();
+    if (portal === "poki" && window.PokiSDK?.gameplayStop) {
+      try {
+        window.PokiSDK.gameplayStop();
+      } catch (e) {
+        console.warn("[portal] Poki gameplayStop", e);
+      }
+    }
+    if (portal === "crazy" || crazyReady()) {
+      try {
+        crazySdk()?.game?.gameplayStop?.();
+      } catch (e) {
+        console.warn("[portal] Crazy gameplayStop", e);
+      }
+    }
+  }
+  function portalCommercialBreak() {
+    const portal = getPortal();
+    if (portal !== "poki" || !window.PokiSDK?.commercialBreak) {
+      return Promise.resolve();
+    }
+    return window.PokiSDK.commercialBreak().catch(() => {
+    });
+  }
+
   // public/js/scenes/BootScene.js
   var BootScene = class extends Phaser.Scene {
     constructor() {
@@ -1215,8 +1336,16 @@
   }
   function transitionTo(scene, key, data = {}) {
     sfx.play("click");
-    scene.cameras.main.fadeOut(220, 10, 14, 26);
-    scene.time.delayedCall(220, () => scene.scene.start(key, data));
+    const go = () => {
+      scene.cameras.main.fadeOut(220, 10, 14, 26);
+      scene.time.delayedCall(220, () => scene.scene.start(key, data));
+    };
+    if (key === "Game") {
+      portalGameplayStop();
+      portalCommercialBreak().then(go);
+      return;
+    }
+    go();
   }
   function fadeInScene(scene, ms = 320) {
     scene.cameras.main.fadeIn(ms, 10, 14, 26);
@@ -1406,7 +1535,10 @@
         return { id, name, nameSet: true };
       }
       const out = { id, name: nameSet ? name : "", nameSet: false };
-      localStorage.setItem(PLAYER_KEY, JSON.stringify(out));
+      try {
+        localStorage.setItem(PLAYER_KEY, JSON.stringify(out));
+      } catch {
+      }
       return out;
     } catch {
       return { id: "p" + Date.now(), name: "", nameSet: false };
@@ -1418,7 +1550,11 @@
     const p = getPlayer();
     p.name = n;
     p.nameSet = true;
-    localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
+    try {
+      localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
+    } catch {
+      return null;
+    }
     return p;
   }
   function hasName() {
@@ -2081,6 +2217,9 @@
     }
   }
   async function fetchLeaderboard(board) {
+    if (!portalAllowsGlobalRankings()) {
+      return { board, rows: [], offline: true, portal: true };
+    }
     try {
       const res = await fetch(apiUrl(`/api/leaderboard/${encodeURIComponent(board)}`));
       if (res.ok) return await res.json();
@@ -2096,6 +2235,9 @@
     }
   }
   async function submitScore(board, playerId, name, score) {
+    if (!portalAllowsGlobalRankings()) {
+      return { ok: false, offline: true, portal: true };
+    }
     try {
       const res = await fetch(apiUrl(`/api/leaderboard/${encodeURIComponent(board)}`), {
         method: "POST",
@@ -2189,6 +2331,8 @@
       }
       fadeInScene(this, 280);
       if (bgm.isOn()) bgm.unlock();
+      portalGameplayStart();
+      this.events.once("shutdown", () => portalGameplayStop());
     }
     drawTrayArea() {
       const L = this.layout;
@@ -3078,6 +3222,7 @@
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
+        autoRound: true,
         width: W,
         height: H
       },
@@ -3085,7 +3230,7 @@
         antialias: true,
         pixelArt: false,
         transparent: false,
-        roundPixels: false,
+        roundPixels: true,
         powerPreference: "high-performance"
       },
       resolution: uiResolution()
@@ -3109,7 +3254,10 @@
   window.addEventListener("error", (e) => {
     if (!window.__bfReady) showBootError(e.message || "Script error");
   });
-  startGame();
+  Promise.race([
+    initPortalSdk(),
+    new Promise((r) => setTimeout(r, 2e3))
+  ]).finally(() => startGame());
   function unlockAudio() {
     sfx.ensure();
     bgm.unlock();

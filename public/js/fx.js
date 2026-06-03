@@ -1,5 +1,6 @@
 import { W } from "./config.js";
 import { sfx } from "./audio.js";
+import { portalCommercialBreak, portalGameplayStop } from "./portalSdk.js";
 
 /** Rich shiny backdrop — gradient, stars, glow orbs */
 export function drawBackdrop(scene, width, height) {
@@ -58,8 +59,16 @@ export function drawBackdrop(scene, width, height) {
 
 export function transitionTo(scene, key, data = {}) {
   sfx.play("click");
-  scene.cameras.main.fadeOut(220, 10, 14, 26);
-  scene.time.delayedCall(220, () => scene.scene.start(key, data));
+  const go = () => {
+    scene.cameras.main.fadeOut(220, 10, 14, 26);
+    scene.time.delayedCall(220, () => scene.scene.start(key, data));
+  };
+  if (key === "Game") {
+    portalGameplayStop();
+    portalCommercialBreak().then(go);
+    return;
+  }
+  go();
 }
 
 export function fadeInScene(scene, ms = 320) {

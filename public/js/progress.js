@@ -18,7 +18,11 @@ const DEFAULT = {
 
 function writeSave(data) {
   const d = sanitizeProgress(data);
-  localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 2, d, h: sealSave(d) }));
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 2, d, h: sealSave(d) }));
+  } catch {
+    /* incognito / portal storage blocked */
+  }
   return d;
 }
 

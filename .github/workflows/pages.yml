@@ -27,6 +27,7 @@ jobs:
         env:
           BF_GIST_ID: ${{ secrets.BF_GIST_ID }}
           BF_API_URL: ${{ vars.BF_API_URL }}
+          BF_PUBLIC_URL: ${{ vars.BF_GAME_URL }}
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -35,7 +35,11 @@ export function getPlayer() {
     }
 
     const out = { id, name: nameSet ? name : "", nameSet: false };
-    localStorage.setItem(PLAYER_KEY, JSON.stringify(out));
+    try {
+      localStorage.setItem(PLAYER_KEY, JSON.stringify(out));
+    } catch {
+      /* incognito */
+    }
     return out;
   } catch {
     return { id: "p" + Date.now(), name: "", nameSet: false };
@@ -49,7 +53,11 @@ export function setPlayerName(name) {
   const p = getPlayer();
   p.name = n;
   p.nameSet = true;
-  localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
+  try {
+    localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
+  } catch {
+    return null;
+  }
   return p;
 }
 

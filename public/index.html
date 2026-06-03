@@ -18,13 +18,31 @@
 
   <title>Block Forge</title>
 
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="manifest.json" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060912'/%3E%3Crect x='14' y='14' width='16' height='16' rx='4' fill='%23818cf8'/%3E%3Crect x='34' y='14' width='16' height='16' rx='4' fill='%2338bdf8'/%3E%3Crect x='24' y='34' width='16' height='16' rx='4' fill='%23fde047'/%3E%3C/svg%3E" />
 
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    (function () {
+      var q = location.search || "";
+      var h = location.hostname || "";
+      function add(src) {
+        document.write('<script src="' + src + '"><\/script>');
+      }
+      if (/poki\.com|poki-gdn\.com/i.test(h) || /portal=poki/i.test(q)) {
+        add("https://game-cdn.poki.com/scripts/v2/poki-sdk.js");
+      }
+      if (/crazygames\.com/i.test(h) || /portal=crazy/i.test(q)) {
+        add("https://sdk.crazygames.com/crazygames-sdk-v3.js");
+      }
+      if (!/poki|crazygames/i.test(h) && !/portal=(poki|crazy)/i.test(q)) {
+        add("https://game-cdn.poki.com/scripts/v2/poki-sdk.js");
+        add("https://sdk.crazygames.com/crazygames-sdk-v3.js");
+      }
+    })();
+  </script>
 
   <style>
 
@@ -74,9 +92,15 @@
 
   </script>
 
-  <script src="/vendor/phaser.min.js"></script>
-  <script src="/js/runtime-config.js"></script>
-  <script src="/js/game.bundle.js?v=40"></script>
+  <script>
+    window.addEventListener("wheel", function (e) { e.preventDefault(); }, { passive: false });
+    window.addEventListener("keydown", function (e) {
+      if (["ArrowUp", "ArrowDown", " "].includes(e.key)) e.preventDefault();
+    });
+  </script>
+  <script src="vendor/phaser.min.js"></script>
+  <script src="js/runtime-config.js"></script>
+  <script src="js/game.bundle.js?v=46"></script>
 
 </body>
 

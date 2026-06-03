@@ -24,7 +24,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Build web + Capacitor
         run: |
-          echo "${{ vars.BF_GAME_URL || 'https://block-forge.netlify.app' }}" > config/api-url.txt
+          echo "${{ vars.BF_GAME_URL || 'https://sahuprakh26.github.io/block-forge' }}" > config/api-url.txt
           npm ci
           npm run build:android
           npx cap sync android

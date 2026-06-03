@@ -1,5 +1,5 @@
-# Netlify live site deploys via GitHub → Netlify (project: blackforgee26).
-# Do NOT use netlify deploy --allow-anonymous here — it creates unclaimed Drop URLs (401).
+# DEPRECATED — use GitHub Pages (.github/workflows/pages.yml) instead.
+# Netlify account suspended; do not deploy here.
 
 name: Netlify Drop (disabled)
 

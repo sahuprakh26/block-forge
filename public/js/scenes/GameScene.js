@@ -35,6 +35,7 @@ import { ensureName } from "../namePrompt.js";
 import { gameLayout } from "../layout.js";
 import { gameHudStyle } from "../gameUi.js";
 import { applyCrispText } from "../textUtil.js";
+import { portalGameplayStart, portalGameplayStop } from "../portalSdk.js";
 const ENDLESS_MILESTONES = [500, 1000, 2000, 5000, 10000];
 
 export default class GameScene extends Phaser.Scene {
@@ -110,6 +111,8 @@ export default class GameScene extends Phaser.Scene {
     }
     fadeInScene(this, 280);
     if (bgm.isOn()) bgm.unlock();
+    portalGameplayStart();
+    this.events.once("shutdown", () => portalGameplayStop());
   }
 
   drawTrayArea() {
